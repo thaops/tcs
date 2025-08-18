@@ -1,0 +1,11 @@
+{
+    "authorities": [
+      {
+        "type": "AAD",
+        "audience": {
+          "type": "AzureADMyOrg",
+          "tenant_id": "2756f5d9-a38b-40ae-9a3b-774c286b5aab"
+        }
+      }
+    ]
+  }

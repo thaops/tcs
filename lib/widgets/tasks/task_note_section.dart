@@ -1,0 +1,39 @@
+import 'package:flutter/material.dart';
+import 'package:tcs_flutter/common/widgets/custom_text_field.dart';
+import 'package:tcs_flutter/common/widgets/text_widget.dart';
+
+class TaskNoteSection extends StatelessWidget {
+  final TextEditingController controllerNote;
+  final String label;
+  final String note;
+  final double screenWidth;
+
+  TaskNoteSection({
+    required this.label,
+    required this.note,
+    required this.screenWidth,
+    required this.controllerNote,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextWidget(
+         text:  label,
+         fontSize: 15,
+         fontWeight: FontWeight.bold,
+
+        ),
+        const SizedBox(height: 8),
+        CustomTextField(
+          controller: controllerNote,
+          hintText: note,
+          maxLines: 4,
+          borderRadius: 24,
+        ),
+      ],
+    );
+  }
+}
