@@ -1,0 +1,18 @@
+name: feature
+description: Generate a Feature (GetX + Clean Architecture)
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0 <1.0.0"
+vars:
+  name:
+    type: string
+    description: Feature name (e.g. profile)
+    prompt: What is the feature name?
+  scope:
+    type: enum
+    description: Feature scope directory under lib/feature
+    default: private_app_shell
+    values:
+      - private_app_shell
+      - public_app_shell
+      - common

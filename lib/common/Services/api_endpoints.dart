@@ -8,41 +8,14 @@ class ApiEndpoints {
   
 
   static String login = "${Config.baseUrl}/users/oauth2-google";
-  static String loginUrlMicrosoft(int platform, int type) => "${Config.baseUrl}/users/get-redirect-url?platform=$platform&type=$type";
-    static String loginMicrosoft = "${Config.baseUrl}/users/login-with-ms-token";
+  static String loginUrlMicrosoft(int platform, int type) => "${Config.baseUrl}/login/get-redirect-url?platform=$platform&type=$type";
+    static String loginMicrosoft = "${Config.baseUrl}/login/login-with-ms-token";
 
 
   static String loginFrame = "${Config.baseUrl}/users/login";
 
   //task
-  static String productPagination(int page, int pageSize) =>
-      "${Config.baseUrl}/projects?page=$page&pageSize=$pageSize";
-  static String taskPagination(
-      {int page = 1,
-      int pageSize = 999,
-      String? projectID = '',
-      DateTime? startDate,
-      DateTime? endDate,
-      bool forMe = true}) {
-    startDate ??= DateTime(2024, 12, 21);
-    endDate ??= DateTime(2222, 12, 31);
 
-    return "${Config.baseUrl}/tasks?project=$projectID&page=$page&pageSize=$pageSize&startDate=$startDate&endDate=$endDate&forMe=$forMe";
-  }
-
-  static String taskPaginationEvery = "${Config.baseUrl}/tasks/get-list-task2";
-
-  static String taskPaginationDetail = "${Config.baseUrl}/tasks/get-task2";
-  static String addTask() => "${Config.baseUrl}/tasks/create-task2";
-
-  static String taskDetail(String taskID) => "${Config.baseUrl}/tasks/$taskID";
-
-  static String updateTask(String taskID) => "${Config.baseUrl}/tasks/update-task2?id=$taskID";
-
-  static String deleteTask = "${Config.baseUrl}/tasks/remove-task2";
-
-  static String meetingDetail(String meetingID) =>
-      "${Config.baseUrl}/weekworkingschedule/$meetingID";
 
   // profile
   static String profile = "${Config.baseUrl}/users/profile";
@@ -77,30 +50,6 @@ class ApiEndpoints {
   // departments
   static String departments = "${Config.baseUrl}/departments/get-departments-with-employees";
 
-  // /tasks/valid-priorities
-  static String validPriorities = "${Config.baseUrl}/tasks/valid-priorities";
-
-  ///tasks/valid-states
-  static String validStates = "${Config.baseUrl}/tasks/valid-states";
-
-  //projects
-  static String projects = "${Config.baseUrl}/projectwbs/get-list-of-projects";
-
-  //sprints
-  static String sprints(String projectId) =>
-      "${Config.baseUrl}/sprints?project=$projectId&page=1&pageSize=9999&startDate=2023-12-04&endDate=2222-12-31";
-  //wbs
-    static String getListOfWbs = "${Config.baseUrl}/projectwbs/get-list-of-wbs";
-  static String wbs = "${Config.baseUrl}/projectwbs/get-wbs-for-task";
-  static String boardDetail = "${Config.baseUrl}/projectwbs/get-wbs";
-  static String updateBoardDetail (String taskId) => "${Config.baseUrl}/projectwbs/update-wbs?id=$taskId";
-  static String addBoard = "${Config.baseUrl}/projectwbs/add-wbs";
-  static String addComment = "${Config.baseUrl}/projectcomment/add";
-  static String updateComment(String id) => "${Config.baseUrl}/projectcomment/update?id=$id";
-  static String deleteComment = "${Config.baseUrl}/projectcomment/remove";
-  static String replyComment = "${Config.baseUrl}/projectcomment/reply";
-  static String deleteWbs = "${Config.baseUrl}/projectwbs/remove-wbs";
-  static String getComment = "${Config.baseUrl}/projectcomment/get-list";
   // listofff
   static String listoff(DateTime firstDayOfMonth, DateTime lastDayOfMonth) => "${Config.baseUrl}/dayoff/list-day-off?pageIndex=1&pageSize=9999&fromDate=$firstDayOfMonth&toDate=$lastDayOfMonth&keyword=";
   static String getLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/get-day-off/$leaveId";
@@ -109,29 +58,6 @@ class ApiEndpoints {
   static String createLeaveID() => "${Config.baseUrl}/dayoff/add-day-off";
   static String getLeave = "${Config.baseUrl}/dayoff/list-category?pageIndex=1&pageSize=9999";
   static String approveLeave(String approveId) => "${Config.baseUrl}/dayoff/approve-day-off/$approveId";
-  //kanban
-  static String getKanban = "${Config.baseUrl}/projectwbs/get-list-of-task-kanban";
-  static String updateKanban(String taskId) => "${Config.baseUrl}/tasks/update-task2?id=$taskId";
-
-  
-
-  // wbsKanban
-  static String getWbs = "${Config.baseUrl}/projectwbs/get-list-of-wbs-kanban";
-  static String updateWbs(String taskId) => "${Config.baseUrl}/projectwbs/update-wbs?id=$taskId";
-
-  static String getWbsDetail = "${Config.baseUrl}/projectwbs/get-wbs";
-
-  //report
-  static String getListReport = "${Config.baseUrl}/reports/get-list";
-  static String getReportDetail(String reportId) => "${Config.baseUrl}/reports/get-by-id/$reportId";
-  static String reportType = "${Config.baseUrl}/reports/report-type";
-  static String reportStatus = "${Config.baseUrl}/reports/report-status";
-  static String addReport = "${Config.baseUrl}/reports/add";
-  static String updateReport = "${Config.baseUrl}/reports/update";
-  static String deleteReport = "${Config.baseUrl}/reports/remove";
-
-
-
 
 
 

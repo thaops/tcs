@@ -1,14 +1,14 @@
 import 'package:get/get.dart';
-import 'package:tcs_flutter/feature/auth/login/binding/login_binding.dart';
-import 'package:tcs_flutter/feature/auth/login/view/login_screen.dart';
-import 'package:tcs_flutter/feature/auth/login_with_microsoft/login_with_microsoft.dart';
-import 'package:tcs_flutter/feature/presentation/filter_user/filter_user_view.dart';
+import 'package:tcs_flutter/feature/public_app_shell/auth/login/binding/login_binding.dart';
+import 'package:tcs_flutter/feature/public_app_shell/auth/login/view/login_screen.dart';
+import 'package:tcs_flutter/feature/public_app_shell/auth/login_with_microsoft/login_with_microsoft.dart';
+import 'package:tcs_flutter/feature/private_app_shell/filter_user/filter_user_view.dart';
 
-import 'package:tcs_flutter/feature/presentation/leave_management/view/leave_request_create_screen.dart';
-import 'package:tcs_flutter/feature/presentation/leave_management/view/leave_request_detail_screen.dart';
-import 'package:tcs_flutter/feature/presentation/leave_management/view/leave_request_update_screen.dart';
-import 'package:tcs_flutter/feature/presentation/profile/binding/profile_binding.dart';
-import 'package:tcs_flutter/feature/presentation/profile/view/profile_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_create_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_detail_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_update_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/binding/profile_binding.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_screen.dart';
 import 'package:tcs_flutter/main.dart';
 import 'package:tcs_flutter/router/bottom_navigation_main.dart';
 
