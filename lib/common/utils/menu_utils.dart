@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:tcs_flutter/widgets/custom_menu.dart';
+import 'package:tcs_flutter/common/widgets/widgets/custom_menu.dart';
 
 class MenuUtils {
    Future<void> customMenu(BuildContext context, List<MenuItem> items) async {

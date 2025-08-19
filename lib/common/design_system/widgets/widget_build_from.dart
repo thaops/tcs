@@ -7,8 +7,8 @@ import 'package:tcs_flutter/common/widgets/task_date.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/common/widgets/custom_text_field.dart';
-import 'package:tcs_flutter/widgets/buildH.dart';
-import 'package:tcs_flutter/widgets/custom_mandays_buton.dart';
+import 'package:tcs_flutter/common/widgets/widgets/buildH.dart';
+import 'package:tcs_flutter/common/widgets/widgets/custom_mandays_buton.dart';
 
 class WidgetBuildFrom {
   static Column buildEditRow(

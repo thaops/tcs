@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:tcs_flutter/feature/presentation/leave_management/data/models/leave_id.dart';
-import 'package:tcs_flutter/widgets/tasks/text_tasks.dart';
-import 'package:tcs_flutter/widgets/tasks/text_tasks_row.dart';
+import 'package:tcs_flutter/common/widgets/widgets/tasks/text_tasks.dart';
+import 'package:tcs_flutter/common/widgets/widgets/tasks/text_tasks_row.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

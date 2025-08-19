@@ -4,7 +4,7 @@ import 'package:tcs_flutter/common/img/img.dart';
 import 'package:tcs_flutter/feature/auth/login/controller/login_controller.dart';
 import 'package:tcs_flutter/feature/auth/login/widget/frame_login.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:tcs_flutter/widgets/background_fill_view.dart';
+import 'package:tcs_flutter/common/widgets/widgets/background_fill_view.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});

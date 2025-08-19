@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tcs_flutter/common/widgets/styles/gogbal_styles.dart';
 import 'package:tcs_flutter/src/config/constants/color/colors.dart';
 
-import 'package:tcs_flutter/styles/gogbal_styles.dart';
 
 class TextTasksRow extends StatelessWidget {
   final String? text1;

@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_update_controller.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_management.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/listoff_leave.dart';
-import 'package:tcs_flutter/widgets/tasks/task_note_section.dart';
+import 'package:tcs_flutter/common/widgets/widgets/tasks/task_note_section.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LeaveRequestUpdateScreen extends StatefulWidget {
