@@ -15,7 +15,7 @@ class GoogleSignInButton extends StatelessWidget {
         width: MediaQuery.of(context).size.width * 0.8,
         height: 50,
         decoration: BoxDecoration(
-          color: AppColors.colorBackgroundGoogle,
+          color: AppColors.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: TextButton(

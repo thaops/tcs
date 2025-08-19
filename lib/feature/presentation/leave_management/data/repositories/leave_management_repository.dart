@@ -6,11 +6,11 @@ import 'package:tcs_flutter/src/config/constants/url/url.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/data/models/add.leave.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/data/models/leave_id.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_management.dart';
-import 'package:tcs_flutter/src/services/lib/services/auth_service.dart';
-import 'package:dio/dio.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/repositories/leave_repository_interface.dart';
 import 'package:flutter/material.dart';
+import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 
-class LeaveManagementRepository extends ChangeNotifier {
+class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositoryInterface {
   final DioApi dio = DioApi();
   bool isLoading = false;
 
@@ -18,20 +18,6 @@ class LeaveManagementRepository extends ChangeNotifier {
     return await BaseUrlProvider.getBaseUrl(context);
   }
 
-  Future<String?> _getAccessToken() async {
-    final authService = AuthService();
-    return await authService.getAccessToken();
-  }
-
-  Future<Options> _createOptions() async {
-    final accessToken = await _getAccessToken();
-    return Options(
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
-  }
 
   Future<List<Employee>?> getListOff(DateTime firstDayOfMonth,
       DateTime lastDayOfMonth) async {
@@ -40,7 +26,7 @@ class LeaveManagementRepository extends ChangeNotifier {
       final response = await dio.get(
         ApiEndpoints.listoff(firstDayOfMonth, lastDayOfMonth));
         print("response.getListOff: ${response.data}");
-      if (response.data['statusCode'] == 200) {
+      if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> employeeJson = jsonResponse['data'];
         List<Employee> employee = employeeJson
@@ -66,7 +52,7 @@ class LeaveManagementRepository extends ChangeNotifier {
       final response = await dio.get(ApiEndpoints.getLeaveID(leaveId));
       print("response.getLeaveID: ${response.data}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final Map<String, dynamic> leaveJson = jsonResponse['data'];
         return LeaveID.fromJson(leaveJson);
@@ -119,10 +105,9 @@ class LeaveManagementRepository extends ChangeNotifier {
 
   Future<List<LeaveType>?> getLeave(BuildContext context) async {
     try {
-      final options = await _createOptions();
       final response = await dio.get(ApiEndpoints.getLeave);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> leaveJson = jsonResponse['data'];
         List<LeaveType> leaves = leaveJson
@@ -143,7 +128,7 @@ class LeaveManagementRepository extends ChangeNotifier {
     try {
       final response = await dio.delete(ApiEndpoints.deleteLeaveID(dayyOffId));
 
-      if (response.data['statusCode'] == 200) {
+      if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
         print('Task deleted successfully');
         return true;
       } else {
@@ -153,6 +138,66 @@ class LeaveManagementRepository extends ChangeNotifier {
     } catch (e) {
       print('Error: $e');
       return false;
+    }
+  }
+
+  @override
+  Future<AddDayOffResponseModel> addLeave(
+      Map<String, dynamic> addData, BuildContext context) async {
+    try {
+      final response = await dio.post(
+        ApiEndpoints.careateleave,
+        data: jsonEncode(addData),
+      );
+
+      if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
+        final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+        return AddDayOffResponseModel.fromJson(data);
+      } else {
+        return AddDayOffResponseModel(
+          statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
+          message: 'Request failed with status: ${response.statusCode}',
+          totalRecord: 0,
+          data: true,
+        );
+      }
+    } catch (e) {
+      return AddDayOffResponseModel(
+        statusCode: HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
+        message: 'An error occurred: $e',
+        totalRecord: 0,
+        data: true,
+      );
+    }
+  }
+
+  @override
+  Future<AddDayOffResponseModel> updateLeave(
+      Map<String, dynamic> updateData, String leaveId, BuildContext context) async {
+    try {
+      final response = await dio.put(
+        ApiEndpoints.updateleave(leaveId),
+        data: jsonEncode(updateData),
+      );
+
+      if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
+        final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+        return AddDayOffResponseModel.fromJson(data);
+      } else {
+        return AddDayOffResponseModel(
+          statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
+          message: 'Request failed with status: ${response.statusCode}',
+          totalRecord: 0,
+          data: true,
+        );
+      }
+    } catch (e) {
+      return AddDayOffResponseModel(
+        statusCode: HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
+        message: 'An error occurred: $e',
+        totalRecord: 0,
+        data: true,
+      );
     }
   }
 
@@ -198,12 +243,12 @@ class LeaveManagementRepository extends ChangeNotifier {
         data: jsonEncode(approveData),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> data = response.data as Map<String, dynamic>;
         return AddDayOffResponseModel.fromJson(data);
       } else {
         return AddDayOffResponseModel(
-          statusCode: response.statusCode ?? 500,
+          statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
           message: 'Request failed with status: ${response.statusCode}',
           totalRecord: 0,
           data: true,
@@ -211,11 +256,37 @@ class LeaveManagementRepository extends ChangeNotifier {
       }
     } catch (e) {
       return AddDayOffResponseModel(
-        statusCode: 500,
+        statusCode: HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
         message: 'An error occurred: $e',
         totalRecord: 0,
         data: true,
       );
+    }
+  }
+
+  @override
+  Future<List<String>> getDepartmentNames() async {
+    try {
+      final response = await dio.post(
+        ApiEndpoints.departments,
+        data: {"string": "string"},
+      );
+      if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
+        final list = (response.data is Map && response.data['data'] is List)
+            ? (response.data['data'] as List)
+            : <dynamic>[];
+        final names = list
+            .map((e) => (e is Map && e['name'] != null) ? e['name'].toString().trim() : '')
+            .where((s) => s.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+        return names;
+      }
+      return <String>[];
+    } catch (e) {
+      print('Error fetching departments: $e');
+      return <String>[];
     }
   }
 }

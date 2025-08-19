@@ -8,6 +8,7 @@ class MicrosoftController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    print("urlMicrosoft: $urlMicrosoft");
 
     if (urlMicrosoft.isEmpty) {
       Get.snackbar('Error', 'Microsoft login URL is missing', snackPosition: SnackPosition.BOTTOM);

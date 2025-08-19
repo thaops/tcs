@@ -48,7 +48,7 @@ class _MainScreenState extends State<MainScreen> {
       icon: Icon(Icons.list, size: 24),
       title: Text("Xin phép",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      selectedColor: Colors.green,
+      selectedColor: AppColors.primary,
     ),
     // SalomonBottomBarItem(
     //   icon: Icon(Icons.support_agent_rounded, size: 24),

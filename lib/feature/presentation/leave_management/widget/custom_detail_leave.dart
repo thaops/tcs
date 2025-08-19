@@ -33,23 +33,26 @@ class CustomDetailLeave extends StatelessWidget {
               ],
             ),
             10.horizontalSpace,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextWidget(
-                  text: title ?? '',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.darkGrey.withOpacity(0.9),
-                ),
-                TextWidget(
-                  paddingVertical: 4,
-                  text: content.toString(),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color:colorText?? AppColors.darkGrey.withOpacity(0.9),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget(
+                    text: title ?? '',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.darkGrey.withOpacity(0.9),
+                  ),
+                  TextWidget(
+                    paddingVertical: 4,
+                    text: content.toString(),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    maxLines: 3,
+                    color:colorText?? AppColors.darkGrey.withOpacity(0.9),
+                  ),
+                ],
+              ),
             )
           ],
         ),

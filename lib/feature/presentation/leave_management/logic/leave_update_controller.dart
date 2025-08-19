@@ -1,17 +1,18 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:tcs_flutter/common/Services/api_endpoints.dart';
-import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/data/models/leave_id.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/data/repositories/leave_management_repository.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_logic.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_management.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_update.dart';
 import 'package:tcs_flutter/src/Api/models/users_model.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/repositories/leave_repository_interface.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/usecases/get_leave_types_usecase.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/usecases/update_leave_usecase.dart';
+import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 
 class LeaveUpdateController extends GetxController {
   // Các biến reactive để theo dõi trạng thái thay đổi
-  DioApi dioApi = DioApi();
   Rx<LeaveID?> leave = Rx<LeaveID?>(null);
   RxString? category = RxString('');
   String? usersID;
@@ -23,13 +24,18 @@ class LeaveUpdateController extends GetxController {
   RxBool isLoading = false.obs;
   late TextEditingController controllerNote;
 
-  LeaveManagementRepository leaveManagementRepository =
-      LeaveManagementRepository();
+  final LeaveRepositoryInterface leaveManagementRepository;
+  late final GetLeaveTypesUseCase _getLeaveTypes;
+  late final UpdateLeaveUseCase _updateLeave;
+  LeaveUpdateController({LeaveRepositoryInterface? repo})
+      : leaveManagementRepository = repo ?? LeaveManagementRepository() {
+    _getLeaveTypes = GetLeaveTypesUseCase(leaveManagementRepository);
+    _updateLeave = UpdateLeaveUseCase(leaveManagementRepository);
+  }
 
   @override
   void onInit() {
     super.onInit();
-    fetchLeave();
     final LeaveUpdateData? arguments = Get.arguments as LeaveUpdateData?;
     leave.value = arguments?.leave;
     print("leave: ${leave.toString()}");
@@ -46,6 +52,12 @@ class LeaveUpdateController extends GetxController {
     } else {
       controllerNote = TextEditingController(text: '');
     }
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    fetchLeave();
   }
 
   void updateDate(DateTime newDate, bool isStartDate) {
@@ -78,13 +90,12 @@ class LeaveUpdateController extends GetxController {
 
     try {
       isLoading.value = true;
-      final response = await dioApi.put(ApiEndpoints.updateleave(leaveId), data: updateData);
-      if (response.data['statusCode'] == 200) {
-          Get.back(result: true);
+      final result = await _updateLeave(updateData, leaveId, context);
+      if (result.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
+        Get.back(result: true);
         Get.snackbar('Thành công', 'Cập nhật đơn xin phép thành công');
-      
       } else {
-        Get.snackbar('Thất bại', 'Đơn xin phép thất bại: ${response.data['message']}');
+        Get.snackbar('Thất bại', 'Đơn xin phép thất bại: ${result.message}');
       }
     } catch (e) {
       print("error: $e");
@@ -97,18 +108,14 @@ class LeaveUpdateController extends GetxController {
     Future<void> fetchLeave() async {
     try {
       isLoading.value = true;
-      final response = await dioApi.get(ApiEndpoints.leavePagination);
-      if (response != null) {
-        List<dynamic> data = response.data['data'];
-        leaves = data
-            .map((item) => LeaveType.fromJson(item))
-            .toList(); 
-
-      } else {
-        print('Access token is missing.');
+      final ctx = Get.context;
+      if (ctx == null) {
+        return;
       }
+      final response = await _getLeaveTypes(ctx);
+      leaves = response ?? [];
     } catch (e) {
-      print('Error fetching users: $e');
+      print('Error fetching leave types: $e');
     } finally {
       isLoading.value = false;
     }

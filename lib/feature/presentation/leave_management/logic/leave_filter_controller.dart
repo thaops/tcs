@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
-import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/common/widgets/custom_select.dart';
-import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/feature/presentation/filter_user/controller/filter_user_controller.dart';
 import 'package:tcs_flutter/src/api/models/employee_model.dart' as leave_model;
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/repositories/leave_repository_interface.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/data/repositories/leave_management_repository.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/usecases/get_departments_usecase.dart';
 
 DateTime _firstDayOfMonth(DateTime date) {
   return DateTime(date.year, date.month, 1, 0, 0, 0, 0, 0);
@@ -17,7 +18,13 @@ DateTime _lastDayOfMonth(DateTime date) {
 }
 
 class LeaveFilterController extends GetxController {
-  DioApi dioApi = DioApi();
+  // Repository & UseCase
+  final LeaveRepositoryInterface leaveRepository;
+  late final GetDepartmentsUseCase _getDepartments;
+  LeaveFilterController({LeaveRepositoryInterface? repo})
+      : leaveRepository = repo ?? LeaveManagementRepository() {
+    _getDepartments = GetDepartmentsUseCase(leaveRepository);
+  }
   RxBool isLoading = false.obs;
   Rx<DateTime> startDate = _firstDayOfMonth(DateTime.now()).obs;
   Rx<DateTime> endDate = _lastDayOfMonth(DateTime.now()).obs;
@@ -90,22 +97,8 @@ class LeaveFilterController extends GetxController {
   Future<void> fetchDepartments() async {
     try {
       isLoading.value = true;
-      final res = await dioApi.get(ApiEndpoints.departments);
-      final data = res.data;
-      if (data is Map && data['data'] is List) {
-        final List list = data['data'];
-        final items = list.map((e) {
-          final name = (e['name'] ?? '').toString();
-          // Use name for both id and name to match Employee.department
-          return Item(id: name, name: name);
-        }).where((it) => it.id.isNotEmpty && it.name.isNotEmpty).toList();
-        departmentItems.assignAll(items);
-        // Đảm bảo selectedId hợp lệ với danh sách mới
-        final depIds = departmentItems.map((e) => e.id).toSet();
-        if (!depIds.contains(departmentId.value)) {
-          departmentId.value = '';
-        }
-      }
+      final names = await _getDepartments();
+      setDepartmentsFromNames(names);
     } catch (_) {
       // ignore error, keep items as-is
     } finally {

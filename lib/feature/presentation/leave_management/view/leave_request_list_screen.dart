@@ -1,20 +1,18 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
-import 'package:tcs_flutter/common/img/img.dart';
 import 'package:tcs_flutter/common/widgets/app_bar_widget.dart';
 import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
+import 'package:tcs_flutter/common/widgets/state_widget/empty_lottie_state.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
+import 'package:tcs_flutter/feature/presentation/filter_user/controller/filter_user_controller.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/data/repositories/leave_management_repository.dart';
-import 'package:flutter/material.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/usecases/get_list_off_usecase.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_filter_controller.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/leave_filter_widget.dart';
-import 'package:tcs_flutter/router/app_router.dart';
-import 'package:tcs_flutter/src/api/models/employee_model.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/listoff_month_widget.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/listoff_widgets.dart';
-import 'package:tcs_flutter/common/widgets/state_widget/empty_lottie_state.dart';
-import 'package:tcs_flutter/feature/presentation/user_list/controller/user_controller.dart';
-import 'package:tcs_flutter/feature/presentation/filter_user/controller/filter_user_controller.dart';
+import 'package:tcs_flutter/router/app_router.dart';
+import 'package:tcs_flutter/src/api/models/employee_model.dart';
 
 class LeaveScreen extends StatefulWidget {
   final Function(bool) onUpdateCallback;
@@ -28,12 +26,13 @@ class LeaveScreen extends StatefulWidget {
 }
 
 class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClientMixin {
-  final LeaveManagementRepository leaveManagementRepository = LeaveManagementRepository();
   final RxList<Employee> listOff = <Employee>[].obs;
+  late final GetListOffUseCase _getListOff = GetListOffUseCase(LeaveManagementRepository());
   final _leaveFilterController = Get.put(LeaveFilterController());
   final FilterUserController filterUserController = Get.put(FilterUserController());
   final RxBool isLoading = false.obs;
   String errorMessage = '';
+
   List<Map<String, DateTime>> months = [];
   DateTime? selectedMonth;
   bool _isDataLoaded = false;
@@ -43,7 +42,7 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
 
     try {
       isLoading.value = true;
-      final response = await leaveManagementRepository.getListOff(firstDay, lastDay);
+      final response = await _getListOff(firstDay, lastDay);
       listOff.value = response ?? [];
       _leaveFilterController.setDepartmentsFromNames(
         listOff.map((e) => e.department ?? '').toList(),

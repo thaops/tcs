@@ -94,7 +94,7 @@ class FrameLogin extends StatelessWidget {
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width * 0.7,
                     child: Text(
-                      'Vui lòng đăng nhập Google hoặc Microsoft để sử dụng ứng dụng',
+                      'Vui lòng đăng nhập Microsoft để sử dụng ứng dụng',
                       textAlign: TextAlign.center,
                       style:
                           TextStyle(color: Colors.grey.shade600, fontSize: 14),
@@ -108,14 +108,14 @@ class FrameLogin extends StatelessWidget {
                     controllerLogin.fetchMicrosoftRedirectUrl(context);
                   },
                 ),
-                SizedBox(height: 16.h),
-                GoogleSignInButton(
-                  text: 'Đăng nhập với Google',
-                  iconPath: Img.google,
-                  onPressed: () async {
-                    controllerLogin.loginWithGoogle(context);
-                  },
-                ),
+                // SizedBox(height: 16.h),
+                // GoogleSignInButton(
+                //   text: 'Đăng nhập với Google',
+                //   iconPath: Img.google,
+                //   onPressed: () async {
+                //     controllerLogin.loginWithGoogle(context);
+                //   },
+                // ),
               ],
             );
           }

@@ -5,25 +5,36 @@ import 'package:tcs_flutter/feature/presentation/leave_management/data/models/le
 import 'package:tcs_flutter/feature/presentation/leave_management/data/repositories/leave_management_repository.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_management.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:tcs_flutter/src/config/customdialog/customdialog.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/repositories/leave_repository_interface.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/usecases/get_leave_types_usecase.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/usecases/get_leave_by_id_usecase.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/domain/usecases/delete_leave_usecase.dart';
+import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 
 class LeaveLogic extends GetxController {
-  final LeaveManagementRepository leaveManagementRepository =
-      LeaveManagementRepository();
+  final LeaveRepositoryInterface leaveManagementRepository;
+  late final GetLeaveTypesUseCase _getLeaveTypes;
+  late final GetLeaveByIdUseCase _getLeaveById;
+  late final DeleteLeaveUseCase _deleteLeave;
+  LeaveLogic({LeaveRepositoryInterface? repo})
+      : leaveManagementRepository = repo ?? LeaveManagementRepository() {
+    _getLeaveTypes = GetLeaveTypesUseCase(leaveManagementRepository);
+    _getLeaveById = GetLeaveByIdUseCase(leaveManagementRepository);
+    _deleteLeave = DeleteLeaveUseCase(leaveManagementRepository);
+  }
   final CustomDialog customDialog = CustomDialog();
   bool isLoading = false;
   List<UserModel>? users;
   List<LeaveType>? leaves;
-  int SUCCESS_CODE = 200;
-  int ERROR_CODE = 400;
+  int SUCCESS_CODE = HttpStatusCodes.STATUS_CODE_OK;
+  int ERROR_CODE = HttpStatusCodes.STATUS_CODE_BAD_REQUEST;
 
   Future<void> deleteLeave(String dayyOffId, BuildContext context) async {
     final bool? confirmDelete = await _showConfirmationDialog(
         context, 'Xác nhận xóa', 'Bạn muốn xóa đơn xin nghỉ này?');
     if (confirmDelete == true) {
-      final bool success =
-          await leaveManagementRepository.deleteLeave(dayyOffId, context);
+      final bool success = await _deleteLeave(dayyOffId, context);
       _showSnackBar(
           context,
           success
@@ -48,7 +59,7 @@ class LeaveLogic extends GetxController {
 
   Future<List<LeaveType>> fetchLeave(BuildContext context) async {
     try {
-      final response = await leaveManagementRepository.getLeave(context);
+      final response = await _getLeaveTypes(context);
       return response ?? [];
     } catch (e) {
       print('Error fetching leave data: $e');
@@ -61,7 +72,7 @@ class LeaveLogic extends GetxController {
       isLoading = true;
       print("loadingnew...");
       print(isLoading);
-      return await leaveManagementRepository.getLeaveID(leaveId, context);
+      return await _getLeaveById(leaveId, context);
     } catch (e) {
       print('Error fetching leave: $e');
       return null;

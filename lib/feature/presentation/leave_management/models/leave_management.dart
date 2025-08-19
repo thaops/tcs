@@ -21,7 +21,9 @@ class LeaveType {
       name: json['name'],
       code: json['code'],
       description: json['description'],
-      createdDate: DateTime.parse(json['createdDate']),
+      createdDate: json['createdDate'] == null
+          ? null
+          : DateTime.tryParse(json['createdDate'].toString()),
       isDeleted: json['isDeleted'],
     );
   }

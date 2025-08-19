@@ -1,6 +1,4 @@
 import 'package:get/get.dart';
-import 'package:tcs_flutter/common/Services/api_endpoints.dart';
-import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/common/utils/custom_dialog.dart';
 import 'package:tcs_flutter/common/widgets/custom_text_field.dart';
 import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
@@ -12,10 +10,8 @@ import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_m
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/custom_detail_leave.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/leave_button_browse.dart';
 import 'package:tcs_flutter/router/app_router.dart';
-import 'package:tcs_flutter/src/api/models/employee_model.dart';
 import 'package:tcs_flutter/src/config/constants/url/url.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/data/models/leave_id.dart';
-import 'package:tcs_flutter/feature/presentation/leave_management/data/repositories/leave_management_repository.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_logic.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_update.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/leave_list_workflow.dart';
@@ -32,11 +28,9 @@ class ListoffDetail extends StatefulWidget {
 }
 
 class _ListoffDetailState extends State<ListoffDetail> {
-  DioApi dio = DioApi();
-    final arguments = Get.arguments;
+  final arguments = Get.arguments;
   String? leaveId;
-  LeaveManagementRepository leaveManagementRepository =
-      LeaveManagementRepository();
+  late final LeaveLogic leaveLogic;
 
   final DateFormat dateFormat = DateFormat("dd-MM");
   LeaveID? _leave;
@@ -47,7 +41,8 @@ class _ListoffDetailState extends State<ListoffDetail> {
   @override
   void initState() {
     super.initState();
-        final arguments = Get.arguments;
+    leaveLogic = Get.put(LeaveLogic());
+    final arguments = Get.arguments;
     leaveId = arguments != null ? arguments['leaveId'] as String? : null;
     debugPrint('ListoffDetail initialized with leaveId: $leaveId');
     if (leaveId != null) {
@@ -78,18 +73,16 @@ class _ListoffDetailState extends State<ListoffDetail> {
       setState(() {
         isLoading = true;
       });
-      final response = await dio.get(ApiEndpoints.getLeaveID(leaveId));
-      if (response.statusCode == 200) {
-        _leave = null;
-
-        final Map<String, dynamic> jsonResponse = response.data;
-        final Map<String, dynamic> leaveJson = jsonResponse['data'];
-        _leave = LeaveID.fromJson(leaveJson);
+      final result = await leaveLogic.getLeave(leaveId, context);
+      if (result != null) {
+        _leave = result;
       } else {
+        // ignore: avoid_print
         print('Failed to load task');
         return null;
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error: $e');
       return null;
     } finally {
@@ -101,7 +94,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
 
   @override
   Widget build(BuildContext context) {
-    final leaveLogic = Get.put(LeaveLogic());
+    final leaveLogic = this.leaveLogic;
     final controllerApprove = Get.put(LeaveApproveController());
     _getStatusColor(_leave?.statusLabel ?? '');
     final screenWidth = MediaQuery.of(context).size.width;
