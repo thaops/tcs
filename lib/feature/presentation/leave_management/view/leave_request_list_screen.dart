@@ -5,9 +5,8 @@ import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
 import 'package:tcs_flutter/common/widgets/state_widget/empty_lottie_state.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/feature/presentation/filter_user/controller/filter_user_controller.dart';
-import 'package:tcs_flutter/feature/presentation/leave_management/data/repositories/leave_management_repository.dart';
-import 'package:tcs_flutter/feature/presentation/leave_management/domain/usecases/get_list_off_usecase.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_filter_controller.dart';
+import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_list_controller.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/leave_filter_widget.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/listoff_month_widget.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/listoff_widgets.dart';
@@ -26,65 +25,31 @@ class LeaveScreen extends StatefulWidget {
 }
 
 class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClientMixin {
-  final RxList<Employee> listOff = <Employee>[].obs;
-  late final GetListOffUseCase _getListOff = GetListOffUseCase(LeaveManagementRepository());
-  final _leaveFilterController = Get.put(LeaveFilterController());
+  final LeaveListController listController = Get.put(LeaveListController());
+  final LeaveFilterController _leaveFilterController = Get.put(LeaveFilterController());
   final FilterUserController filterUserController = Get.put(FilterUserController());
-  final RxBool isLoading = false.obs;
-  String errorMessage = '';
-
-  List<Map<String, DateTime>> months = [];
   DateTime? selectedMonth;
-  bool _isDataLoaded = false;
+  
 
   Future<void> _fetchListOff(DateTime firstDay, DateTime lastDay, {bool forceFetch = false}) async {
-    if (!forceFetch && _isDataLoaded) return;
-
-    try {
-      isLoading.value = true;
-      final response = await _getListOff(firstDay, lastDay);
-      listOff.value = response ?? [];
-      _leaveFilterController.setDepartmentsFromNames(
-        listOff.map((e) => e.department ?? '').toList(),
-      );
-      // Diagnostics: count records without department
-      final missingCount = listOff.where((e) => (e.department ?? '').trim().isEmpty).length;
-      // ignore: avoid_print
-      print('[LeaveScreen] Employees without department: $missingCount / ${listOff.length}');
-      _isDataLoaded = true; // Đánh dấu dữ liệu đã tải
-    } catch (e) {
-      errorMessage = 'Đã xảy ra lỗi khi tải dữ liệu';
-    } finally {
-      isLoading.value = false;
-    }
+    await listController.fetchListOff(firstDay, lastDay, forceFetch: forceFetch);
+    _leaveFilterController.setDepartmentsFromNames(
+      listController.listOff.map((e) => e.department ?? '').toList(),
+    );
   }
 
-  void _generateMonths() {
-    DateTime now = DateTime.now();
-    DateTime startMonth = (now.month == 12)
-        ? DateTime(now.year + 1, 1, 1)
-        : DateTime(now.year, now.month + 1, 1);
-
-    for (int i = 0; i < 12; i++) {
-      DateTime firstDay = DateTime(startMonth.year, startMonth.month - i, 1);
-      DateTime lastDay = DateTime(startMonth.year, startMonth.month - i + 1, 1);
-      months.add({
-        'firstDay': firstDay,
-        'lastDay': lastDay,
-      });
-    }
-  }
+  
 
   @override
   void initState() {
     super.initState();
-    _generateMonths();
+    listController.generateMonths();
     // Đảm bảo map employeeId -> department đã sẵn sàng
     if (filterUserController.employeeIdToDepartment.isEmpty) {
       filterUserController.fetchUserList();
     }
-    if (!_isDataLoaded) {
-      _fetchListOff(months[1]['firstDay']!, months[1]['lastDay']!);
+    if (!listController.isDataLoaded) {
+      _fetchListOff(listController.months[1]['firstDay']!, listController.months[1]['lastDay']!);
     }
   }
 
@@ -95,13 +60,13 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
     Get.toNamed(AppRouter.leaveCreate, arguments: _fetchListOff)?.then((value) {
       if (value == true) {
         widget.onUpdateCallback(true);
-        _fetchListOff(months[1]['firstDay']!, months[1]['lastDay']!, forceFetch: true);
+        _fetchListOff(listController.months[1]['firstDay']!, listController.months[1]['lastDay']!, forceFetch: true);
       }
     });
   }
 
   Future<void> refresh() async {
-    await _fetchListOff(months[1]['firstDay']!, months[1]['lastDay']!, forceFetch: true);
+    await _fetchListOff(listController.months[1]['firstDay']!, listController.months[1]['lastDay']!, forceFetch: true);
     if (!mounted) return;
     setState(() {
       selectedMonth = null;
@@ -116,7 +81,7 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
       onRefresh: refresh,
       child: Obx(
         () => LoadingOverlay(
-          isLoading: isLoading.value,
+          isLoading: listController.isLoading.value,
           
           child: Scaffold(
           backgroundColor: AppColors.white,
@@ -130,14 +95,12 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
               iconRightSecond: Icons.filter_alt_rounded,
               colorSecond: AppColors.primary,
               functionSecond: () {
-                // Dùng mapping từ FilterUserController để build danh sách phòng ban
                 _leaveFilterController.setDepartmentsFromController(
                   filterUserController,
-                  listOff.toList(),
+                  listController.listOff.toList(),
                 );
-                // Xây danh sách trạng thái từ dữ liệu hiện tại
                 _leaveFilterController.setStatusesFromEmployees(
-                  listOff.toList(),
+                  listController.listOff.toList(),
                 );
                 showModalBottomSheet(
                   context: context,
@@ -164,10 +127,10 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
                             // Sau khi có dữ liệu mới, build lại filter local
                             _leaveFilterController.setDepartmentsFromController(
                               filterUserController,
-                              listOff.toList(),
+                              listController.listOff.toList(),
                             );
                             _leaveFilterController.setStatusesFromEmployees(
-                              listOff.toList(),
+                              listController.listOff.toList(),
                             );
                             // Khôi phục lựa chọn để áp dụng filter ngay trên danh sách
                             _leaveFilterController.departmentId.value = prevDep;
@@ -187,7 +150,7 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
               child: Column(
                 children: [
                   MonthSelector(
-                    months: months,
+                    months: listController.months,
                     selectedMonth: selectedMonth,
                     onMonthSelected: (firstDay, lastDay) {
                       setState(() {
@@ -198,21 +161,22 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
                   ),
                   Obx(
                     () {
-                      if (isLoading.value) {
+                      if (listController.isLoading.value) {
                         return const Expanded(child: Center(child: SizedBox()));
-                      } else if (listOff.isEmpty && _isDataLoaded) {
+                      } else if (listController.listOff.isEmpty && listController.isDataLoaded) {
                         return Expanded(child: EmptyLottieState());
                       } else {
                         final depId = _leaveFilterController.departmentId.value;
+                        final baseList = listController.listOff.toList();
                         final afterDept = depId.isEmpty
-                            ? listOff.toList()
+                            ? baseList
                             : (depId == '__unknown__'
-                                ? listOff.where((e) {
+                                ? baseList.where((e) {
                                     final mapped = filterUserController.departmentNameForEmployee(e.employeeId);
                                     final dep = (mapped ?? e.department ?? '').trim();
                                     return dep.isEmpty;
                                   }).toList()
-                                : listOff.where((e) {
+                                : baseList.where((e) {
                                     final mapped = filterUserController.departmentNameForEmployee(e.employeeId);
                                     final dep = (mapped ?? e.department ?? '').trim();
                                     return dep == depId;
@@ -246,7 +210,7 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
           listOff: employee,
           onUpdateCallback: (isUpdate) {
             if (isUpdate) {
-              _fetchListOff(months[1]['firstDay']!, months[1]['lastDay']!, forceFetch: true);
+              _fetchListOff(listController.months[1]['firstDay']!, listController.months[1]['lastDay']!, forceFetch: true);
             }
           },
         ),

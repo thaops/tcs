@@ -5,12 +5,9 @@ import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_approve_controller.dart';
-import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_careate_controller.dart';
-import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_management.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/custom_detail_leave.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/widget/leave_button_browse.dart';
 import 'package:tcs_flutter/router/app_router.dart';
-import 'package:tcs_flutter/src/config/constants/url/url.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/data/models/leave_id.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/logic/leave_logic.dart';
 import 'package:tcs_flutter/feature/presentation/leave_management/models/leave_update.dart';
@@ -28,11 +25,10 @@ class ListoffDetail extends StatefulWidget {
 }
 
 class _ListoffDetailState extends State<ListoffDetail> {
-  final arguments = Get.arguments;
   String? leaveId;
   late final LeaveLogic leaveLogic;
+  late final LeaveApproveController controllerApprove;
 
-  final DateFormat dateFormat = DateFormat("dd-MM");
   LeaveID? _leave;
   bool isLoading = false;
   String avatar =
@@ -42,6 +38,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
   void initState() {
     super.initState();
     leaveLogic = Get.put(LeaveLogic());
+    controllerApprove = Get.put(LeaveApproveController());
     final arguments = Get.arguments;
     leaveId = arguments != null ? arguments['leaveId'] as String? : null;
     debugPrint('ListoffDetail initialized with leaveId: $leaveId');
@@ -64,39 +61,33 @@ class _ListoffDetailState extends State<ListoffDetail> {
     });
   }
 
-  Future<String> getBaseUrl(BuildContext context) async {
-    return await BaseUrlProvider.getBaseUrl(context);
-  }
-
   Future<LeaveID?> getLeaveID(String leaveId, BuildContext context) async {
+    LeaveID? result;
     try {
       setState(() {
         isLoading = true;
       });
-      final result = await leaveLogic.getLeave(leaveId, context);
+      result = await leaveLogic.getLeave(leaveId, context);
       if (result != null) {
         _leave = result;
       } else {
         // ignore: avoid_print
         print('Failed to load task');
-        return null;
       }
     } catch (e) {
       // ignore: avoid_print
       print('Error: $e');
-      return null;
     } finally {
       setState(() {
         isLoading = false;
       });
     }
+    return result;
   }
 
   @override
   Widget build(BuildContext context) {
     final leaveLogic = this.leaveLogic;
-    final controllerApprove = Get.put(LeaveApproveController());
-    _getStatusColor(_leave?.statusLabel ?? '');
     final screenWidth = MediaQuery.of(context).size.width;
     final DateFormat dateFormatD = DateFormat('dd-MM-yyyy');
     return Scaffold(
@@ -213,7 +204,6 @@ class _ListoffDetailState extends State<ListoffDetail> {
   }
 
   Padding _application_details(DateFormat dateFormatD, double screenWidth) {
-    final controllerCategory = Get.put(LeaveCareateController());
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Column(
@@ -268,14 +258,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
           ),
           CustomDetailLeave(
             title: 'Lý do',
-            content: controllerCategory.leaves
-                    ?.firstWhere(
-                      (e) => e.id == _leave?.categoryId,
-                      orElse: () => LeaveType(
-                          id: "1", name: '-------'), // Giá trị mặc định
-                    )
-                    ?.name ??
-                '-------',
+            content: _leave?.category ?? '-------',
           ),
           CustomDetailLeave(
               title: 'Ghi chú', content: _leave?.reason ?? '-------'),
