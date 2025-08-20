@@ -29,8 +29,9 @@ class MonthSelector extends StatelessWidget {
             DateTime lastDay = months[index]['lastDay']!;
             String monthName = DateFormat('MMMM', 'vi_VN').format(firstDay);
             String yearName = DateFormat('yyyy', 'vi_VN').format(firstDay);
+            final defaultIndex = months.length > 1 ? 1 : 0;
             bool isSelected = selectedMonth == null
-                ? index == 1 
+                ? index == defaultIndex 
                 : selectedMonth == firstDay;
 
             return GestureDetector(

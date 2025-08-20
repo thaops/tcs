@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/common/widgets/custom_select.dart';
 import 'package:tcs_flutter/feature/private_app_shell/filter_user/controller/filter_user_controller.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_list_controller.dart';
 import 'package:tcs_flutter/src/api/models/employee_model.dart' as leave_model;
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/repositories/leave_management_repository.dart';
@@ -26,8 +27,9 @@ class LeaveFilterController extends GetxController {
     _getDepartments = GetDepartmentsUseCase(leaveRepository);
   }
   RxBool isLoading = false.obs;
-  Rx<DateTime> startDate = _firstDayOfMonth(DateTime.now()).obs;
-  Rx<DateTime> endDate = _lastDayOfMonth(DateTime.now()).obs;
+  Rx<DateTime> startDate = DateTime.now().obs;
+  Rx<DateTime> endDate = DateTime.now().obs;
+  final listController = Get.find<LeaveListController>();
   // Department filter
   final RxString departmentId = ''.obs;
   final RxList<Item> departmentItems = <Item>[].obs;
@@ -40,8 +42,15 @@ class LeaveFilterController extends GetxController {
     super.onInit();
     // Đặt mốc đầu/cuối tháng tại thời điểm khởi tạo (bao gồm giờ phút giây)
     final now = DateTime.now();
-    startDate.value = _firstDayOfMonth(now);
-    endDate.value = _lastDayOfMonth(now);
+    final months = listController.months;
+    if (months.length > 1 && months[1]['firstDay'] != null && months[1]['lastDay'] != null) {
+      startDate.value = months[1]['firstDay']!;
+      endDate.value = months[1]['lastDay']!;
+    } else {
+      // Fallback an toàn nếu months chưa được khởi tạo
+      startDate.value = _firstDayOfMonth(now);
+      endDate.value = _lastDayOfMonth(now);
+    }
     // Không gọi các hàm khác để tránh ghi đè khoảng ngày mặc định
   }
 

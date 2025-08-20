@@ -20,6 +20,14 @@ class LeaveListController extends GetxController {
   final List<Map<String, DateTime>> months = [];
   bool isDataLoaded = false;
 
+  @override
+  void onInit() {
+    super.onInit();
+    // Ensure months are generated as soon as the controller is injected,
+    // so other controllers depending on it won't read an empty list.
+    generateMonths();
+  }
+
   void generateMonths() {
     months.clear();
     final DateTime now = DateTime.now();

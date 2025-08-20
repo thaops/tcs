@@ -44,6 +44,23 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
     _lastFetchedEnd = lastDay;
   }
 
+  // Default date range: prefer months[1] (current month per business rule),
+  // fallback to current month's first/next-month-first if months is not ready.
+  DateTimeRange _getDefaultRange() {
+    if (listController.months.length > 1 &&
+        listController.months[1]['firstDay'] != null &&
+        listController.months[1]['lastDay'] != null) {
+      return DateTimeRange(
+        start: listController.months[1]['firstDay']!,
+        end: listController.months[1]['lastDay']!,
+      );
+    }
+    final now = DateTime.now();
+    final firstDay = DateTime(now.year, now.month, 1);
+    final lastDay = DateTime(now.year, now.month + 1, 1);
+    return DateTimeRange(start: firstDay, end: lastDay);
+  }
+
   
 
   @override
@@ -54,7 +71,8 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
       filterUserController.fetchUserList();
     }
     if (!listController.isDataLoaded) {
-      _fetchListOff(listController.months[1]['firstDay']!, listController.months[1]['lastDay']!);
+      final range = _getDefaultRange();
+      _fetchListOff(range.start, range.end);
     }
   }
 
@@ -65,13 +83,15 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
     Get.toNamed(AppRouter.leaveCreate, arguments: _fetchListOff)?.then((value) {
       if (value == true) {
         widget.onUpdateCallback(true);
-        _fetchListOff(listController.months[1]['firstDay']!, listController.months[1]['lastDay']!, forceFetch: true);
+        final range = _getDefaultRange();
+        _fetchListOff(range.start, range.end, forceFetch: true);
       }
     });
   }
 
   Future<void> refresh() async {
-    await _fetchListOff(listController.months[1]['firstDay']!, listController.months[1]['lastDay']!, forceFetch: true);
+    final range = _getDefaultRange();
+    await _fetchListOff(range.start, range.end, forceFetch: true);
     if (!mounted) return;
     setState(() {
       selectedMonth = null;
@@ -235,7 +255,8 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
           listOff: employee,
           onUpdateCallback: (isUpdate) {
             if (isUpdate) {
-              _fetchListOff(listController.months[1]['firstDay']!, listController.months[1]['lastDay']!, forceFetch: true);
+              final range = _getDefaultRange();
+              _fetchListOff(range.start, range.end, forceFetch: true);
             }
           },
         ),
