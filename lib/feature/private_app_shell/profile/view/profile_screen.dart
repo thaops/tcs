@@ -198,8 +198,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: Center(
                                 child: TextWidget(
                                   text: isVision
-                                      ? "@NPP - Phiên bản - ${controllerProfile.version.value}"
-                                      : "@NPP - Phiên bản - dev",
+                                      ? "@TCS - Phiên bản - ${controllerProfile.version.value}"
+                                      : "@TCS - Phiên bản - dev",
                                   fontSize: 12,
                                   fontStyle: FontStyle.italic,
                                   fontWeight: FontWeight.w500,

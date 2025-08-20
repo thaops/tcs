@@ -122,20 +122,9 @@ class _ListoffDetailState extends State<ListoffDetail> {
 
   Future<bool> get _shouldShowApproveButtons async{
     if (_leave == null || myId == null) return false;
-    print("myId: $myId");
     final bool isApproved = (_leave!.status == 2) || (_leave!.statusLabel == 'Đã duyệt');
     if (isApproved) return false;
     final String currentId = myId!;
-    final List<WorkFlow> flows = _leave!.workFlows ?? const <WorkFlow>[];
-    if (flows.isNotEmpty) {
-      // Ưu tiên dùng workflow của đơn hiện tại để tránh gọi API.
-      final bool inPendingStep = flows.any((wf) =>
-          wf.approverId == currentId &&
-          // Chỉ hiển thị khi bước duyệt của user còn đang chờ/xử lý.
-          (wf.statusLabel == null || wf.statusLabel == 'Chờ xử lý' || wf.status == null || wf.status == 0));
-      return inPendingStep;
-    }
-    // Fallback (hiếm khi cần): gọi API khi thiếu workflow từ server.
     try {
       final approvers = await controllerApprove.getListApprover(null, null);
       return approvers.any((wf) => wf.id == currentId);
