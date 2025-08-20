@@ -51,8 +51,12 @@ class ApiEndpoints {
   // departments
   static String departments = "${Config.baseUrl}/employee/get-list-employee-of-department";
 
-  // listofff
-  static String listoff(DateTime firstDayOfMonth, DateTime lastDayOfMonth) => "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$firstDayOfMonth&toDate=$lastDayOfMonth&keyword=";
+  // listoff - ensure ISO8601 and URL-encoded
+  static String listoff(DateTime firstDayOfMonth, DateTime lastDayOfMonth) {
+    final from = Uri.encodeComponent(firstDayOfMonth.toIso8601String());
+    final to = Uri.encodeComponent(lastDayOfMonth.toIso8601String());
+    return "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
+  }
   static String getLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/get-detail-day-off/$leaveId";
   static String updateLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/update-day-off/$leaveId";
   static String deleteLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/delete-day-off/$leaveId";
@@ -65,8 +69,11 @@ class ApiEndpoints {
 
 
   static String fetchListOff(
-          DateTime firstDayOfMonth, DateTime lastDayOfMonth) =>
-      "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$firstDayOfMonth&toDate=$lastDayOfMonth&keyword=";
+      DateTime firstDayOfMonth, DateTime lastDayOfMonth) {
+    final from = Uri.encodeComponent(firstDayOfMonth.toIso8601String());
+    final to = Uri.encodeComponent(lastDayOfMonth.toIso8601String());
+    return "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
+  }
 
   static String supportcenter(
       {int? status,

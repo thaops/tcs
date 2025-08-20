@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:tcs_flutter/common/img/img.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/feature/private_app_shell/filter_user/controller/filter_user_controller.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
@@ -10,12 +11,10 @@ import 'package:tcs_flutter/src/config/constants/color/colors.dart';
 
 class WorkflowList extends StatelessWidget {
   final List<WorkFlow> workflows;
-  final String avatar;
 
   const WorkflowList({
     Key? key,
     required this.workflows,
-    required this.avatar,
   }) : super(key: key);
 
   @override
@@ -41,12 +40,8 @@ class WorkflowList extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(25),
-                child: CachedNetworkImage(
-                  imageUrl: controllerUser.userList.value
-                          .firstWhereOrNull(
-                              (user) => user.id == workflow.approverId)
-                          ?.avatarUrl ??
-                      avatar,
+                child: Image.asset(
+                  Img.avatarDefault,
                   width: 50,
                   height: 50,
                   fit: BoxFit.cover,

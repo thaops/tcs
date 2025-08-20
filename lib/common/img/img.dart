@@ -33,6 +33,8 @@ class Img {
 
   static const String nodataIcon = 'assets/icon/nodata.png';
 
+  static const String avatarDefault = 'assets/image/avatar.jpg';
+
 
 
 

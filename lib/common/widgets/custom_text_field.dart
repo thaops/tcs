@@ -34,6 +34,10 @@ class CustomTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final bool? isEnabled;
   final String? Function(String?)? validator;
+  final TextCapitalization textCapitalization;
+  final bool? autocorrect;
+  final bool? enableSuggestions;
+  final TextInputAction? textInputAction;
 
   CustomTextField({
     super.key,
@@ -67,6 +71,10 @@ class CustomTextField extends StatefulWidget {
     this.error,
     this.validator,
     this.isCheckError = false,
+    this.textCapitalization = TextCapitalization.none,
+    this.autocorrect,
+    this.enableSuggestions,
+    this.textInputAction,
   });
 
   @override
@@ -103,157 +111,159 @@ class _CustomTextFieldState extends State<CustomTextField> {
           color: widget.backgroundColor ?? Colors.white,
           borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
         ),
-        child: ValueListenableBuilder(
-          valueListenable: widget.controller,
-          builder: (context, value, child) {
-            return TextField(
-              enabled: widget.isEnabled,
-              focusNode: widget.focusNode,
-              controller: widget.controller,
-              autocorrect: false, // Thêm để tắt tự sửa
-              enableSuggestions: false, // Thêm để tắt gợi ý
-              autofocus: false,
-              maxLength: widget.maxLength,
-              minLines: widget.minLines,
-              maxLines: widget.maxLines ?? widget.minLines ?? 1,
-              keyboardType: widget.keyboardType ??
-                  (widget.isNumberic == true
-                      ? TextInputType.number
-                      : TextInputType.text),
-              inputFormatters: widget.isNumberic == true
-                  ? [FilteringTextInputFormatter.digitsOnly]
-                  : [],
-              style: TextStyle(
-                fontSize: widget.fontSize ?? 16,
-                fontWeight: FontWeight.w400,
-                color: widget.isEnabled == true
-                    ? AppColors.black
-                    : Colors.grey.shade500,
-              ),
-              textAlignVertical: TextAlignVertical.center,
-              onTap: widget.onTap,
-              obscureText: _obscureText,
-              onSubmitted: widget.onSubmit,
-              onChanged: (value) {
-                widget.onChanged?.call(value);
-                if (widget.isCheckError) {
-                  setState(() {
-                    if (widget.controller.text.isNotEmpty) {
-                      widget.error = null;
-                    } else {
-                      widget.error = widget.error;
-                    }
-                  });
+        child: TextField(
+          enabled: widget.isEnabled,
+          focusNode: widget.focusNode,
+          controller: widget.controller,
+          autocorrect: widget.autocorrect ?? true,
+          enableSuggestions: widget.enableSuggestions ?? true,
+          autofocus: false,
+          maxLength: widget.maxLength,
+          minLines: widget.minLines,
+          maxLines: widget.maxLines ?? widget.minLines ?? 1,
+          keyboardType: widget.keyboardType ??
+              (widget.isNumberic == true
+                  ? TextInputType.number
+                  : (((widget.maxLines ?? widget.minLines ?? 1) > 1)
+                      ? TextInputType.multiline
+                      : TextInputType.text)),
+          textInputAction: widget.textInputAction ??
+              (((widget.maxLines ?? widget.minLines ?? 1) > 1)
+                  ? TextInputAction.newline
+                  : TextInputAction.done),
+          textCapitalization: widget.textCapitalization,
+          inputFormatters: widget.isNumberic == true
+              ? [FilteringTextInputFormatter.digitsOnly]
+              : [],
+          style: TextStyle(
+            fontSize: widget.fontSize ?? 16,
+            fontWeight: FontWeight.w400,
+            color: widget.isEnabled == true
+                ? AppColors.black
+                : Colors.grey.shade500,
+          ),
+          textAlignVertical: TextAlignVertical.center,
+          onTap: widget.onTap,
+          obscureText: _obscureText,
+          onSubmitted: widget.onSubmit,
+          onChanged: (value) {
+            widget.onChanged?.call(value);
+            if (widget.isCheckError) {
+              setState(() {
+                if (widget.controller.text.isNotEmpty) {
+                  widget.error = null;
+                } else {
+                  widget.error = widget.error;
                 }
-                if (widget.validator != null) {
-                  setState(() {
-                    widget.error = widget.validator!(widget.controller.text);
-                  });
-                }
-              },
-              decoration: InputDecoration(
-                filled: true,
-                errorText: widget.error,
-                errorStyle: TextStyle(
-                  color: Colors.redAccent,
-                  fontSize: 12.sp,
-                  textBaseline: TextBaseline.alphabetic,
-                ),
-                errorMaxLines: 2, // Cho phép hiển thị nhiều dòng nếu lỗi dài
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
-                  borderSide: const BorderSide(
-                    color: Colors.redAccent,
-                    width: 1.5,
-                  ),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
-                  borderSide: const BorderSide(
-                    color: Colors.redAccent,
-                    width: 1.5,
-                  ),
-                ),
-                fillColor:
-                    widget.isEnabled == true ? Colors.white : Colors.grey.shade100,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: widget.isMobile ? 12 : 24,
-                  vertical: widget.isMobile ? 12 : 12,
-                ),
-                hintText: widget.hintText,
-                hintStyle: TextStyle(
-                  fontSize: widget.fontSize ?? 16,
-                  fontWeight: FontWeight.w500,
-                  color: widget.isEnabled == true
-                      ? Colors.grey.shade600
-                      : Colors.grey.shade400,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
-                  borderSide: BorderSide(
-                    color: widget.borderColor ?? AppColors.grey,
-                    width: widget.borderWidth ?? 1,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
-                  borderSide: BorderSide(
-                    color: widget.borderColor ?? AppColors.grey,
-                    width: widget.borderWidth ?? 1,
-                  ),
-                ),
-                disabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
-                  borderSide: BorderSide(
-                    color: Colors.grey.shade400,
-                    width: widget.borderWidth ?? 1,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
-                  borderSide: BorderSide(
-                    color: widget.borderColor ?? AppColors.primary,
-                    width: widget.borderWidth ?? 1.5,
-                  ),
-                ),
-                prefixIcon: widget.prefixIcon != null
-                    ? IconButton(
-                        onPressed:
-                            widget.isEnabled == true ? widget.onPrefixTap : null,
-                        icon: Icon(
-                          widget.prefixIcon,
-                          size: 24,
-                          color: widget.isEnabled == true
-                              ? null
-                              : Colors.grey.shade400,
-                        ),
-                      )
-                    : null,
-                suffixIcon: widget.suffixIcon != null
-                    ? IconButton(
-                        icon: Icon(
-                          _obscureText && widget.obscureText
-                              ? Icons.visibility_off
-                              : widget.suffixIcon,
-                          size: 24,
-                          color: widget.isEnabled == true
-                              ? (value.text.isEmpty &&
-                                      widget.colorIconSuffix != null
-                                  ? widget.colorIconSuffix
-                                  : AppColors.colorIcon)
-                              : Colors.grey.shade400,
-                        ),
-                        onPressed: widget.isEnabled == true
-                            ? (widget.onSuffixTap ??
-                                (widget.obscureText
-                                    ? _togglePasswordVisibility
-                                    : null))
-                            : null,
-                      )
-                    : null,
-              ),
-            );
+              });
+            }
+            if (widget.validator != null) {
+              setState(() {
+                widget.error = widget.validator!(widget.controller.text);
+              });
+            }
           },
+          decoration: InputDecoration(
+            filled: true,
+            errorText: widget.error,
+            errorStyle: TextStyle(
+              color: Colors.redAccent,
+              fontSize: 12.sp,
+              textBaseline: TextBaseline.alphabetic,
+            ),
+            errorMaxLines: 2, // Cho phép hiển thị nhiều dòng nếu lỗi dài
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
+              borderSide: const BorderSide(
+                color: Colors.redAccent,
+                width: 1.5,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
+              borderSide: const BorderSide(
+                color: Colors.redAccent,
+                width: 1.5,
+              ),
+            ),
+            fillColor:
+                widget.isEnabled == true ? Colors.white : Colors.grey.shade100,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: widget.isMobile ? 12 : 24,
+              vertical: widget.isMobile ? 12 : 12,
+            ),
+            hintText: widget.hintText,
+            hintStyle: TextStyle(
+              fontSize: widget.fontSize ?? 16,
+              fontWeight: FontWeight.w500,
+              color: widget.isEnabled == true
+                  ? Colors.grey.shade600
+                  : Colors.grey.shade400,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
+              borderSide: BorderSide(
+                color: widget.borderColor ?? AppColors.grey,
+                width: widget.borderWidth ?? 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
+              borderSide: BorderSide(
+                color: widget.borderColor ?? AppColors.grey,
+                width: widget.borderWidth ?? 1,
+              ),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
+              borderSide: BorderSide(
+                color: Colors.grey.shade400,
+                width: widget.borderWidth ?? 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? 12),
+              borderSide: BorderSide(
+                color: widget.borderColor ?? AppColors.primary,
+                width: widget.borderWidth ?? 1.5,
+              ),
+            ),
+            prefixIcon: widget.prefixIcon != null
+                ? IconButton(
+                    onPressed:
+                        widget.isEnabled == true ? widget.onPrefixTap : null,
+                    icon: Icon(
+                      widget.prefixIcon,
+                      size: 24,
+                      color: widget.isEnabled == true
+                          ? null
+                          : Colors.grey.shade400,
+                    ),
+                  )
+                : null,
+            suffixIcon: widget.suffixIcon != null
+                ? IconButton(
+                    icon: Icon(
+                      _obscureText && widget.obscureText
+                          ? Icons.visibility_off
+                          : widget.suffixIcon,
+                      size: 24,
+                      color: widget.isEnabled == true
+                          ? ((widget.controller.text.isEmpty &&
+                                  widget.colorIconSuffix != null)
+                              ? widget.colorIconSuffix
+                              : AppColors.colorIcon)
+                          : Colors.grey.shade400,
+                    ),
+                    onPressed: widget.isEnabled == true
+                        ? (widget.onSuffixTap ??
+                            (widget.obscureText
+                                ? _togglePasswordVisibility
+                                : null))
+                        : null,
+                  )
+                : null,
+          ),
         ),
       ),
     );

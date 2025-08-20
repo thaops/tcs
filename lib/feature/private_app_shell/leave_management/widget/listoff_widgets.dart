@@ -26,8 +26,7 @@ class ListWidgets extends StatefulWidget {
 class _ListWidgetsState extends State<ListWidgets> {
   final controllerUser = Get.put(FilterUserController());
   final DateFormat dateFormat = DateFormat("dd/MM");
-  String avatar =
-      'https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png';
+
   @override
   Widget build(BuildContext context) {
     return Container(

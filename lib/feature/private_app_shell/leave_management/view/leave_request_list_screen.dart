@@ -56,8 +56,18 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
       );
     }
     final now = DateTime.now();
-    final firstDay = DateTime(now.year, now.month, 1);
-    final lastDay = DateTime(now.year, now.month + 1, 1);
+    final firstDay = DateTime(now.year, now.month, 1, 0, 0, 0, 0, 0);
+    final lastDateOfMonth = DateTime(now.year, now.month + 1, 0);
+    final lastDay = DateTime(
+      lastDateOfMonth.year,
+      lastDateOfMonth.month,
+      lastDateOfMonth.day,
+      23,
+      59,
+      59,
+      999,
+      0,
+    );
     return DateTimeRange(start: firstDay, end: lastDay);
   }
 
@@ -83,20 +93,50 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
     Get.toNamed(AppRouter.leaveCreate, arguments: _fetchListOff)?.then((value) {
       if (value == true) {
         widget.onUpdateCallback(true);
-        final range = _getDefaultRange();
-        _fetchListOff(range.start, range.end, forceFetch: true);
+        // Re-fetch using last range (or selected month) to keep current context
+        DateTime start = _lastFetchedStart ?? listController.months.first['firstDay']!;
+        DateTime end = _lastFetchedEnd ?? listController.months.first['lastDay']!;
+        if (selectedMonth != null) {
+          Map<String, DateTime>? item;
+          for (final m in listController.months) {
+            if (m['firstDay'] == selectedMonth) {
+              item = m;
+              break;
+            }
+          }
+          if (item != null) {
+            start = item['firstDay']!;
+            end = item['lastDay']!;
+          }
+        }
+        _fetchListOff(start, end, forceFetch: true);
       }
     });
   }
 
   Future<void> refresh() async {
-    final range = _getDefaultRange();
-    await _fetchListOff(range.start, range.end, forceFetch: true);
+    // Prefer last fetched range, then selectedMonth, then default
+    DateTime? start = _lastFetchedStart;
+    DateTime? end = _lastFetchedEnd;
+    if (start == null || end == null) {
+      if (selectedMonth != null) {
+        Map<String, DateTime>? item;
+        for (final m in listController.months) {
+          if (m['firstDay'] == selectedMonth) {
+            item = m;
+            break;
+          }
+        }
+        if (item != null) {
+          start = item['firstDay'];
+          end = item['lastDay'];
+        }
+      }
+    }
+    final fallback = _getDefaultRange();
+    await _fetchListOff(start ?? fallback.start, end ?? fallback.end, forceFetch: true);
     if (!mounted) return;
-    setState(() {
-      selectedMonth = null;
-    });
-    _leaveFilterController.clearDepartment();
+    setState(() {}); // keep selectedMonth & filters as-is
   }
 
   @override
@@ -255,8 +295,23 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
           listOff: employee,
           onUpdateCallback: (isUpdate) {
             if (isUpdate) {
-              final range = _getDefaultRange();
-              _fetchListOff(range.start, range.end, forceFetch: true);
+              // Re-fetch using current context
+              DateTime start = _lastFetchedStart ?? listController.months.first['firstDay']!;
+              DateTime end = _lastFetchedEnd ?? listController.months.first['lastDay']!;
+              if (selectedMonth != null) {
+                Map<String, DateTime>? item;
+                for (final m in listController.months) {
+                  if (m['firstDay'] == selectedMonth) {
+                    item = m;
+                    break;
+                  }
+                }
+                if (item != null) {
+                  start = item['firstDay']!;
+                  end = item['lastDay']!;
+                }
+              }
+              _fetchListOff(start, end, forceFetch: true);
             }
           },
         ),

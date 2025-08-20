@@ -67,10 +67,19 @@ class LeaveFilterController extends GetxController {
   void setStartAndEndDates() {
     DateTime currentDate = DateTime.now();
 
-    startDate.value = DateTime(currentDate.year, currentDate.month, 1);
+    startDate.value = DateTime(currentDate.year, currentDate.month, 1, 0, 0, 0, 0, 0);
 
-    endDate.value =
-        DateTime(currentDate.year, currentDate.month, 1);
+    final lastDateOfMonth = DateTime(currentDate.year, currentDate.month + 1, 0);
+    endDate.value = DateTime(
+      lastDateOfMonth.year,
+      lastDateOfMonth.month,
+      lastDateOfMonth.day,
+      23,
+      59,
+      59,
+      999,
+      0,
+    );
   }
 
   // Helpers for department filter

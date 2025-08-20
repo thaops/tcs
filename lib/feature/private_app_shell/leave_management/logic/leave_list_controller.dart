@@ -36,8 +36,20 @@ class LeaveListController extends GetxController {
         : DateTime(now.year, now.month + 1, 1);
 
     for (int i = 0; i < 12; i++) {
-      final DateTime firstDay = DateTime(startMonth.year, startMonth.month - i, 1);
-      final DateTime lastDay = DateTime(startMonth.year, startMonth.month - i + 1, 1);
+      // Month anchor for iteration
+      final DateTime targetFirst = DateTime(startMonth.year, startMonth.month - i, 1);
+      final DateTime firstDay = DateTime(targetFirst.year, targetFirst.month, 1, 0, 0, 0, 0, 0);
+      final DateTime lastDateOfMonth = DateTime(targetFirst.year, targetFirst.month + 1, 0);
+      final DateTime lastDay = DateTime(
+        lastDateOfMonth.year,
+        lastDateOfMonth.month,
+        lastDateOfMonth.day,
+        23,
+        59,
+        59,
+        999,
+        0,
+      );
       months.add({'firstDay': firstDay, 'lastDay': lastDay});
     }
   }

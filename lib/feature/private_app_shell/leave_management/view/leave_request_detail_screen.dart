@@ -32,9 +32,6 @@ class _ListoffDetailState extends State<ListoffDetail> {
 
   LeaveID? _leave;
   bool isLoading = false;
-  String avatar =
-      'https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png';
-
   @override
   void initState() {
     super.initState();
@@ -120,9 +117,22 @@ class _ListoffDetailState extends State<ListoffDetail> {
     return result;
   }
 
-  Future<bool> get _shouldShowApproveButtons async{
+  Future<bool> _ischeckSatus() async {
     if (_leave == null || myId == null) return false;
     final bool isApproved = (_leave!.status == 2) || (_leave!.statusLabel == 'Đã duyệt');
+    if (isApproved) return false;
+    final String currentId = myId!;
+    if (currentId == _leave!.employeeId) {
+      setState(() {
+        isshouldShowApproveButtons.value = true;
+      });
+    }
+    return true;
+  }
+
+  Future<bool> get _shouldShowApproveButtons async{
+    if (_leave == null || myId == null) return false;
+    final bool isApproved = (_leave!.status == 2) || (_leave!.status == 3) || (_leave!.statusLabel == 'Đã duyệt') || (_leave!.statusLabel == 'Từ chối');
     if (isApproved) return false;
     final String currentId = myId!;
     try {
@@ -133,11 +143,24 @@ class _ListoffDetailState extends State<ListoffDetail> {
     }
   }
 
+  // Chỉ hiển thị nút cập nhật/xoá khi:
+  // - Đơn KHÔNG ở trạng thái đã duyệt (2) hoặc từ chối (3)
+  // - Và người dùng hiện tại là người tạo đơn
+  bool get _canShowModifyButtons {
+    if (_leave == null || myId == null) return false;
+    final int? status = _leave!.status;
+    final bool isApprovedOrRejected = (status == 2) || (status == 3) ||
+        (_leave!.statusLabel == 'Đã duyệt') || (_leave!.statusLabel == 'Từ chối');
+    if (isApprovedOrRejected) return false;
+    return myId == _leave!.employeeId;
+  }
+
   @override
   Widget build(BuildContext context) {
     final leaveLogic = this.leaveLogic;
     final screenWidth = MediaQuery.of(context).size.width;
     final DateFormat dateFormatD = DateFormat('dd-MM-yyyy HH:mm');
+    final bool canModify = _canShowModifyButtons;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -153,16 +176,22 @@ class _ListoffDetailState extends State<ListoffDetail> {
           fontWeight: FontWeight.w600,
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit_note_sharp, color: AppColors.primary),
-            onPressed: () => _updateScreen(),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete, color: Colors.red),
-            onPressed: () => leaveLogic.deleteLeave(leaveId!, context),
-          ),
-        ],
+        actions: canModify
+            ? [
+                IconButton(
+                  icon: Icon(Icons.edit_note_sharp, color: AppColors.primary),
+                  onPressed: () => _updateScreen(),
+                ),
+                IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    if (leaveId != null) {
+                      leaveLogic.deleteLeave(leaveId!, context);
+                    }
+                  },
+                ),
+              ]
+            : null,
       ),
       body: LoadingOverlay(
         isLoading: isLoading,
@@ -184,7 +213,6 @@ class _ListoffDetailState extends State<ListoffDetail> {
                 SizedBox(height: 8),
                 WorkflowList(
                   workflows: _leave?.workFlows ?? [],
-                  avatar: avatar,
                 ),
                 Obx(() => isshouldShowApproveButtons.value
                     ? _buildLeaveButtonBrowse(context)
@@ -236,7 +264,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
         CustomDialog()
             .showConfirmationDialog(
               child: Column(
-                children: [TextWidget(text: "Từ chối đơn xin nghĩ phép")],
+                children: [TextWidget(text: "Từ chối đơn xin nghỉ phép")],
               ),
             )
             .then((value) async {

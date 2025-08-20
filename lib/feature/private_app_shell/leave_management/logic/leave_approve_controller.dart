@@ -37,11 +37,11 @@ class LeaveApproveController extends GetxController {
         icon: Icons.favorite,
         iconColor: Colors.blue,
         messageColor: Colors.green,
-        duration: Duration(seconds: 2),
+        duration: Duration(seconds: 3),
       );
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(Duration(seconds: 3));
         Navigator.pop(context, true);
         Navigator.pop(context, true);
       } else {

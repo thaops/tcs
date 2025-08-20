@@ -58,6 +58,7 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                   label1: "Nhân viên",
                   name: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
                   searchable: false,
+                  isEnabled: false,
                   selectedName: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
                   onTap: () async {
                     final result = await Get.to(() => FilterUserView());

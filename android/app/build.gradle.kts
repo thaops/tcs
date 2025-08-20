@@ -41,6 +41,17 @@ android {
     }
 }
 
+// androidComponents {
+//     @Suppress("UnstableApiUsage")
+//     onVariants(selector().all()) { variant ->
+//         variant.outputs.forEach { output ->
+//             if (output is com.android.build.api.variant.ApkVariantOutput) {
+//                 output.outputFileName.set("tcs-v1-${variant.name}.apk")
+//             }
+//         }
+//     }
+// }
+
 flutter {
     source = "../.."
 }

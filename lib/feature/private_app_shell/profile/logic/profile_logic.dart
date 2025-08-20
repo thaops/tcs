@@ -79,15 +79,6 @@ class ProfileLogic extends GetxController {
               'title': "Ngày bắt đầu",
               'subtitle': DateUtilsCustom.formatStringDate(u.createdDate),
             },
-              {
-              'title': "creator",
-              'subtitle': u.creator ?? '---------',
-            },
-             
-              {
-              'title': "doB",
-              'subtitle': u.doB ?? '---------',
-            },
             
         ];
       }

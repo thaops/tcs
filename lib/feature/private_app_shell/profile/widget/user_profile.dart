@@ -31,8 +31,7 @@ class UserProfile extends StatelessWidget {
             ),
           ),
           10.horizontalSpace,
-          SizedBox(
-            width: Get.width * 0.6,
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -53,7 +52,7 @@ class UserProfile extends StatelessWidget {
               ],
             ),
           ),
-          Spacer(),
+          8.horizontalSpace,
           Icon(
             Icons.arrow_forward_ios,
             color: Colors.grey,

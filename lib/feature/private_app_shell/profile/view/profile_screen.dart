@@ -22,8 +22,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String avatar =
-      "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png";
 
   Future<void> _phoneCall(String phoneNumber) async {
     launchUrl(Uri.parse('tel:$phoneNumber'));
@@ -89,9 +87,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         controllerProfile.profile?.user?.avatar,
                                       ),
                                       radius: 50,
-                                      backgroundImage: NetworkImage(
-                                        controllerProfile.profile?.user?.avatar ?? avatar,
-                                      ),
+                                      backgroundImage: Image.asset(
+                                        Img.avatarDefault,
+                                      ).image,
                                     ),
                                   ),
                                 ),
