@@ -24,6 +24,8 @@ class CustomSelect extends StatefulWidget {
   final String? errorText;
   final bool searchable;
   final String? selectedId;
+  final String? selectedName;
+  final Future<void> Function()? onTap;
 
   const CustomSelect({
     Key? key,
@@ -39,6 +41,8 @@ class CustomSelect extends StatefulWidget {
     this.errorText,
     this.searchable = true,
     this.selectedId,
+    this.selectedName,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -61,6 +65,10 @@ class _SelectState extends State<CustomSelect> {
       );
       _controller.text = selectedItem.name;
     }
+    // Initialize from external selectedName if provided
+    if ((widget.selectedName ?? '').isNotEmpty) {
+      _controller.text = widget.selectedName!;
+    }
     // Kích hoạt gợi ý khi TextField được nhấn
     _focusNode.addListener(() {
       if (_focusNode.hasFocus && widget.selectList != null && widget.selectList!.isNotEmpty) {
@@ -68,6 +76,30 @@ class _SelectState extends State<CustomSelect> {
         _controller.text = _controller.text; // Kích hoạt suggestionsCallback
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomSelect oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update when selectedId changes
+    if (widget.selectedId != oldWidget.selectedId || widget.selectList != oldWidget.selectList) {
+      if (widget.selectedId != null && (widget.selectList ?? []).isNotEmpty) {
+        final selectedItem = widget.selectList!.firstWhere(
+          (item) => item.id == widget.selectedId,
+          orElse: () => Item(id: '', name: ''),
+        );
+        setState(() {
+          _selectedId = widget.selectedId;
+          _controller.text = selectedItem.name;
+        });
+      }
+    }
+    // Update when selectedName changes externally
+    if (widget.selectedName != oldWidget.selectedName && (widget.selectedName ?? '').isNotEmpty) {
+      setState(() {
+        _controller.text = widget.selectedName!;
+      });
+    }
   }
 
   @override
@@ -80,6 +112,7 @@ class _SelectState extends State<CustomSelect> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final isEnabledEffective = widget.isEnabled && !widget.isNotChange;
 
     return Container(
       padding: EdgeInsets.only(bottom: 16.h),
@@ -106,7 +139,8 @@ class _SelectState extends State<CustomSelect> {
                 return TextField(
                   controller: controller,
                   focusNode: focusNode,
-                  enabled: widget.isEnabled && !widget.isNotChange,
+                  enabled: isEnabledEffective,
+                  readOnly: widget.onTap != null,
                   decoration: InputDecoration(
                     hintText: widget.name ?? 'Chọn một tùy chọn',
                     hintStyle: TextStyle(
@@ -133,11 +167,11 @@ class _SelectState extends State<CustomSelect> {
                       borderSide: BorderSide(color: Colors.grey.shade200),
                     ),
                     filled: true,
-                    fillColor: widget.isEnabled ? Colors.white : Colors.grey.shade100,
-                    suffixIcon: widget.isEnabled
+                    fillColor: isEnabledEffective ? Colors.white : Colors.grey.shade100,
+                    suffixIcon: isEnabledEffective
                         ? Icon(
                             widget.icon ?? Icons.keyboard_arrow_down_rounded,
-                            color: widget.isEnabled ? widget.colorIcon ?? Colors.black : Colors.grey.shade400,
+                            color: isEnabledEffective ? widget.colorIcon ?? Colors.black : Colors.grey.shade400,
                             size: 20.sp,
                           )
                         : null,
@@ -149,6 +183,11 @@ class _SelectState extends State<CustomSelect> {
                     fontFamily: 'Inter',
                   ),
                   onTap: () {
+                    // If provided, delegate to external picker
+                    if (widget.onTap != null) {
+                      widget.onTap!.call();
+                      return;
+                    }
                     if (widget.selectList != null && widget.selectList!.isNotEmpty) {
                       // Kích hoạt gợi ý khi nhấn
                       _controller.text = _controller.text; // Gửi sự kiện
@@ -209,6 +248,58 @@ class _SelectState extends State<CustomSelect> {
                 ),
               ),
             )
+          else if (widget.onTap != null)
+            TextFormField(
+              controller: _controller,
+              readOnly: true,
+              enabled: isEnabledEffective,
+              onTap: isEnabledEffective
+                  ? () async {
+                      await widget.onTap!.call();
+                    }
+                  : null,
+              decoration: InputDecoration(
+                hintText: widget.name ?? 'Chọn một tùy chọn',
+                hintStyle: TextStyle(
+                  color: Colors.black.withOpacity(0.8),
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(
+                    color: widget.errorText != null ? Colors.red : Colors.grey.shade400,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(
+                    color: widget.errorText != null ? Colors.red : Colors.grey.shade400,
+                  ),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+                filled: true,
+                fillColor: isEnabledEffective ? Colors.white : Colors.grey.shade100,
+                suffixIcon: isEnabledEffective
+                    ? Icon(
+                        widget.icon ?? Icons.keyboard_arrow_down_rounded,
+                        color: isEnabledEffective ? widget.colorIcon ?? Colors.black : Colors.grey.shade400,
+                        size: 20.sp,
+                      )
+                    : null,
+              ),
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w400,
+                fontSize: 14.sp,
+                fontFamily: 'Inter',
+              ),
+            )
           else
             DropdownButtonFormField<String>(
               value: _selectedId?.isNotEmpty == true ? _selectedId : null,
@@ -224,7 +315,7 @@ class _SelectState extends State<CustomSelect> {
                         ),
                       ))
                   .toList(),
-              onChanged: widget.isEnabled && !widget.isNotChange
+              onChanged: isEnabledEffective
                   ? (val) {
                       final selectedItem = (widget.selectList ?? [])
                           .firstWhere((e) => e.id == val, orElse: () => Item(id: '', name: ''));
@@ -255,7 +346,7 @@ class _SelectState extends State<CustomSelect> {
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 filled: true,
-                fillColor: widget.isEnabled ? Colors.white : Colors.grey.shade100,
+                fillColor: isEnabledEffective ? Colors.white : Colors.grey.shade100,
               ),
             ),
           if (widget.errorText != null) ...[

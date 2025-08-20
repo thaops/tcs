@@ -1,4 +1,4 @@
-package com.example.tcs_flutter
+package com.namphuongso.tcs
 
 import io.flutter.embedding.android.FlutterActivity
 

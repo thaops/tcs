@@ -1,16 +1,14 @@
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:tcs_flutter/common/share/cache/my_id.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/repositories/leave_management_repository.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/add_leave_usecase.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/get_leave_types_usecase.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/models/leave_management.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logic.dart';
-import 'package:tcs_flutter/feature/private_app_shell/user_list/controller/user_controller.dart';
-import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
-import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/get_leave_types_usecase.dart';
-import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/add_leave_usecase.dart';
-import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 
 class LeaveCareateController extends GetxController {
-  final controllerUser = Get.put(UserController());
   final controllerProfile = Get.put(ProfileLogic());
 
   final LeaveRepositoryInterface leaveManagementRepository;
@@ -21,23 +19,26 @@ class LeaveCareateController extends GetxController {
     _getLeaveTypes = GetLeaveTypesUseCase(leaveManagementRepository);
     _addLeave = AddLeaveUseCase(leaveManagementRepository);
   }
-  List<LeaveType>? leaves;
+  final RxList<LeaveType> leaves = <LeaveType>[].obs;
   RxBool isLoading = false.obs;
 
   String? usersID;
   String? leaveID;
-  Rx<DateTime> startDate = Rx<DateTime>(DateTime.now());
-  Rx<DateTime> dueDate = Rx<DateTime>(DateTime.now().add(Duration(days: 1)));
+  Rx<DateTime> startDate = Rx<DateTime>(
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
+  Rx<DateTime> dueDate = Rx<DateTime>(DateTime(
+      DateTime.now().year, DateTime.now().month, DateTime.now().day, 23, 59));
   RxBool isloadingSave = false.obs;
 
   late TextEditingController controllerNote;
   
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
     controllerNote = TextEditingController();
-    usersID = controllerProfile.profile?.id;
+    MyId myId = await MyId.create();
+    usersID = await myId.getMyId();
     // fetchUsers();
   }
 
@@ -62,9 +63,9 @@ class LeaveCareateController extends GetxController {
 
     try {
       isloadingSave.value = true;
-      print("addData: $addData");
       final result = await _addLeave(addData, context);
-      if (result.statusCode != HttpStatusCodes.STATUS_CODE_OK) {
+
+      if (result.data == false) {
         Get.snackbar("Thất bại", result.message);
         return;
       }
@@ -88,10 +89,10 @@ class LeaveCareateController extends GetxController {
       _showSnackBar(context, 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
       return false;
     }
-    if (_startDate.value.isBefore(DateTime.now().add(Duration(days: 1)))) {
-      _showSnackBar(context, 'Bạn phải xin nghỉ trước ít nhất 2 ngày.');
-      return false;
-    }
+    // if (_startDate.value.isBefore(DateTime.now().add(Duration(days: 1)))) {
+    //   _showSnackBar(context, 'Bạn phải xin nghỉ trước ít nhất 2 ngày.');
+    //   return false;
+    // }
     return true;
   }
 
@@ -101,7 +102,6 @@ class LeaveCareateController extends GetxController {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  // Lấy danh sách các loại nghỉ phép
   Future<void> fetchLeave() async {
     try {
       isLoading.value = true;
@@ -110,7 +110,7 @@ class LeaveCareateController extends GetxController {
         return;
       }
       final response = await _getLeaveTypes(ctx);
-      leaves = response ?? [];
+      leaves.assignAll(response ?? []);
     } catch (e) {
       print('Error fetching leave types: $e');
     } finally {
@@ -118,7 +118,6 @@ class LeaveCareateController extends GetxController {
     }
   }
 
-  // Cập nhật ngày bắt đầu hoặc ngày kết thúc
   void _updateDate(DateTime newDate, bool isStartDate) {
     if (isStartDate) {
       startDate.value = newDate;

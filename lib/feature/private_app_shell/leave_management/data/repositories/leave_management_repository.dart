@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
 import 'package:tcs_flutter/src/api/models/employee_model.dart';
 import 'package:tcs_flutter/src/config/constants/url/url.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/add.leave.dart';
@@ -25,6 +26,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
       isLoading = true;
       final response = await dio.get(
         ApiEndpoints.listoff(firstDayOfMonth, lastDayOfMonth));
+        print("response.getListOffss: ${response.data}");
       if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> employeeJson = jsonResponse['data'];
@@ -71,7 +73,6 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
   Future<List<LeaveType>?> getLeave(BuildContext context) async {
     try {
       final response = await dio.get(ApiEndpoints.getLeave);
-
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> leaveJson = jsonResponse['data'];
@@ -114,6 +115,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         ApiEndpoints.careateleave,
         data: jsonEncode(addData),
       );
+      print("response.addLeave: ${response.data}");
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> data = response.data as Map<String, dynamic>;
@@ -123,7 +125,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
           statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
           message: 'Request failed with status: ${response.statusCode}',
           totalRecord: 0,
-          data: true,
+          data: false,
         );
       }
     } catch (e) {
@@ -131,7 +133,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         statusCode: HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
         message: 'An error occurred: $e',
         totalRecord: 0,
-        data: true,
+        data: false,
       );
     }
   }
@@ -153,7 +155,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
           statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
           message: 'Request failed with status: ${response.statusCode}',
           totalRecord: 0,
-          data: true,
+          data: false,
         );
       }
     } catch (e) {
@@ -161,7 +163,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         statusCode: HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
         message: 'An error occurred: $e',
         totalRecord: 0,
-        data: true,
+        data: false,
       );
     }
   }
@@ -173,6 +175,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         ApiEndpoints.approveLeave(approveId),
         data: jsonEncode(approveData),
       );
+      print("response.approveLeave: ${response.data}");
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> data = response.data as Map<String, dynamic>;
@@ -182,7 +185,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
           statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
           message: 'Request failed with status: ${response.statusCode}',
           totalRecord: 0,
-          data: true,
+          data: false,
         );
       }
     } catch (e) {
@@ -190,7 +193,7 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         statusCode: HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
         message: 'An error occurred: $e',
         totalRecord: 0,
-        data: true,
+        data: false,
       );
     }
   }
@@ -219,5 +222,26 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
       print('Error fetching departments: $e');
       return <String>[];
     }
+  }
+
+  @override
+  Future<List<Approver>> getListApprover(int? step, String? keyword) async {
+   try {
+    final response = await dio.get(ApiEndpoints.getListApprover(step, keyword));
+    print("response.getListApprover: ${response.data}");
+    if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
+      final list = (response.data is Map && response.data['data'] is List)
+          ? (response.data['data'] as List)
+          : <dynamic>[];
+      final approvers = list
+          .map((e) => Approver.fromJson(e))
+          .toList();
+      return approvers;
+    }
+    return <Approver>[];
+   } catch (e) {
+    print('Error fetching approvers: $e');
+    return <Approver>[];
+   }
   }
 }

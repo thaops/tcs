@@ -40,6 +40,7 @@ class LeaveListController extends GetxController {
     try {
       isLoading.value = true;
       final response = await _getListOff(firstDay, lastDay);
+      print("response.getListOff: ${response}");
       listOff.value = response ?? [];
       // Diagnostics
       final missingCount = listOff.where((e) => (e.department ?? '').trim().isEmpty).length;

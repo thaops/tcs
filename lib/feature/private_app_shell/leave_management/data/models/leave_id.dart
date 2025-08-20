@@ -54,11 +54,11 @@ class LeaveID {
 
     return LeaveID(
       numberOfDaysOffRemaining: json['numberOfDaysOffRemaining'] as int? ?? 0,
-      id: json['id'] as String?,
-      employeeId: json['employeeId'] as String?,
-      department: json['department'] as String?,
-      avatarUrl: json['avatarUrl'] as String?,
-      fullName: json['fullName'] as String? ?? '',
+      id: json['id'] ?? '',
+      employeeId: json['employeeId'] ?? '',
+      department: json['department'] ?? '',
+      avatarUrl: json['avatarUrl'] ?? '',
+      fullName: json['fullName'] ?? '',
       fromDate: json['fromDate'] != null 
           ? DateTime.tryParse(json['fromDate'] as String) 
           : null,
@@ -66,18 +66,18 @@ class LeaveID {
           ? DateTime.tryParse(json['toDate'] as String) 
           : null,
       totalDay: json['totalDay'],
-      categoryId: json['categoryId'] as String?,
-      category: json['category'] as String?,
+      categoryId: json['categoryId'] ?? '',
+      category: json['category'] ?? '',
       status: json['status'] as int?,
-      statusLabel: json['statusLabel'] as String?,
+      statusLabel: json['statusLabel'] ?? '',
       approvalDate: json['approvalDate'] != null 
           ? DateTime.tryParse(json['approvalDate'] as String) 
           : null,
       lastApprovalDate: json['lastApprovalDate'] != null 
           ? DateTime.tryParse(json['lastApprovalDate'] as String) 
           : null,
-      reason: json['reason'] as String? ?? '',
-      note: json['note'] as String?,
+      reason: json['reason'] ?? '',
+      note: json['note'] ?? '',
       createdDate: json['createdDate'] != null 
           ? DateTime.tryParse(json['createdDate'] as String) 
           : null,
@@ -153,16 +153,16 @@ class WorkFlow {
     }
 
     return WorkFlow(
-      id: json['id'] as String? ?? '',
-      approverId: json['approverId'] as String? ?? '',
-      approver: json['approver'] as String? ?? '',
+      id: json['id'] ?? '' ?? '',
+      approverId: json['approverId'] ?? '' ?? '',
+      approver: json['approver'] ?? '' ?? '',
       approvalDate: json['approvalDate'] != null 
           ? DateTime.tryParse(json['approvalDate'] as String) 
           : null,
       step: json['step'] as int?,
       status: json['status'] as int?,
-      statusLabel: json['statusLabel'] as String?,
-      note: json['note'] as String?,
+      statusLabel: json['statusLabel'] ?? '',
+      note: json['note'] ?? '',
       createdDate: json['createdDate'] != null 
           ? DateTime.tryParse(json['createdDate'] as String) 
           : null,

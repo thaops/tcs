@@ -20,6 +20,7 @@ import 'package:tcs_flutter/common/utils/check_awaiting_approval.dart';
 import 'package:tcs_flutter/common/utils/check_awaiting_services.dart';
 import 'package:tcs_flutter/common/utils/navigation_utils.dart';
 import 'package:tcs_flutter/core/configs/theme/app_theme.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logic.dart';
 import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/router/deep_link_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -98,6 +99,11 @@ Future<void> _initializeServices() async {
   await initializeDateFormatting('vi_VN', null);
   await Get.put(SignOutClear());
 }
+
+// Future<void> _loadUserData() async {
+//   final controllerProfile = Get.put(ProfileLogic());
+//   await controllerProfile.loadUserData();
+// }
 
 class MyApp extends StatefulWidget {
   final Uri? initialDeepLink;

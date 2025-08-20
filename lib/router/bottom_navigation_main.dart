@@ -2,11 +2,9 @@ import 'package:get/get.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logic.dart';
 import 'package:flutter/material.dart';
-import 'package:tcs_flutter/feature/private_app_shell/user_list/controller/user_controller.dart';
 import 'package:tcs_flutter/router/one_signal_service.dart';
 import 'package:tcs_flutter/src/Api/api_service.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
-import 'package:tcs_flutter/feature/private_app_shell/user_list/user_list_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_list_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,7 +20,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    Get.lazyPut(() => UserController());
     Get.put(ProfileLogic());
     
   }

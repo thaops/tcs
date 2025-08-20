@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/repositories/leave_management_repository.dart';
-import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_logic.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/models/leave_management.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/models/leave_update.dart';
 import 'package:tcs_flutter/src/Api/models/users_model.dart';
@@ -38,10 +37,8 @@ class LeaveUpdateController extends GetxController {
     super.onInit();
     final LeaveUpdateData? arguments = Get.arguments as LeaveUpdateData?;
     leave.value = arguments?.leave;
-    print("leave: ${leave.toString()}");
+    debugPrint("leave: ${leave.toString()}");
     category!.value = arguments?.category ?? '';
-
-    final leaveLogicRead = Get.put(LeaveLogic());
 
     if (leave.value != null) {
       usersID = leave.value!.employeeId!;
@@ -73,6 +70,10 @@ class LeaveUpdateController extends GetxController {
       Get.snackbar('Lỗi', 'Vui lòng điền đầy đủ thông tin');
       return;
     }
+    if (startDate.value == null || dueDate.value == null) {
+      Get.snackbar('Lỗi', 'Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.');
+      return;
+    }
     if (dueDate.value!.isBefore(startDate.value!)) {
       Get.snackbar('Lỗi', 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
       return;
@@ -98,7 +99,7 @@ class LeaveUpdateController extends GetxController {
         Get.snackbar('Thất bại', 'Đơn xin phép thất bại: ${result.message}');
       }
     } catch (e) {
-      print("error: $e");
+      debugPrint("error: $e");
     } finally {
       isLoading.value = false;
     }
@@ -115,10 +116,17 @@ class LeaveUpdateController extends GetxController {
       final response = await _getLeaveTypes(ctx);
       leaves = response ?? [];
     } catch (e) {
-      print('Error fetching leave types: $e');
+      debugPrint('Error fetching leave types: $e');
     } finally {
       isLoading.value = false;
     }
+  }
+
+  bool get canEdit {
+    final l = leave.value;
+    if (l == null) return false;
+    final bool isApproved = (l.status == 2) || (l.statusLabel == 'Đã duyệt');
+    return !isApproved;
   }
 
 }

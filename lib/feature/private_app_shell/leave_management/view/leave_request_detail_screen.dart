@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:tcs_flutter/common/share/cache/my_id.dart';
 import 'package:tcs_flutter/common/utils/custom_dialog.dart';
 import 'package:tcs_flutter/common/widgets/custom_text_field.dart';
 import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
@@ -16,9 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ListoffDetail extends StatefulWidget {
-  const ListoffDetail({
-    Key? key,
-  }) : super(key: key);
+  const ListoffDetail({Key? key}) : super(key: key);
 
   @override
   State<ListoffDetail> createState() => _ListoffDetailState();
@@ -28,6 +27,8 @@ class _ListoffDetailState extends State<ListoffDetail> {
   String? leaveId;
   late final LeaveLogic leaveLogic;
   late final LeaveApproveController controllerApprove;
+  String? myId; 
+  RxBool isshouldShowApproveButtons = false.obs;
 
   LeaveID? _leave;
   bool isLoading = false;
@@ -39,22 +40,47 @@ class _ListoffDetailState extends State<ListoffDetail> {
     super.initState();
     leaveLogic = Get.put(LeaveLogic());
     controllerApprove = Get.put(LeaveApproveController());
+    
     final arguments = Get.arguments;
+
     leaveId = arguments != null ? arguments['leaveId'] as String? : null;
     debugPrint('ListoffDetail initialized with leaveId: $leaveId');
-    if (leaveId != null) {
+    if (leaveId != null){
       getLeaveID(leaveId!, context);
+      _loadMyId();
+      // Recompute approve buttons after data loads.
     } else {
       debugPrint('No leaveId provided, showing error');
     }
-    
+  }
+
+  Future<void> _loadMyId() async {
+    try {
+      final create = await MyId.create();
+      final id = await create.getMyId();
+      // controllerApprove.getListApprover(null, null);
+      if (!mounted) return;
+      
+      setState(() {
+        myId = id;
+      });
+      // If leave is available, recompute approve buttons visibility.
+      if (_leave != null) {
+        final show = await _shouldShowApproveButtons;
+        if (mounted) {
+          isshouldShowApproveButtons.value = show;
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to load myId: $e');
+    }
   }
 
   void _updateScreen() {
-    Get.toNamed(AppRouter.leaveUpdate,
-        arguments: LeaveUpdateData(
-          leave: _leave,
-        ))?.then((value) {
+    Get.toNamed(
+      AppRouter.leaveUpdate,
+      arguments: LeaveUpdateData(leave: _leave),
+    )?.then((value) {
       if (value == true) {
         getLeaveID(leaveId!, context);
       }
@@ -69,7 +95,16 @@ class _ListoffDetailState extends State<ListoffDetail> {
       });
       result = await leaveLogic.getLeave(leaveId, context);
       if (result != null) {
-        _leave = result;
+        setState(() {
+          _leave = result;
+        });
+        // If myId is available, recompute approve buttons visibility.
+        if (myId != null) {
+          final show = await _shouldShowApproveButtons;
+          if (mounted) {
+            isshouldShowApproveButtons.value = show;
+          }
+        }
       } else {
         // ignore: avoid_print
         print('Failed to load task');
@@ -85,6 +120,30 @@ class _ListoffDetailState extends State<ListoffDetail> {
     return result;
   }
 
+  Future<bool> get _shouldShowApproveButtons async{
+    if (_leave == null || myId == null) return false;
+    print("myId: $myId");
+    final bool isApproved = (_leave!.status == 2) || (_leave!.statusLabel == 'Đã duyệt');
+    if (isApproved) return false;
+    final String currentId = myId!;
+    final List<WorkFlow> flows = _leave!.workFlows ?? const <WorkFlow>[];
+    if (flows.isNotEmpty) {
+      // Ưu tiên dùng workflow của đơn hiện tại để tránh gọi API.
+      final bool inPendingStep = flows.any((wf) =>
+          wf.approverId == currentId &&
+          // Chỉ hiển thị khi bước duyệt của user còn đang chờ/xử lý.
+          (wf.statusLabel == null || wf.statusLabel == 'Chờ xử lý' || wf.status == null || wf.status == 0));
+      return inPendingStep;
+    }
+    // Fallback (hiếm khi cần): gọi API khi thiếu workflow từ server.
+    try {
+      final approvers = await controllerApprove.getListApprover(null, null);
+      return approvers.any((wf) => wf.id == currentId);
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final leaveLogic = this.leaveLogic;
@@ -94,10 +153,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Colors.black,
-          ),
+          icon: Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () {
             Get.back();
           },
@@ -121,7 +177,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
       ),
       body: LoadingOverlay(
         isLoading: isLoading,
-        
+
         child: SingleChildScrollView(
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -141,65 +197,70 @@ class _ListoffDetailState extends State<ListoffDetail> {
                   workflows: _leave?.workFlows ?? [],
                   avatar: avatar,
                 ),
-                LeaveButtonBrowse(
-                  approver_on: () async {
-                    CustomDialog()
-                        .showConfirmationDialog(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextWidget(
-                            text: "Ý kiến lãnh đạo",
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            paddingVertical: 10,
-                            textAlign: TextAlign.start,
-                          ),
-                          CustomTextField(
-                            controller: controllerApprove.textController,
-                            hintText: "Nội dung",
-                            maxLines: 5,
-                          )
-                        ],
-                      ),
-                    )
-                        .then((value) async {
-                      if (value == true) {
-                        await controllerApprove.approveOrRejectLeave(
-                            _leave!.id.toString(),
-                            2,
-                            "Cảm ơn, Xếp đã duyệt đơn nghỉ phép!",
-                            context);
-                      }
-                    });
-                  },
-                  approver_off: () async {
-                    CustomDialog()
-                        .showConfirmationDialog(
-                            child: Column(
-                      children: [
-                        TextWidget(
-                          text: "Từ chối đơn xin nghĩ phép",
-                        )
-                      ],
-                    ))
-                        .then((value) async {
-                      if (value == true) {
-                        await controllerApprove.approveOrRejectLeave(
-                            _leave!.id.toString(),
-                            3,
-                            "Chân thành cảm ơn, Xếp đã từ chối đơn nghỉ phép",
-                            context);
-                      }
-                    });
-                  },
-                ),
+                Obx(() => isshouldShowApproveButtons.value
+                    ? _buildLeaveButtonBrowse(context)
+                    : const SizedBox.shrink()),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  LeaveButtonBrowse _buildLeaveButtonBrowse(BuildContext context) {
+    return LeaveButtonBrowse(
+      approver_on: () async {
+        CustomDialog()
+            .showConfirmationDialog(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget(
+                    text: "Ý kiến lãnh đạo",
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    paddingVertical: 10,
+                    textAlign: TextAlign.start,
+                  ),
+                  CustomTextField(
+                    controller: controllerApprove.textController,
+                    hintText: "Nội dung",
+                    maxLines: 5,
+                  ),
+                ],
+              ),
+            )
+            .then((value) async {
+              if (value == true) {
+                await controllerApprove.approveOrRejectLeave(
+                  _leave!.id.toString(),
+                  2,
+                  "Cảm ơn, Xếp đã duyệt đơn nghỉ phép!",
+                  context,
+                );
+              }
+            });
+      },
+      approver_off: () async {
+        CustomDialog()
+            .showConfirmationDialog(
+              child: Column(
+                children: [TextWidget(text: "Từ chối đơn xin nghĩ phép")],
+              ),
+            )
+            .then((value) async {
+              if (value == true) {
+                await controllerApprove.approveOrRejectLeave(
+                  _leave!.id.toString(),
+                  3,
+                  "Chân thành cảm ơn, Xếp đã từ chối đơn nghỉ phép",
+                  context,
+                );
+              }
+            });
+      },
     );
   }
 
@@ -210,18 +271,20 @@ class _ListoffDetailState extends State<ListoffDetail> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          CustomDetailLeave(title: 'Nhân viên', content: _leave?.fullName ?? '-------'),
+          CustomDetailLeave(title: 'Phòng ban', content: _leave?.department ?? '-------'),
           CustomDetailLeave(
-            title: 'Nhân viên',
-            content: _leave?.fullName,
+            paddingVertical: 8,
+            title: 'Ngày yêu cầu',
+            content: _leave?.createdDate != null
+                ? dateFormatD.format(_leave!.createdDate!)
+                : '-------',
           ),
           CustomDetailLeave(
-              paddingVertical: 8,
-              title: 'Ngày yêu cầu',
-              content: dateFormatD
-                  .format(_leave?.createdDate ?? DateTime.now())),
-          CustomDetailLeave(
             title: 'Số ngày nghỉ',
-            content: _leave?.totalDay.toString(),
+            content: (_leave != null && _leave!.totalDay != null)
+                ? _leave!.totalDay.toString()
+                : '-------',
           ),
           Container(
             width: screenWidth,
@@ -231,8 +294,9 @@ class _ListoffDetailState extends State<ListoffDetail> {
                 Expanded(
                   child: CustomDetailLeave(
                     title: 'Từ ngày',
-                    content: dateFormatD
-                        .format(_leave?.fromDate ?? DateTime.now()),
+                    content: _leave?.fromDate != null
+                        ? dateFormatD.format(_leave!.fromDate!)
+                        : '-------',
                   ),
                 ),
                 SizedBox(width: 20),
@@ -242,8 +306,9 @@ class _ListoffDetailState extends State<ListoffDetail> {
                     child: CustomDetailLeave(
                       isShowicon: false,
                       title: 'Đến ngày',
-                      content: dateFormatD
-                          .format(_leave?.toDate ?? DateTime.now()),
+                      content: _leave?.toDate != null
+                          ? dateFormatD.format(_leave!.toDate!)
+                          : '-------',
                     ),
                   ),
                 ),
@@ -258,10 +323,16 @@ class _ListoffDetailState extends State<ListoffDetail> {
           ),
           CustomDetailLeave(
             title: 'Lý do',
-            content: _leave?.category ?? '-------',
+            content: (_leave?.category?.isNotEmpty ?? false)
+                ? _leave!.category
+                : '-------',
           ),
           CustomDetailLeave(
-              title: 'Ghi chú', content: _leave?.reason ?? '-------'),
+            title: 'Ghi chú',
+            content: (_leave?.reason?.isNotEmpty ?? false)
+                ? _leave!.reason
+                : '-------',
+          ),
         ],
       ),
     );

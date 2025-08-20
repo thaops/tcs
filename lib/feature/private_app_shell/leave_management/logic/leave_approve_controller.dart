@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/common/constants/http_status_codes.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/repositories/leave_management_repository.dart';
 import 'package:tcs_flutter/src/config/customdialog/customdialog.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
@@ -28,6 +29,7 @@ class LeaveApproveController extends GetxController {
       };
       final AddDayOffResponseModel response = await _approveLeave(
           approveData, leaveID, status, context);
+      print("response: ${response.data}");
       await CustomDialog.show(
         context,
         message: "Cảm ơn, sếp đã duyệt ",
@@ -44,17 +46,17 @@ class LeaveApproveController extends GetxController {
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Bạn không có quyền duyệt')));
+            .showSnackBar(SnackBar(content: Text(response.message)));
         Navigator.pop(context, false);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(
-                'Bạn không có quyền từ chối hoặc duyệt đơn xin nghỉ phép')),
-      );
+      print(e);
     } finally {
       isLoading.value = false;
     }
   }
+
+  Future<List<Approver>> getListApprover(int? step, String? keyword) {
+    return leaveManagementRepository.getListApprover(step, keyword);
+}
 }

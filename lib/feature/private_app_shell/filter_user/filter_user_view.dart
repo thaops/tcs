@@ -9,7 +9,7 @@ import 'package:tcs_flutter/feature/private_app_shell/filter_user/controller/fil
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FilterUserView extends StatelessWidget {
-  final FilterUserController controller = Get.find<FilterUserController>();
+  final FilterUserController controller = Get.put(FilterUserController());
 
   FilterUserView({super.key}) {
     controller.selectEmployeeIds.clear();
@@ -38,22 +38,7 @@ class FilterUserView extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 color: AppColors.white,
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    // Trả về Map chứa ids và names
-                    Get.back(result: {
-                      'ids': controller.selectEmployeeIds.map((e) => e.id).toList(),
-                      'names': controller.selectEmployeeIds.map((e) => e.name).toList(),
-                    });
-                  },
-                  child: TextWidget(
-                    text: "Xong",
-                    fontSize: 14.sp,
-                    color: AppColors.white,
-                  ),
-                ),
-              ],
+              actions: const [],
             ),
             body: Column(
               children: [
@@ -81,26 +66,12 @@ class FilterUserView extends StatelessWidget {
                           children: [
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 16.w),
-                              child: Obx(() => Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextWidget(
-                                          text: department.name ?? "Không xác định",
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                      Checkbox(
-                                        value: controller.isDepartmentSelected(
-                                            department.name ?? ""),
-                                        onChanged: (value) {
-                                          controller.toggleDepartmentSelection(
-                                              department.name ?? "", value ?? false);
-                                        },
-                                      ),
-                                    ],
-                                  )),
+                              child: TextWidget(
+                                text: department.name ?? "Không xác định",
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                             Padding(
                               padding: EdgeInsets.all(16.w),
@@ -117,34 +88,24 @@ class FilterUserView extends StatelessWidget {
                                   shrinkWrap: true,
                                   itemBuilder: (context, empIndex) {
                                     final employee = department.employees![empIndex];
-                                    return Obx(() => Row(
-                                          children: [
-                                            Expanded(
-                                              child: CustomUserFilter(
-                                                name: employee.fullName,
-                                                avatar: employee.avatarUrl,
-                                                email: employee.email,
-                                                department: department.name,
-                                              ),
-                                            ),
-                                            Checkbox(
-                                              value: controller.selectEmployeeIds.any(
-                                                  (item) => item.id == employee.id),
-                                              onChanged: (bool? value) {
-                                                if (value != null &&
-                                                    employee.id != null &&
-                                                    employee.fullName != null) {
-                                                  controller.toggleEmployeeSelection(
-                                                    ItemFilter(
-                                                      id: employee.id!,
-                                                      name: employee.fullName!,
-                                                    ),
-                                                  );
-                                                }
-                                              },
-                                            ),
-                                          ],
-                                        ));
+                                    return GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        if (employee.id != null && employee.fullName != null) {
+                                          Get.back(result: {
+                                            'id': employee.id,
+                                            'name': employee.fullName,
+                                            'department': department.name,
+                                          });
+                                        }
+                                      },
+                                      child: CustomUserFilter(
+                                        name: employee.fullName,
+                                        avatar: employee.avatarUrl,
+                                        email: employee.email,
+                                        department: department.name,
+                                      ),
+                                    );
                                   },
                                 ),
                               ),

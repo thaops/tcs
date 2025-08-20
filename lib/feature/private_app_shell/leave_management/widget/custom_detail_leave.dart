@@ -48,7 +48,7 @@ class CustomDetailLeave extends StatelessWidget {
                     text: content.toString(),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    maxLines: 3,
+                    maxLines: 8,
                     color:colorText?? AppColors.darkGrey.withOpacity(0.9),
                   ),
                 ],

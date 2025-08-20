@@ -11,6 +11,7 @@ class LeaveButtonBrowse extends StatefulWidget {
   }) : super(key: key);
   final Function approver_on;
   final Function approver_off;
+  
 
   @override
   State<LeaveButtonBrowse> createState() => _LeaveButtonBrowseState();

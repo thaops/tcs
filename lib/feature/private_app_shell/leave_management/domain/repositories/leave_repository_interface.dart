@@ -1,5 +1,6 @@
 // Domain repository interface for Leave Management (GetX remains in presentation)
 import 'package:flutter/material.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
 import 'package:tcs_flutter/src/api/models/employee_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/add.leave.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
@@ -37,4 +38,6 @@ abstract class LeaveRepositoryInterface {
 
   // Departments for filter
   Future<List<String>> getDepartmentNames();
+
+  Future<List<Approver>> getListApprover(int? step, String? keyword);
 }

@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
+ 
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
-import 'package:tcs_flutter/feature/private_app_shell/user_list/model/user_department_model.dart';
-import 'package:tcs_flutter/feature/private_app_shell/user_list/model/user_list_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/filter_user/model/user_department_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/filter_user/model/user_list_model.dart';
 
 class ItemFilter {
   final String id;
@@ -30,7 +29,6 @@ class ItemFilter {
 
 class FilterUserController extends GetxController {
   DioApi dioApi = DioApi();
-  Dio dio = Dio();
   final searchController = TextEditingController();
   final userList = <UserListModel>[].obs;
   final allUsers = <UserListModel>[].obs;
@@ -100,50 +98,48 @@ class FilterUserController extends GetxController {
   Future<void> fetchUserList() async {
     try {
       isLoading.value = true;
-      final response = await dioApi.post(
-        ApiEndpoints.departments,
-        data: {"string": "string"}
+      final response = await dioApi.get(
+        ApiEndpoints.employees,
       );
+      print("response.data: ${response.data}");
       if (response.statusCode != HttpStatusCodes.STATUS_CODE_OK) {
-        Get.snackbar("Lỗi", "Không thể tải danh sách nhân viên");
         return;
       }
-      final List<dynamic> departmentsJson = (response.data['data'] as List? ?? <dynamic>[]);
-      userList.clear(); 
-      final mappedDepartments = <UserDepartmentModel>[];
+      final List<dynamic> dataList = (response.data['data'] as List? ?? <dynamic>[]);
+
+      // Group flat list of employees by departmentName
+      final Map<String, List<Employee>> groups = {};
       employeeIdToDepartment.clear();
-      for (final dept in departmentsJson) {
-        if (dept is! Map<String, dynamic>) continue;
-        final deptName = (dept['name'] as String?)?.trim() ?? 'Unknown Department';
-        final employeesMap = dept['employees'];
-        final seen = <String>{};
-        final employees = <Employee>[];
-        if (employeesMap is Map) {
-          employeesMap.forEach((key, value) {
-            final id = key?.toString() ?? '';
-            final name = value?.toString() ?? 'Unknown';
-            if (id.isNotEmpty && !seen.contains(id)) {
-              seen.add(id);
-              employees.add(Employee(
-                id: id,
-                fullName: name,
-                email: '',
-                avatarUrl: '',
-              ));
-              employeeIdToDepartment[id] = deptName;
-            }
-          });
-        }
-        employees.sort((a, b) {
+      for (final item in dataList) {
+        if (item is! Map<String, dynamic>) continue;
+        final deptName = (item['departmentName'] ?? 'Unknown Department').toString().trim();
+        final empId = (item['accountId'] ?? item['id'] ?? '').toString().trim();
+        if (empId.isEmpty) continue;
+        final empName = (item['employeeName'] ?? 'Unknown').toString();
+        final empEmail = (item['employeeEmail'] ?? '').toString();
+        groups.putIfAbsent(deptName, () => <Employee>[]);
+        groups[deptName]!.add(Employee(
+          id: empId,
+          fullName: empName,
+          email: empEmail,
+          avatarUrl: '',
+        ));
+        employeeIdToDepartment[empId] = deptName;
+      }
+
+      // Sort employees within each department
+      for (final entry in groups.entries) {
+        entry.value.sort((a, b) {
           final an = removeDiacritics((a.fullName ?? '').toLowerCase());
           final bn = removeDiacritics((b.fullName ?? '').toLowerCase());
           return an.compareTo(bn);
         });
-        mappedDepartments.add(UserDepartmentModel(
-          name: deptName,
-          employees: employees,
-        ));
       }
+
+      final mappedDepartments = groups.entries
+          .map((e) => UserDepartmentModel(name: e.key, employees: e.value))
+          .toList();
+
       userDepartmentList.value = mappedDepartments;
       userDepartmentListSearch.assignAll(userDepartmentList);
     } catch (e) {

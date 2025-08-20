@@ -18,7 +18,8 @@ class ApiEndpoints {
 
 
   // profile
-  static String profile = "${Config.baseUrl}/users/profile";
+  static String profile = "${Config.baseUrl}/user/get-info-mine";
+
 
   static String role = "${Config.baseUrl}/tasks/get-role-for-task";
 
@@ -44,26 +45,28 @@ class ApiEndpoints {
     return "${Config.baseUrl}/users?$query";
   }
 
-  static String employees = "${Config.baseUrl}/employees/get-list";
+  static String employees = "${Config.baseUrl}/employee/get-list-employee?pageIndex=1&pageSize=9999";
   
 
   // departments
-  static String departments = "${Config.baseUrl}/departments/get-departments-with-employees";
+  static String departments = "${Config.baseUrl}/employee/get-list-employee-of-department";
 
   // listofff
-  static String listoff(DateTime firstDayOfMonth, DateTime lastDayOfMonth) => "${Config.baseUrl}/dayoff/list-day-off?pageIndex=1&pageSize=9999&fromDate=$firstDayOfMonth&toDate=$lastDayOfMonth&keyword=";
-  static String getLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/get-day-off/$leaveId";
+  static String listoff(DateTime firstDayOfMonth, DateTime lastDayOfMonth) => "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$firstDayOfMonth&toDate=$lastDayOfMonth&keyword=";
+  static String getLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/get-detail-day-off/$leaveId";
   static String updateLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/update-day-off/$leaveId";
   static String deleteLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/delete-day-off/$leaveId";
   static String createLeaveID() => "${Config.baseUrl}/dayoff/add-day-off";
-  static String getLeave = "${Config.baseUrl}/dayoff/list-category?pageIndex=1&pageSize=9999";
+  static String getLeave = "${Config.baseUrl}/dayoff/get-list-category";
   static String approveLeave(String approveId) => "${Config.baseUrl}/dayoff/approve-day-off/$approveId";
+
+  static String getListApprover(int? step, String? keyword) => "${Config.baseUrl}/dayoff/get-list-approval-orders";
 
 
 
   static String fetchListOff(
           DateTime firstDayOfMonth, DateTime lastDayOfMonth) =>
-      "${Config.baseUrl}/dayoff/list-day-off?pageIndex=1&pageSize=9999&fromDate=$firstDayOfMonth&toDate=$lastDayOfMonth&keyword=";
+      "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$firstDayOfMonth&toDate=$lastDayOfMonth&keyword=";
 
   static String supportcenter(
       {int? status,

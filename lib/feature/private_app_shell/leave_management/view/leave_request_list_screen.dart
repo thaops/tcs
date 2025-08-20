@@ -29,6 +29,9 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
   final LeaveFilterController _leaveFilterController = Get.put(LeaveFilterController());
   final FilterUserController filterUserController = Get.put(FilterUserController());
   DateTime? selectedMonth;
+  // Track last fetched date range to avoid redundant API calls when filtering
+  DateTime? _lastFetchedStart;
+  DateTime? _lastFetchedEnd;
   
 
   Future<void> _fetchListOff(DateTime firstDay, DateTime lastDay, {bool forceFetch = false}) async {
@@ -36,6 +39,9 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
     _leaveFilterController.setDepartmentsFromNames(
       listController.listOff.map((e) => e.department ?? '').toList(),
     );
+    // Update last fetched range
+    _lastFetchedStart = firstDay;
+    _lastFetchedEnd = lastDay;
   }
 
   
@@ -44,7 +50,6 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
   void initState() {
     super.initState();
     listController.generateMonths();
-    // Đảm bảo map employeeId -> department đã sẵn sàng
     if (filterUserController.employeeIdToDepartment.isEmpty) {
       filterUserController.fetchUserList();
     }
@@ -118,23 +123,43 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
                             // Lưu lại lựa chọn hiện tại để giữ filter sau khi refetch
                             final prevDep = _leaveFilterController.departmentId.value;
                             final prevStatus = _leaveFilterController.statusId.value;
-                            // Ưu tiên gọi API trước
-                            await _fetchListOff(
-                              _leaveFilterController.startDate.value,
-                              _leaveFilterController.endDate.value,
-                              forceFetch: true,
-                            );
-                            // Sau khi có dữ liệu mới, build lại filter local
-                            _leaveFilterController.setDepartmentsFromController(
-                              filterUserController,
-                              listController.listOff.toList(),
-                            );
-                            _leaveFilterController.setStatusesFromEmployees(
-                              listController.listOff.toList(),
-                            );
-                            // Khôi phục lựa chọn để áp dụng filter ngay trên danh sách
-                            _leaveFilterController.departmentId.value = prevDep;
-                            _leaveFilterController.statusId.value = prevStatus;
+                            final newStart = _leaveFilterController.startDate.value;
+                            final newEnd = _leaveFilterController.endDate.value;
+                            final hasPrev = _lastFetchedStart != null && _lastFetchedEnd != null;
+                            final bool dateChanged = !hasPrev ||
+                                !newStart.isAtSameMomentAs(_lastFetchedStart!) ||
+                                !newEnd.isAtSameMomentAs(_lastFetchedEnd!);
+
+                            if (dateChanged) {
+                              // Gọi API khi khoảng ngày thay đổi
+                              await _fetchListOff(
+                                newStart,
+                                newEnd,
+                                forceFetch: true,
+                              );
+                              // Sau khi có dữ liệu mới, build lại filter local
+                              _leaveFilterController.setDepartmentsFromController(
+                                filterUserController,
+                                listController.listOff.toList(),
+                              );
+                              _leaveFilterController.setStatusesFromEmployees(
+                                listController.listOff.toList(),
+                              );
+                              // Khôi phục lựa chọn để áp dụng filter ngay trên danh sách
+                              _leaveFilterController.departmentId.value = prevDep;
+                              _leaveFilterController.statusId.value = prevStatus;
+                            } else {
+                              // Không đổi ngày: không gọi API, chỉ rebuild filter local và đóng
+                              _leaveFilterController.setDepartmentsFromController(
+                                filterUserController,
+                                listController.listOff.toList(),
+                              );
+                              _leaveFilterController.setStatusesFromEmployees(
+                                listController.listOff.toList(),
+                              );
+                              _leaveFilterController.departmentId.value = prevDep;
+                              _leaveFilterController.statusId.value = prevStatus;
+                            }
                             Get.back();
                           },
                         ),

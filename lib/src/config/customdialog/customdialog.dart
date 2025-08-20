@@ -39,7 +39,7 @@ class CustomDialog {
                     //   fit: BoxFit.cover, // Adjust fit as needed
                     // ),
                     Lottie.asset(
-                      Img.loading_lottie,
+                      Img.animation_approve,
                       width: 200, // Adjust width as needed
                       height: 200, // Adjust height as needed
                       fit: BoxFit.cover, // Adjust fit as needed

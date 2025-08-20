@@ -8,12 +8,10 @@ import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logi
 import 'package:flutter/material.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/widget/summary_user_profile.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/widget/user_profile.dart';
-import 'package:tcs_flutter/feature/private_app_shell/qr_bank/qr_bank.dart';
-import 'package:tcs_flutter/feature/private_app_shell/user_list/controller/user_controller.dart';
 import 'package:tcs_flutter/src/api/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:tcs_flutter/common/utils/date_utils.dart';
+ 
 
 class ProfileScreen extends StatefulWidget {
   final bool? flag;
@@ -34,31 +32,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final controllerProfile = Get.find<ProfileLogic>();
-
-      controllerProfile.loadData();
-    });
+    // Khởi tạo controller một lần
+    Get.put(ProfileLogic());
   }
 
   @override
   Widget build(BuildContext context) {
-    final controllerUserlist = Get.put(UserController());
-    final controllerProfile = Get.put(ProfileLogic());
+    final controllerProfile = Get.find<ProfileLogic>();
     final apiService = Get.put(ApiService());
 
     final isVision = apiService.isVision;
-    final String userId = Get.arguments ?? controllerProfile.profile?.id ?? '';
+    final String userId = Get.arguments ?? controllerProfile.profile?.user?.id ?? '';
 
     return Obx(
       () => LoadingOverlay(
-        isLoading: controllerUserlist.isLoading.value,
+        isLoading: controllerProfile.isloading.value,
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: _buildAppBar(controllerProfile, context),
           body: RefreshIndicator(
             onRefresh: () async {
-              await controllerUserlist.fetchUserList();
               await controllerProfile.loadUserData();
             },
             child: Obx(
@@ -93,14 +86,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     alignment: Alignment.topCenter,
                                     child: CircleAvatar(
                                       key: ValueKey(
-                                        controllerProfile.user.value?.avatarUrl ??
-                                            controllerProfile.profile?.avatarUrl,
+                                        controllerProfile.profile?.user?.avatar,
                                       ),
                                       radius: 50,
                                       backgroundImage: NetworkImage(
-                                        controllerProfile.user.value?.avatarUrl ??
-                                            controllerProfile.profile?.avatarUrl ??
-                                            avatar,
+                                        controllerProfile.profile?.user?.avatar ?? avatar,
                                       ),
                                     ),
                                   ),
@@ -108,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ],
                             )),
                         24.verticalSpace,
-                        _buildPersonalInformation(controllerUserlist, userId,
+                        _buildPersonalInformation(userId,
                             controllerProfile, context, isVision),
                       ],
                     ),
@@ -123,7 +113,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Expanded _buildPersonalInformation(
-      UserController controllerUserlist,
       String userId,
       ProfileLogic controllerProfile,
       BuildContext context,
@@ -150,63 +139,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: AppColors.grey,
               ),
               16.verticalSpace,
-              SizedBox(
-                width: Get.width,
-                child: GestureDetector(
-                  onTap: () {
-                    final matches = controllerUserlist.userList
-                        .where((u) => u.id == userId);
-                    if (matches.isNotEmpty) {
-                      final user = matches.first;
-                      final bankInfo = user.bankInfo ?? '';
-                      if (bankInfo.contains("TPBank")) {
-                        String accountNumber = controllerProfile
-                                .extractAccountNumber(bankInfo) ??
-                            'Không có số tài khoản';
-                        Get.to(QrBank(accountNumber: accountNumber));
-                      }
-                    } else {
-                      // Không có UserListModel tương ứng, bỏ qua tap
-                    }
-                  },
-                  child: SummaryUserProfile(
-                    title: controllerProfile.extractLetters(
-                        controllerProfile.user.value?.bankInfo ?? ''),
-                    subtitle: controllerProfile.extractAccountNumber(
-                            controllerProfile.user.value?.bankInfo ?? '') ??
-                        'Không có số tài khoản',
-                  ),
-                ),
-              ),
+              // SizedBox(
+              //   width: Get.width,
+              //   child: GestureDetector(
+              //     onTap: () {
+                 
+              //     },
+              //     child: SummaryUserProfile(
+              //       title: controllerProfile.extractLetters(
+              //           controllerProfile.profile?.bankInfo ?? ''),
+              //       subtitle: controllerProfile.extractAccountNumber(
+              //               controllerProfile.profile?.bankInfo ?? '') ??
+              //           'Không có số tài khoản',
+              //     ),
+              //   ),
+              // ),
               ...(() {
                 if (controllerProfile.summaryData.isNotEmpty) {
                   return controllerProfile.summaryData;
                 }
                 // Fallback từ Profile khi không có summaryData từ UserController
-                final p = controllerProfile.profile;
+                final p = controllerProfile.profile?.user;
                 final List<Map<String, dynamic>> fallback = [];
                 if (p != null) {
-                  if ((p.address ?? '').isNotEmpty) {
-                    fallback.add({'title': 'Địa chỉ', 'subtitle': p.address!});
+                  if ((p.phoneNumber ?? '').isNotEmpty) {
+                    fallback.add({'title': 'Số điện thoại', 'subtitle': p.phoneNumber!});
                   }
-                  if ((p.department ?? '').isNotEmpty) {
-                    fallback.add({'title': 'Phòng ban', 'subtitle': p.department!});
-                  }
-                  if ((p.tel ?? '').isNotEmpty) {
-                    fallback.add({'title': 'Số điện thoại', 'subtitle': p.tel!});
-                  }
-                  if ((p.email ?? '').isNotEmpty) {
-                    fallback.add({'title': 'Email', 'subtitle': p.email!});
-                  }
-                  if (p.workStartDate != null) {
-                    fallback.add({
-                      'title': 'Ngày làm việc',
-                      'subtitle': DateUtilsCustom.formatDate(p.workStartDate),
-                    });
+                  if ((p.email).isNotEmpty) {
+                    fallback.add({'title': 'Email', 'subtitle': p.email});
                   }
                 }
                 return fallback;
-              }() as List<Map<String, dynamic>>).map((data) {
+              }()).map((data) {
                 return SummaryUserProfile(
                   title: data['title'].toString(),
                   subtitle: data['subtitle'].toString(),
@@ -228,13 +192,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             }
                             return GestureDetector(
                               onTap: () {
-                                controllerProfile.tapCount++;
+                                controllerProfile.tapCount.value++;
                                 controllerProfile.showConfigDialog();
                               },
                               child: Center(
                                 child: TextWidget(
                                   text: isVision
-                                      ? "@NPP - Phiên bản - ${controllerProfile.version?.value}"
+                                      ? "@NPP - Phiên bản - ${controllerProfile.version.value}"
                                       : "@NPP - Phiên bản - dev",
                                   fontSize: 12,
                                   fontStyle: FontStyle.italic,
@@ -274,25 +238,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: TextWidget(
                   color: AppColors.black,
                   fontSize: 18,
-                  text: controllerProfile.user.value?.fullName ??
-                      (controllerProfile.profile?.fullName ?? ''),
+                  text: controllerProfile.profile?.user?.fullName ??
+                      controllerProfile.profile?.user?.username ??
+                      '',
                   fontWeight: FontWeight.w600,
                 ),
               ),
               4.verticalSpace,
               Center(
                 child: TextWidget(
-                  text: controllerProfile.user.value?.department ??
-                      (controllerProfile.profile?.department ?? ''),
+                  text: '',
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
                   color: AppColors.primary,
                   fontWeight: FontWeight.w400,
                 ),
               ),
-              widget.flag == true
-                  ? _buildContact(controllerProfile)
-                  : SizedBox(),
+             _buildContact(controllerProfile)
+              
             ]),
           ),
         ),
@@ -317,8 +280,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
           // Fallback từ Profile nếu chưa có dữ liệu từ UserController
           final List<Map<String, dynamic>> fallback = [];
-          final tel = controllerProfile.profile?.tel;
-          final email = controllerProfile.profile?.email;
+          final tel = controllerProfile.profile?.user?.phoneNumber;
+          final email = controllerProfile.profile?.user?.email;
           if (tel != null && tel.isNotEmpty) {
             fallback.add({
               'title': 'Số Điện Thoại',
@@ -343,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             });
           }
           return fallback;
-        }() as List<Map<String, dynamic>>).map((data) {
+        }()).map((data) {
           return GestureDetector(
             onTap: data['onTap'] as void Function()?,
             child: UserProfile(

@@ -7,6 +7,7 @@ import 'package:tcs_flutter/common/Services/network_controller.dart';
 import 'package:tcs_flutter/common/Services/services.dart';
 import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:tcs_flutter/common/share/auth/sign_out_clear.dart';
 import 'package:uuid/uuid.dart';
 
 class DioApi {
@@ -134,6 +135,10 @@ class DioApi {
   }
 
   Future<void> _showNoNetworkDialog() async {
+    // Prevent showing multiple stacked dialogs
+    if (_hasShownDialog.value || (Get.isDialogOpen == true)) {
+      return;
+    }
     _hasShownDialog.value = true;
     await Get.dialog(
       CupertinoAlertDialog(
@@ -152,6 +157,8 @@ class DioApi {
       ),
       barrierDismissible: false,
     );
+    // Ensure flag reset even if the dialog is dismissed programmatically
+    _hasShownDialog.value = false;
   }
 
   Future<dioLib.Response> get(String url,
@@ -223,12 +230,10 @@ class DioApi {
   }
 
   dioLib.Response _handleResponse(dioLib.Response response) {
-    if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK ||
-        response.statusCode == HttpStatusCodes.STATUS_CODE_CREATED) {
-      return response;
-    } else {
-      throw Exception(
-          'Error: ${response.statusCode} - ${response.statusMessage}');
+    if(response.statusCode == HttpStatusCodes.STATUS_CODE_UNAUTHORIZED){ 
+      SignOutClear().signOut();
+      throw Exception('Unauthorized');
     }
+    return response;
   }
 }

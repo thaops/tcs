@@ -126,12 +126,7 @@ class _ListWidgetsState extends State<ListWidgets> {
                         fontSize: 12,
                         color: AppColors.darkBackground.withOpacity(0.7),
                         fontWeight: FontWeight.w400,
-                        text: (() {
-                          final fromController = controllerUser.departmentNameForEmployee(employee.employeeId);
-                          final dep = fromController ?? employee.department;
-                          if (dep == null || dep.trim().isEmpty) return 'Chưa phòng';
-                          return dep.trim();
-                        })()),
+                        text: employee.department ?? 'Chưa phòng'),
                     16.verticalSpace,
                     Text(
                       employee.statusLabel ?? 'Chưa có thông tin',

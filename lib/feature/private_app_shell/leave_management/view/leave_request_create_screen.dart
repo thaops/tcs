@@ -9,6 +9,7 @@ import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/lea
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/buttom_leave.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/listoff_leave.dart';
 import 'package:tcs_flutter/common/widgets/widgets/tasks/task_note_section.dart';
+import 'package:tcs_flutter/feature/private_app_shell/filter_user/filter_user_view.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -21,6 +22,7 @@ class ListoffAddScreen extends StatefulWidget {
 
 class _ListoffAddScreenState extends State<ListoffAddScreen> {
   final controllerCreate = Get.put(LeaveCareateController());
+  String? _selectedEmployeeName;
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +31,7 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
       appBar: appBar_create(context),
       body: Obx(
         () => LoadingOverlay(
-          isLoading: controllerCreate.isLoading.value,
-          
+          isLoading: controllerCreate.isloadingSave.value,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -55,24 +56,36 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
               children: [
                 CustomSelect(
                   label1: "Nhân viên",
-                  name: controllerCreate.controllerProfile.profile?.fullName,
-                  selectList: controllerCreate.controllerUser.userList.value
-                      .map((e) => Item(
-                          id: e.id.toString(), name: e.fullName.toString()))
-                      .toList(),
-                  onProjectSelected: (value) {
-                    controllerCreate.usersID = value;
+                  name: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
+                  searchable: false,
+                  selectedName: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
+                  onTap: () async {
+                    final result = await Get.to(() => FilterUserView());
+                    if (result is Map) {
+                      // Support both single and multi-select return shapes
+                      final id = (result['id'] ?? (result['ids'] is List && result['ids'].isNotEmpty ? result['ids'][0] : null))?.toString();
+                      final name = (result['name'] ?? (result['names'] is List && result['names'].isNotEmpty ? result['names'][0] : null))?.toString();
+                      if (id != null && name != null) {
+                        setState(() {
+                          controllerCreate.usersID = id;
+                          _selectedEmployeeName = name;
+                        });
+                      }
+                    }
                   },
                 ),
-                ListoffLeave(
-                  label1: "Lý do ",
-                  leaveList: controllerCreate.leaves,
-                  onProjectSelected: (selectedUser) {
-                    setState(() {
-                      controllerCreate.leaveID = selectedUser?.id;
-                    });
-                  },
-                ),
+                Obx(() {
+                  final leaveList = controllerCreate.leaves.toList(growable: false);
+                  return ListoffLeave(
+                    label1: "Lý do",
+                    leaveList: leaveList,
+                    onProjectSelected: (selectedUser) {
+                      setState(() {
+                        controllerCreate.leaveID = selectedUser?.id;
+                      });
+                    },
+                  );
+                }),
                 Obx(
                   () => Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),

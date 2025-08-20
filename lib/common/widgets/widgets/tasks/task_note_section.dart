@@ -7,12 +7,14 @@ class TaskNoteSection extends StatelessWidget {
   final String label;
   final String note;
   final double screenWidth;
+  final bool isEnabled;
 
   TaskNoteSection({
     required this.label,
     required this.note,
     required this.screenWidth,
     required this.controllerNote,
+    this.isEnabled = true,
   });
 
   @override
@@ -32,6 +34,7 @@ class TaskNoteSection extends StatelessWidget {
           hintText: note,
           maxLines: 4,
           borderRadius: 24,
+          isEnabled: isEnabled,
         ),
       ],
     );

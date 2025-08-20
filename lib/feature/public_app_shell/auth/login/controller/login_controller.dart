@@ -95,6 +95,7 @@ class LoginController extends GetxController {
   }
 
   Future<void> loginWithMicrosoftCode(String code, BuildContext context) async {
+    print("codesss: $code");
     Services services = await Services.create();
     isLoadingMicrosoft.value = true;
     showDialog(
@@ -110,6 +111,7 @@ class LoginController extends GetxController {
           'token': code,
         },
       );
+      print("response.datasss: ${response.data}");
       if (response.statusCode == 200) {
         final accessToken = response.data['data']['accessToken'].toString();
         saveLoginRouter(services, accessToken, context);

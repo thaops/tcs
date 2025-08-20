@@ -30,12 +30,11 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
       body: Obx(
         () => LoadingOverlay(
           isLoading: controllerUpdate.isLoading.value,
-          
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                fill_create(screenWidth),
+                fill_create(screenWidth, controllerUpdate.canEdit),
               ],
             ),
           ),
@@ -44,7 +43,7 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
     );
   }
 
-  Row button_seve(double screenWidth, BuildContext context) {
+  Row button_seve(double screenWidth, BuildContext context, bool canEdit) {
     return Row(
       children: [
         Flexible(
@@ -72,38 +71,39 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
             ),
           ),
         ),
-        20.horizontalSpace,
-        Flexible(
-          child: GestureDetector(
-            onTap: () async {
-              await controllerUpdate.leaveUpdate(context);
-            },
-            child: Container(
-              width: Get.width,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(color: Colors.grey.shade300, width: 1),
-              ),
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextWidget(
-                  text: "Cập nhật",
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  textAlign: TextAlign.center,
-                  color: Colors.white,
+        if (canEdit) 20.horizontalSpace,
+        if (canEdit)
+          Flexible(
+            child: GestureDetector(
+              onTap: () async {
+                await controllerUpdate.leaveUpdate(context);
+              },
+              child: Container(
+                width: Get.width,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(color: Colors.grey.shade300, width: 1),
+                ),
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextWidget(
+                    text: "Cập nhật",
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    textAlign: TextAlign.center,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
 
-  Expanded fill_create(double screenWidth) {
+  Expanded fill_create(double screenWidth, bool canEdit) {
     return Expanded(
       flex: 1,
       child: SingleChildScrollView(
@@ -119,26 +119,33 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
                       .map((e) => Item(
                           id: e.id.toString(), name: e.fullName.toString()))
                       .toList(),
+                  isEnabled: canEdit,
                   onProjectSelected: (value) {
                     controllerUpdate.usersID = value;
                   },
                 ),
-                ListoffLeave(
-                  label1: "Lý do ",
-                  leaveList: controllerUpdate.leaves,
-                  name: controllerUpdate.leaves
-                      ?.firstWhere(
-                        (leaveType) =>
-                            leaveType.id ==
-                            controllerUpdate.leave.value?.categoryId,
-                        orElse: () => LeaveType(id: "1", name: 'Default Name'),
-                      )
-                      .name,
-                  onProjectSelected: (selectedUser) {
-                    setState(() {
-                      controllerUpdate.leaveID = selectedUser!.id;
-                    });
-                  },
+                Opacity(
+                  opacity: canEdit ? 1.0 : 0.6,
+                  child: AbsorbPointer(
+                    absorbing: !canEdit,
+                    child: ListoffLeave(
+                      label1: "Lý do ",
+                      leaveList: controllerUpdate.leaves,
+                      name: controllerUpdate.leaves
+                          ?.firstWhere(
+                            (leaveType) =>
+                                leaveType.id ==
+                                controllerUpdate.leave.value?.categoryId,
+                            orElse: () => LeaveType(id: "1", name: 'Default Name'),
+                          )
+                          .name,
+                      onProjectSelected: (selectedUser) {
+                        setState(() {
+                          controllerUpdate.leaveID = selectedUser!.id;
+                        });
+                      },
+                    ),
+                  ),
                 ),
                 Obx(
                   () => Padding(
@@ -148,6 +155,7 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
                       label: 'Nghỉ từ ngày',
                       selectedDate:
                           controllerUpdate.startDate.value ?? DateTime.now(),
+                      isEnabled: canEdit,
                       onDateSelected: (date) {
                         controllerUpdate.startDate.value =
                             date; // Cập nhật ngày bắt đầu
@@ -161,6 +169,7 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
                     label: 'Đến ngày',
                     selectedDate:
                         controllerUpdate.dueDate.value ?? DateTime.now(),
+                    isEnabled: canEdit,
                     onDateSelected: (date) {
                       controllerUpdate.dueDate.value =
                           date; // Cập nhật ngày hạn
@@ -168,14 +177,21 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
                   ),
                 ),
                 8.verticalSpace,
-                TaskNoteSection(
-                  label: 'Ghi chú',
-                  note: '',
-                  screenWidth: screenWidth,
-                  controllerNote: controllerUpdate.controllerNote,
+                Opacity(
+                  opacity: canEdit ? 1.0 : 0.6,
+                  child: AbsorbPointer(
+                    absorbing: !canEdit,
+                    child: TaskNoteSection(
+                      label: 'Ghi chú',
+                      note: '',
+                      screenWidth: screenWidth,
+                      controllerNote: controllerUpdate.controllerNote,
+                      isEnabled: canEdit,
+                    ),
+                  ),
                 ),
                 30.verticalSpace,
-                button_seve(screenWidth, context),
+                button_seve(screenWidth, context, canEdit),
               ],
             ),
           ),

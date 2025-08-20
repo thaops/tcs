@@ -40,8 +40,8 @@ class Img {
   static const String loading = 'https://lottie.host/115f7ed4-9155-4505-b6c2-8b4736f63902/tlHwFilyoV.json';
   static const String roundAvatar = 'assets/bg_avatar_circle.json';
   static const String mess = 'assets/mess_icon.json';
-  static const String notdata = 'assets/icon/empty_icon2.json';
-  static const String animation_approve = 'assets/icon/approve.json';
+  static const String animation_approve = 'assets/icon/empty_icon2.json';
+  // static const String animation_approve = 'assets/icon/approve.json';
   static const String animation_reject = 'assets/icon/reject.json';
   static const String loading_lottie = 'assets/icon/loading_lottie.json';
 
