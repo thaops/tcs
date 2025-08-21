@@ -38,6 +38,7 @@ class CustomTextField extends StatefulWidget {
   final bool? autocorrect;
   final bool? enableSuggestions;
   final TextInputAction? textInputAction;
+  final EdgeInsets? scrollPadding;
 
   CustomTextField({
     super.key,
@@ -75,6 +76,7 @@ class CustomTextField extends StatefulWidget {
     this.autocorrect,
     this.enableSuggestions,
     this.textInputAction,
+    this.scrollPadding,
   });
 
   @override
@@ -121,6 +123,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           maxLength: widget.maxLength,
           minLines: widget.minLines,
           maxLines: widget.maxLines ?? widget.minLines ?? 1,
+          scrollPadding: widget.scrollPadding ?? const EdgeInsets.all(20),
           keyboardType: widget.keyboardType ??
               (widget.isNumberic == true
                   ? TextInputType.number

@@ -121,16 +121,13 @@ class _SelectState extends State<CustomSelect> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.label1 != null)
-            Text(
-              widget.label1 ?? '',
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-                color: widget.colorIcon ?? Colors.black,
-                fontFamily: 'Inter',
+            TextWidget(
+              text: widget.label1 ?? '',
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: widget.colorIcon ?? Colors.black,
               ),
-            ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 10.h),
           if (widget.searchable)
             TypeAheadField<String>(
               controller: _controller,

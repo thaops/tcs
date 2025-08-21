@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:tcs_flutter/common/widgets/app_bar_widget.dart';
 import 'package:tcs_flutter/common/widgets/custom_select.dart';
 import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
 import 'package:tcs_flutter/common/widgets/task_date.dart';
@@ -28,99 +29,96 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: appBar_create(context),
+      resizeToAvoidBottomInset: true,
+      appBar: AppBarWidget(
+        title: "Tạo đơn xin nghỉ",
+        backgroundColor: Colors.white,
+      ),
       body: Obx(
         () => LoadingOverlay(
           isLoading: controllerCreate.isloadingSave.value,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                fill_create(screenWidth),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Expanded fill_create(double screenWidth) {
-    return Expanded(
-      flex: 1,
-      child: SingleChildScrollView(
-        child: IntrinsicHeight(
-          child: SizedBox(
-            height: Get.height * 0.9,
-            child: Column(
-              children: [
-                CustomSelect(
-                  label1: "Nhân viên",
-                  name: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
-                  searchable: false,
-                  isEnabled: false,
-                  selectedName: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
-                  onTap: () async {
-                    final result = await Get.to(() => FilterUserView());
-                    if (result is Map) {
-                      // Support both single and multi-select return shapes
-                      final id = (result['id'] ?? (result['ids'] is List && result['ids'].isNotEmpty ? result['ids'][0] : null))?.toString();
-                      final name = (result['name'] ?? (result['names'] is List && result['names'].isNotEmpty ? result['names'][0] : null))?.toString();
-                      if (id != null && name != null) {
-                        setState(() {
-                          controllerCreate.usersID = id;
-                          _selectedEmployeeName = name;
-                        });
-                      }
-                    }
-                  },
-                ),
-                Obx(() {
-                  final leaveList = controllerCreate.leaves.toList(growable: false);
-                  return ListoffLeave(
-                    label1: "Lý do",
-                    leaveList: leaveList,
-                    onProjectSelected: (selectedUser) {
-                      setState(() {
-                        controllerCreate.leaveID = selectedUser?.id;
-                      });
-                    },
-                  );
-                }),
-                Obx(
-                  () => Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: TaskDate(
-                      colorIcon: AppColors.black,
-                      label: 'Nghỉ từ ngày',
-                      selectedDate: controllerCreate.startDate.value,
-                      onDateSelected: (date) {
-                        controllerCreate.startDate.value =
-                            date; 
-                      },
-                    ),
-                  ),
-                ),
-                Obx(
-                  () => TaskDate(
-                    colorIcon: AppColors.black,
-                    label: 'Đến ngày',
-                    selectedDate: controllerCreate.dueDate.value,
-                    onDateSelected: (date) {
-                      controllerCreate.dueDate.value =
-                          date; // Cập nhật ngày hạn
-                    },
+                RepaintBoundary(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CustomSelect(
+                        label1: "Nhân viên",
+                        name: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
+                        searchable: false,
+                        isEnabled: false,
+                        selectedName: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
+                        onTap: () async {
+                          final result = await Get.to(() => FilterUserView());
+                          if (result is Map) {
+                            // Support both single and multi-select return shapes
+                            final id = (result['id'] ?? (result['ids'] is List && result['ids'].isNotEmpty ? result['ids'][0] : null))?.toString();
+                            final name = (result['name'] ?? (result['names'] is List && result['names'].isNotEmpty ? result['names'][0] : null))?.toString();
+                            if (id != null && name != null) {
+                              setState(() {
+                                controllerCreate.usersID = id;
+                                _selectedEmployeeName = name;
+                              });
+                            }
+                          }
+                        },
+                      ),
+                      Obx(() {
+                        final leaveList = controllerCreate.leaves.toList(growable: false);
+                        return ListoffLeave(
+                          label1: "Lý do",
+                          leaveList: leaveList,
+                          onProjectSelected: (selectedUser) {
+                            setState(() {
+                              controllerCreate.leaveID = selectedUser?.id;
+                            });
+                          },
+                        );
+                      }),
+                      Obx(
+                        () => Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4),
+                          child: TaskDate(
+                            colorIcon: AppColors.black,
+                            label: 'Nghỉ từ ngày',
+                            selectedDate: controllerCreate.startDate.value,
+                            onDateSelected: (date) {
+                              controllerCreate.startDate.value =
+                                  date; 
+                            },
+                          ),
+                        ),
+                      ),
+                      Obx(
+                        () => TaskDate(
+                          colorIcon: AppColors.black,
+                          label: 'Đến ngày',
+                          selectedDate: controllerCreate.dueDate.value,
+                          onDateSelected: (date) {
+                            controllerCreate.dueDate.value =
+                                date; // Cập nhật ngày hạn
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 8.verticalSpace,
-                TaskNoteSection(
-                  label: 'Ghi chú',
-                  note: '',
-                  screenWidth: screenWidth,
-                  controllerNote: controllerCreate.controllerNote,
+                RepaintBoundary(
+                  child: TaskNoteSection(
+                    label: 'Ghi chú',
+                    note: '',
+                    screenWidth: screenWidth,
+                    controllerNote: controllerCreate.controllerNote,
+                  ),
                 ),
                 30.verticalSpace,
-                ButtomLeave(),
+                RepaintBoundary(child: ButtomLeave()),
               ],
             ),
           ),
@@ -129,21 +127,4 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
     );
   }
 
-  AppBar appBar_create(BuildContext context) {
-    return AppBar(
-      title: TextWidget(
-        text: "Tạo đơn xin nghỉ",
-        fontSize: 18,
-        fontWeight: FontWeight.w500,
-      ),
-      backgroundColor: Colors.white,
-      centerTitle: true,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios_sharp, color: Colors.black),
-        onPressed: () {
-          Navigator.pop(context);
-        },
-      ),
-    );
-  }
 }

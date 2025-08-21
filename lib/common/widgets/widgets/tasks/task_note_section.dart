@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tcs_flutter/common/widgets/custom_text_field.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
 
@@ -24,11 +25,11 @@ class TaskNoteSection extends StatelessWidget {
       children: [
         TextWidget(
          text:  label,
-         fontSize: 15,
-         fontWeight: FontWeight.bold,
+         fontSize: 16.sp,
+         fontWeight: FontWeight.w600,
 
         ),
-        const SizedBox(height: 8),
+         SizedBox(height: 10.h),
         CustomTextField(
           controller: controllerNote,
           hintText: note,

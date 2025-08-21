@@ -42,9 +42,9 @@ class TaskDate extends StatelessWidget {
                   ? Container()
                   : TextWidget(
                       text: label,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.black,
-                      fontSize: 14.sp,
+                      fontSize: 16.sp,
                     ),
             ],
           ),

@@ -147,7 +147,6 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
       child: Obx(
         () => LoadingOverlay(
           isLoading: listController.isLoading.value,
-          
           child: Scaffold(
           backgroundColor: AppColors.white,
             appBar: AppBarWidget(

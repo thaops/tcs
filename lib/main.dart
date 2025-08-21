@@ -51,6 +51,9 @@ void main() async {
   final appLinks = AppLinks();
   final initialDeepLink = await appLinks.getInitialLink();
   await _initializeServices();
+MediaQueryData.fromWindow(WidgetsBinding.instance.window);
+print("ssss${MediaQueryData.fromWindow(WidgetsBinding.instance.window)}");
+  
 
   runApp(CalendarControllerProvider(
       controller: EventController(),
@@ -146,7 +149,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       future: _isIPad(),
       builder: (context, snapshot) {
         final isIPad = snapshot.data ?? false;
-        final designSize = isIPad ? const Size(768, 1024) : const Size(411, 875);
+        final designSize = isIPad ? const Size(768, 1024) : const Size(375, 812);
 
         return ScreenUtilInit(
           designSize: designSize,

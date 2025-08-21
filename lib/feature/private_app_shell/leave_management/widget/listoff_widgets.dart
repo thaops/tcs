@@ -125,11 +125,13 @@ class _ListWidgetsState extends State<ListWidgets> {
                         fontSize: 12,
                         color: AppColors.darkBackground.withOpacity(0.7),
                         fontWeight: FontWeight.w400,
-                        text: employee.department ?? 'Chưa phòng'),
+                        text: employee.department ?? ''),
                     16.verticalSpace,
-                    Text(
-                      employee.statusLabel ?? 'Chưa có thông tin',
-                      style: TextStyle(color: titleColor, fontSize: 14),
+                    TextWidget(
+                      text: employee.statusLabel ?? 'Chưa có thông tin',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: titleColor,
                     ),
                   ],
                 ),
