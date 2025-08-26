@@ -75,28 +75,7 @@ class ApiEndpoints {
     return "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
   }
 
-  static String supportcenter(
-      {int? status,
-      DateTime? fromDate,
-      DateTime? toDate,
-      int? pageIndex,
-      int? pageSize,
-      String? keyword}) {
-    fromDate ??= DateTime(2025, 1, 1, 0, 0, 0);
-    toDate ??= DateTime(2025, 1, 31, 23, 59, 59);
-
-    String formattedFromDate = fromDate.toIso8601String();
-    String formattedToDate = toDate.toIso8601String();
-
-    return "${Config.baseUrl}/supportcenter/get-list-request"
-        "?status=$status"
-        "&keyword=${keyword ?? ''}"
-        "&fromDate=$formattedFromDate"
-        "&toDate=$formattedToDate"
-        "&pageIndex=$pageIndex"
-        "&pageSize=$pageSize";
-  }
-
+  
   static String supportcenterDetail(String supportId) =>
       "${Config.baseUrl}/supportcenter/get-detail-request?id=$supportId";
 
@@ -159,5 +138,17 @@ static String updateSupport(String supportId) => "${Config.baseUrl}/supportcente
 static String updateStatusSupport(String supportId) => "${Config.baseUrl}/supportcenter/update-status-request/$supportId";
 
 static String createSupport = "${Config.baseUrl}/supportcenter/create-request";
+
+
+
+// apple Test
+static String usersProfileApple = "${Config.baseUrl}/users/profile";
+
+static String listoffApple(DateTime firstDayOfMonth, DateTime lastDayOfMonth) {
+  final from = Uri.encodeComponent(firstDayOfMonth.toIso8601String());
+  final to = Uri.encodeComponent(lastDayOfMonth.toIso8601String());
+  return "${Config.baseUrl}/dayoff/list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
+}
+
 
 }

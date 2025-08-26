@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:get_storage/get_storage.dart';
 import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
+import 'package:tcs_flutter/common/utils/check_awaiting_services.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
 import 'package:tcs_flutter/src/api/models/employee_model.dart';
 import 'package:tcs_flutter/src/config/constants/url/url.dart';
@@ -22,10 +24,12 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
 
   Future<List<Employee>?> getListOff(DateTime firstDayOfMonth,
       DateTime lastDayOfMonth) async {
+        final checkAwaitingServices = CheckAwaitingServices(GetStorage());
+        final ischeckApple = await checkAwaitingServices.getawaiting();
     try {
       isLoading = true;
       final response = await dio.get(
-        ApiEndpoints.listoff(firstDayOfMonth, lastDayOfMonth));
+        ischeckApple ? ApiEndpoints.listoffApple(firstDayOfMonth, lastDayOfMonth) : ApiEndpoints.listoff(firstDayOfMonth, lastDayOfMonth));
         print("response.getListOffss: ${response.data}");
       if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;

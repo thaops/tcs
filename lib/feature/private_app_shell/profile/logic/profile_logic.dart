@@ -1,10 +1,12 @@
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/common/Services/config.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/common/share/cache/my_id.dart';
+import 'package:tcs_flutter/common/utils/check_awaiting_services.dart';
 import 'package:tcs_flutter/common/utils/date_utils.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/router/app_router.dart';
@@ -105,14 +107,18 @@ class ProfileLogic extends GetxController {
   }
 
   Future<void> getProfile() async {
+     final checkAwaitingServices = CheckAwaitingServices(GetStorage());
+     final ischeckApple = await checkAwaitingServices.getawaiting();
     MyId myId = await MyId.create();
 
     try {
       isloading.value = true;
-      final respon = await dioApi.get(ApiEndpoints.profile);
+      final respon = await dioApi.get(ischeckApple ? ApiEndpoints.usersProfileApple : ApiEndpoints.profile);
       print("respon.profile: ${respon.data}");
       final data = (respon.data ?? {})['data'] ?? {};
-      profile = Profile.fromJson(data as Map<String, dynamic>);
+      profile =ischeckApple ? Profile(
+        user: User.fromJson(data),
+      ) : Profile.fromJson(data as Map<String, dynamic>);
       myId.saveMyId(profile?.user?.id ?? '');
 
       await loadUserData();
