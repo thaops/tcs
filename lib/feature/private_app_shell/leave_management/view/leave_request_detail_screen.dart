@@ -142,8 +142,11 @@ class _ListoffDetailState extends State<ListoffDetail> {
     if (isApproved) return false;
     final String currentId = myId!;
     try {
-      final approvers = await controllerApprove.getListApprover(null, null);
-      return approvers.any((wf) => wf.id == currentId);
+      // Gọi API mới để kiểm tra approval by user
+      final approvals = await controllerApprove.getListApprovalByUser(
+        leaveId ?? '',
+      );
+      return approvals.any((approval) => approval.receiverId == currentId);
     } catch (_) {
       return false;
     }

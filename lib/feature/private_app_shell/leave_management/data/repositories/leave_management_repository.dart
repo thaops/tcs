@@ -4,6 +4,7 @@ import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/common/utils/check_awaiting_services.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approval_list_model.dart';
 import 'package:tcs_flutter/src/api/models/employee_model.dart';
 import 'package:tcs_flutter/src/config/constants/url/url.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/add.leave.dart';
@@ -13,7 +14,8 @@ import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/re
 import 'package:flutter/material.dart';
 import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 
-class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositoryInterface {
+class LeaveManagementRepository extends ChangeNotifier
+    implements LeaveRepositoryInterface {
   final DioApi dio = DioApi();
   bool isLoading = false;
 
@@ -21,22 +23,27 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
     return await BaseUrlProvider.getBaseUrl(context);
   }
 
-
-  Future<List<Employee>?> getListOff(DateTime firstDayOfMonth,
-      DateTime lastDayOfMonth) async {
-        final checkAwaitingServices = CheckAwaitingServices(GetStorage());
-        final ischeckApple = await checkAwaitingServices.getawaiting();
+  Future<List<Employee>?> getListOff(
+    DateTime firstDayOfMonth,
+    DateTime lastDayOfMonth,
+  ) async {
+    final checkAwaitingServices = CheckAwaitingServices(GetStorage());
+    final ischeckApple = await checkAwaitingServices.getawaiting();
     try {
       isLoading = true;
       final response = await dio.get(
-        ischeckApple ? ApiEndpoints.listoffApple(firstDayOfMonth, lastDayOfMonth) : ApiEndpoints.listoff(firstDayOfMonth, lastDayOfMonth));
-        print("response.getListOffss: ${response.data}");
+        ischeckApple
+            ? ApiEndpoints.listoffApple(firstDayOfMonth, lastDayOfMonth)
+            : ApiEndpoints.listoff(firstDayOfMonth, lastDayOfMonth),
+      );
+      print("response.getListOffss: ${response.data}");
       if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> employeeJson = jsonResponse['data'];
-        List<Employee> employee = employeeJson
-            .map((employeeJson) => Employee.fromJson(employeeJson))
-            .toList();
+        List<Employee> employee =
+            employeeJson
+                .map((employeeJson) => Employee.fromJson(employeeJson))
+                .toList();
         return employee;
       } else {
         return null;
@@ -73,16 +80,16 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
     }
   }
 
-
   Future<List<LeaveType>?> getLeave(BuildContext context) async {
     try {
       final response = await dio.get(ApiEndpoints.getLeave);
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> leaveJson = jsonResponse['data'];
-        List<LeaveType> leaves = leaveJson
-            .map((leaveJson) => LeaveType.fromJson(leaveJson))
-            .toList();
+        List<LeaveType> leaves =
+            leaveJson
+                .map((leaveJson) => LeaveType.fromJson(leaveJson))
+                .toList();
         return leaves;
       } else {
         return null;
@@ -94,7 +101,6 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
   }
 
   Future<bool> deleteLeave(String dayyOffId, BuildContext context) async {
-
     try {
       final response = await dio.delete(ApiEndpoints.deleteLeaveID(dayyOffId));
 
@@ -113,7 +119,9 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
 
   @override
   Future<AddDayOffResponseModel> addLeave(
-      Map<String, dynamic> addData, BuildContext context) async {
+    Map<String, dynamic> addData,
+    BuildContext context,
+  ) async {
     try {
       final response = await dio.post(
         ApiEndpoints.careateleave,
@@ -126,7 +134,9 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         return AddDayOffResponseModel.fromJson(data);
       } else {
         return AddDayOffResponseModel(
-          statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
+          statusCode:
+              response.statusCode ??
+              HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
           message: 'Request failed with status: ${response.statusCode}',
           totalRecord: 0,
           data: false,
@@ -144,7 +154,10 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
 
   @override
   Future<AddDayOffResponseModel> updateLeave(
-      Map<String, dynamic> updateData, String leaveId, BuildContext context) async {
+    Map<String, dynamic> updateData,
+    String leaveId,
+    BuildContext context,
+  ) async {
     try {
       final response = await dio.put(
         ApiEndpoints.updateleave(leaveId),
@@ -156,7 +169,9 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         return AddDayOffResponseModel.fromJson(data);
       } else {
         return AddDayOffResponseModel(
-          statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
+          statusCode:
+              response.statusCode ??
+              HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
           message: 'Request failed with status: ${response.statusCode}',
           totalRecord: 0,
           data: false,
@@ -172,8 +187,12 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
     }
   }
 
-  Future<AddDayOffResponseModel> approveLeave(Map<String, dynamic> approveData,
-      String approveId, status, BuildContext context) async {
+  Future<AddDayOffResponseModel> approveLeave(
+    Map<String, dynamic> approveData,
+    String approveId,
+    status,
+    BuildContext context,
+  ) async {
     try {
       final response = await dio.post(
         ApiEndpoints.approveLeave(approveId),
@@ -186,7 +205,9 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         return AddDayOffResponseModel.fromJson(data);
       } else {
         return AddDayOffResponseModel(
-          statusCode: response.statusCode ?? HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
+          statusCode:
+              response.statusCode ??
+              HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
           message: 'Request failed with status: ${response.statusCode}',
           totalRecord: 0,
           data: false,
@@ -210,15 +231,22 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
         data: {"string": "string"},
       );
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
-        final list = (response.data is Map && response.data['data'] is List)
-            ? (response.data['data'] as List)
-            : <dynamic>[];
-        final names = list
-            .map((e) => (e is Map && e['name'] != null) ? e['name'].toString().trim() : '')
-            .where((s) => s.isNotEmpty)
-            .toSet()
-            .toList()
-          ..sort();
+        final list =
+            (response.data is Map && response.data['data'] is List)
+                ? (response.data['data'] as List)
+                : <dynamic>[];
+        final names =
+            list
+                .map(
+                  (e) =>
+                      (e is Map && e['name'] != null)
+                          ? e['name'].toString().trim()
+                          : '',
+                )
+                .where((s) => s.isNotEmpty)
+                .toSet()
+                .toList()
+              ..sort();
         return names;
       }
       return <String>[];
@@ -230,22 +258,45 @@ class LeaveManagementRepository extends ChangeNotifier implements LeaveRepositor
 
   @override
   Future<List<Approver>> getListApprover(int? step, String? keyword) async {
-   try {
-    final response = await dio.get(ApiEndpoints.getListApprover(step, keyword));
-    print("response.getListApprover: ${response.data}");
-    if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
-      final list = (response.data is Map && response.data['data'] is List)
-          ? (response.data['data'] as List)
-          : <dynamic>[];
-      final approvers = list
-          .map((e) => Approver.fromJson(e))
-          .toList();
-      return approvers;
+    try {
+      final response = await dio.get(
+        ApiEndpoints.getListApprover(step, keyword),
+      );
+      print("response.getListApprover: ${response.data}");
+      if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
+        final list =
+            (response.data is Map && response.data['data'] is List)
+                ? (response.data['data'] as List)
+                : <dynamic>[];
+        final approvers = list.map((e) => Approver.fromJson(e)).toList();
+        return approvers;
+      }
+      return <Approver>[];
+    } catch (e) {
+      print('Error fetching approvers: $e');
+      return <Approver>[];
     }
-    return <Approver>[];
-   } catch (e) {
-    print('Error fetching approvers: $e');
-    return <Approver>[];
-   }
+  }
+
+  // Method mới để gọi API get-list-approval-by
+  Future<List<ApprovalData>> getListApprovalByUser(String leaveOffId) async {
+    try {
+      final response = await dio.get(
+        ApiEndpoints.getListApprovalByUser(leaveOffId),
+      );
+      print("response.getListApprovalByUser: ${response.data}");
+      if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
+        final list =
+            (response.data is Map && response.data['data'] is List)
+                ? (response.data['data'] as List)
+                : <dynamic>[];
+        final approvals = list.map((e) => ApprovalData.fromJson(e)).toList();
+        return approvals;
+      }
+      return <ApprovalData>[];
+    } catch (e) {
+      print('Error fetching approval list by user: $e');
+      return <ApprovalData>[];
+    }
   }
 }

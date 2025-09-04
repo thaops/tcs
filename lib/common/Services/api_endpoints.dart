@@ -2,24 +2,20 @@
 import 'package:tcs_flutter/common/Services/config.dart';
 
 class ApiEndpoints {
-
-    //notification
-  static String notification  = "${Config.baseUrl}/device/onesignal-register";
-  
+  //notification
+  static String notification = "${Config.baseUrl}/device/onesignal-register";
 
   static String login = "${Config.baseUrl}/users/oauth2-google";
-  static String loginUrlMicrosoft(int platform, int type) => "${Config.baseUrl}/login/get-redirect-url?platform=$platform&type=$type";
-    static String loginMicrosoft = "${Config.baseUrl}/login/login-with-ms-token";
-
+  static String loginUrlMicrosoft(int platform, int type) =>
+      "${Config.baseUrl}/login/get-redirect-url?platform=$platform&type=$type";
+  static String loginMicrosoft = "${Config.baseUrl}/login/login-with-ms-token";
 
   static String loginFrame = "${Config.baseUrl}/users/login";
 
   //task
 
-
   // profile
   static String profile = "${Config.baseUrl}/user/get-info-mine";
-
 
   static String role = "${Config.baseUrl}/tasks/get-role-for-task";
 
@@ -45,11 +41,12 @@ class ApiEndpoints {
     return "${Config.baseUrl}/users?$query";
   }
 
-  static String employees = "${Config.baseUrl}/employee/get-list-employee?pageIndex=1&pageSize=9999";
-  
+  static String employees =
+      "${Config.baseUrl}/employee/get-list-employee?pageIndex=1&pageSize=9999";
 
   // departments
-  static String departments = "${Config.baseUrl}/employee/get-list-employee-of-department";
+  static String departments =
+      "${Config.baseUrl}/employee/get-list-employee-of-department";
 
   // listoff - ensure ISO8601 and URL-encoded
   static String listoff(DateTime firstDayOfMonth, DateTime lastDayOfMonth) {
@@ -57,25 +54,32 @@ class ApiEndpoints {
     final to = Uri.encodeComponent(lastDayOfMonth.toIso8601String());
     return "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
   }
-  static String getLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/get-detail-day-off/$leaveId";
-  static String updateLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/update-day-off/$leaveId";
-  static String deleteLeaveID(String leaveId) => "${Config.baseUrl}/dayoff/delete-day-off/$leaveId";
+
+  static String getLeaveID(String leaveId) =>
+      "${Config.baseUrl}/dayoff/get-detail-day-off/$leaveId";
+  static String updateLeaveID(String leaveId) =>
+      "${Config.baseUrl}/dayoff/update-day-off/$leaveId";
+  static String deleteLeaveID(String leaveId) =>
+      "${Config.baseUrl}/dayoff/delete-day-off/$leaveId";
   static String createLeaveID() => "${Config.baseUrl}/dayoff/add-day-off";
   static String getLeave = "${Config.baseUrl}/dayoff/get-list-category";
-  static String approveLeave(String approveId) => "${Config.baseUrl}/dayoff/approve-day-off/$approveId";
+  static String approveLeave(String approveId) =>
+      "${Config.baseUrl}/dayoff/approve-day-off/$approveId";
 
-  static String getListApprover(int? step, String? keyword) => "${Config.baseUrl}/dayoff/get-list-approval-orders";
-
-
+  static String getListApprover(int? step, String? keyword) =>
+      "${Config.baseUrl}/dayoff/get-list-approval-orders";
+  static String getListApprovalByUser(String leaveOffId) =>
+      "${Config.baseUrl}/dayoff/get-list-approval-by/$leaveOffId";
 
   static String fetchListOff(
-      DateTime firstDayOfMonth, DateTime lastDayOfMonth) {
+    DateTime firstDayOfMonth,
+    DateTime lastDayOfMonth,
+  ) {
     final from = Uri.encodeComponent(firstDayOfMonth.toIso8601String());
     final to = Uri.encodeComponent(lastDayOfMonth.toIso8601String());
     return "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
   }
 
-  
   static String supportcenterDetail(String supportId) =>
       "${Config.baseUrl}/supportcenter/get-detail-request?id=$supportId";
 
@@ -91,7 +95,7 @@ class ApiEndpoints {
   static String updateleave(String leaveId) =>
       "${Config.baseUrl}/dayoff/update-day-off/$leaveId";
 
-      //SupportCenter 
+  //SupportCenter
 
   //  static String supportcenter(
   //     {int? status,
@@ -122,33 +126,38 @@ class ApiEndpoints {
   static String projectSupport =
       "${Config.baseUrl}/supportcenter/get-list-project?page=1&pageSize=9999";
 
-  static String typeSupport = "${Config.baseUrl}/supportcenter/get-type-support";
-
+  static String typeSupport =
+      "${Config.baseUrl}/supportcenter/get-type-support";
 
   // static String handlerSupport = "${Config.baseUrl}/supportcenter/get-list-handler?pageIndex=1&pageSize=99999";
 
-static String listEmailContact = "${Config.baseUrl}/supportcenter/get-list-email-contact?projectId=&keyword=&isAll=true";
+  static String listEmailContact =
+      "${Config.baseUrl}/supportcenter/get-list-email-contact?projectId=&keyword=&isAll=true";
 
-static String updateTypeSupport(String supportTypeId) => "${Config.baseUrl}/supportcenter/update-type-support/$supportTypeId";
+  static String updateTypeSupport(String supportTypeId) =>
+      "${Config.baseUrl}/supportcenter/update-type-support/$supportTypeId";
 
-static String transferHandler(String supportTransferId) => "${Config.baseUrl}/supportcenter/transfer-handler/$supportTransferId";
+  static String transferHandler(String supportTransferId) =>
+      "${Config.baseUrl}/supportcenter/transfer-handler/$supportTransferId";
 
-static String updateSupport(String supportId) => "${Config.baseUrl}/supportcenter/update-request/$supportId";
+  static String updateSupport(String supportId) =>
+      "${Config.baseUrl}/supportcenter/update-request/$supportId";
 
-static String updateStatusSupport(String supportId) => "${Config.baseUrl}/supportcenter/update-status-request/$supportId";
+  static String updateStatusSupport(String supportId) =>
+      "${Config.baseUrl}/supportcenter/update-status-request/$supportId";
 
-static String createSupport = "${Config.baseUrl}/supportcenter/create-request";
+  static String createSupport =
+      "${Config.baseUrl}/supportcenter/create-request";
 
+  // apple Test
+  static String usersProfileApple = "${Config.baseUrl}/users/profile";
 
-
-// apple Test
-static String usersProfileApple = "${Config.baseUrl}/users/profile";
-
-static String listoffApple(DateTime firstDayOfMonth, DateTime lastDayOfMonth) {
-  final from = Uri.encodeComponent(firstDayOfMonth.toIso8601String());
-  final to = Uri.encodeComponent(lastDayOfMonth.toIso8601String());
-  return "${Config.baseUrl}/dayoff/list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
-}
-
-
+  static String listoffApple(
+    DateTime firstDayOfMonth,
+    DateTime lastDayOfMonth,
+  ) {
+    final from = Uri.encodeComponent(firstDayOfMonth.toIso8601String());
+    final to = Uri.encodeComponent(lastDayOfMonth.toIso8601String());
+    return "${Config.baseUrl}/dayoff/list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
+  }
 }

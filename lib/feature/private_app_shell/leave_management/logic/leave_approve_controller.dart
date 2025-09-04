@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approval_list_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/repositories/leave_management_repository.dart';
 import 'package:tcs_flutter/src/config/customdialog/customdialog.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
@@ -70,5 +71,11 @@ class LeaveApproveController extends GetxController {
 
   Future<List<Approver>> getListApprover(int? step, String? keyword) {
     return leaveManagementRepository.getListApprover(step, keyword);
+  }
+
+  // Method mới để gọi API get-list-approval-by
+  Future<List<ApprovalData>> getListApprovalByUser(String leaveOffId) {
+    return (leaveManagementRepository as LeaveManagementRepository)
+        .getListApprovalByUser(leaveOffId);
   }
 }
