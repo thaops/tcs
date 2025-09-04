@@ -66,16 +66,16 @@ class LeaveUpdateController extends GetxController {
   }
 
   Future<void> leaveUpdate(BuildContext context) async {
-    if (leaveID == null || usersID == null || controllerNote.text.isEmpty) {
-      Get.snackbar('Lỗi', 'Vui lòng điền đầy đủ thông tin');
+    if (leaveID == null || usersID == null ) {
+      Get.snackbar('Thông báo', 'Vui lòng điền đầy đủ thông tin');
       return;
     }
     if (startDate.value == null || dueDate.value == null) {
-      Get.snackbar('Lỗi', 'Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.');
+      Get.snackbar('Thông báo', 'Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.');
       return;
     }
     if (dueDate.value!.isBefore(startDate.value!)) {
-      Get.snackbar('Lỗi', 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
+      Get.snackbar('Thông báo', 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
       return;
     }
 

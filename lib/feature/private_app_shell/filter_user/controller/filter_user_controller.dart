@@ -143,7 +143,7 @@ class FilterUserController extends GetxController {
       userDepartmentList.value = mappedDepartments;
       userDepartmentListSearch.assignAll(userDepartmentList);
     } catch (e) {
-      Get.snackbar("Lỗi", "Đã xảy ra lỗi: $e");
+      Get.snackbar("Thông báo", "Đã xảy ra lỗi: $e");
     } finally {
       isLoading.value = false;
     }
