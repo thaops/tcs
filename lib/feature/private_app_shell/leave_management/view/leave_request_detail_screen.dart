@@ -27,7 +27,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
   String? leaveId;
   late final LeaveLogic leaveLogic;
   late final LeaveApproveController controllerApprove;
-  String? myId; 
+  String? myId;
   RxBool isshouldShowApproveButtons = false.obs;
 
   LeaveID? _leave;
@@ -37,12 +37,12 @@ class _ListoffDetailState extends State<ListoffDetail> {
     super.initState();
     leaveLogic = Get.put(LeaveLogic());
     controllerApprove = Get.put(LeaveApproveController());
-    
+
     final arguments = Get.arguments;
 
     leaveId = arguments != null ? arguments['leaveId'] as String? : null;
     debugPrint('ListoffDetail initialized with leaveId: $leaveId');
-    if (leaveId != null){
+    if (leaveId != null) {
       getLeaveID(leaveId!, context);
       _loadMyId();
       // Recompute approve buttons after data loads.
@@ -57,7 +57,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
       final id = await create.getMyId();
       // controllerApprove.getListApprover(null, null);
       if (!mounted) return;
-      
+
       setState(() {
         myId = id;
       });
@@ -119,7 +119,8 @@ class _ListoffDetailState extends State<ListoffDetail> {
 
   Future<bool> _ischeckSatus() async {
     if (_leave == null || myId == null) return false;
-    final bool isApproved = (_leave!.status == 2) || (_leave!.statusLabel == 'Đã duyệt');
+    final bool isApproved =
+        (_leave!.status == 2) || (_leave!.statusLabel == 'Đã duyệt');
     if (isApproved) return false;
     final String currentId = myId!;
     if (currentId == _leave!.employeeId) {
@@ -130,9 +131,13 @@ class _ListoffDetailState extends State<ListoffDetail> {
     return true;
   }
 
-  Future<bool> get _shouldShowApproveButtons async{
+  Future<bool> get _shouldShowApproveButtons async {
     if (_leave == null || myId == null) return false;
-    final bool isApproved = (_leave!.status == 2) || (_leave!.status == 3) || (_leave!.statusLabel == 'Đã duyệt') || (_leave!.statusLabel == 'Từ chối');
+    final bool isApproved =
+        (_leave!.status == 2) ||
+        (_leave!.status == 3) ||
+        (_leave!.statusLabel == 'Đã duyệt') ||
+        (_leave!.statusLabel == 'Từ chối');
     if (isApproved) return false;
     final String currentId = myId!;
     try {
@@ -149,8 +154,11 @@ class _ListoffDetailState extends State<ListoffDetail> {
   bool get _canShowModifyButtons {
     if (_leave == null || myId == null) return false;
     final int? status = _leave!.status;
-    final bool isApprovedOrRejected = (status == 2) || (status == 3) ||
-        (_leave!.statusLabel == 'Đã duyệt') || (_leave!.statusLabel == 'Từ chối');
+    final bool isApprovedOrRejected =
+        (status == 2) ||
+        (status == 3) ||
+        (_leave!.statusLabel == 'Đã duyệt') ||
+        (_leave!.statusLabel == 'Từ chối');
     if (isApprovedOrRejected) return false;
     return myId == _leave!.employeeId;
   }
@@ -176,22 +184,23 @@ class _ListoffDetailState extends State<ListoffDetail> {
           fontWeight: FontWeight.w600,
         ),
         centerTitle: true,
-        actions: canModify
-            ? [
-                IconButton(
-                  icon: Icon(Icons.edit_note_sharp, color: AppColors.primary),
-                  onPressed: () => _updateScreen(),
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    if (leaveId != null) {
-                      leaveLogic.deleteLeave(leaveId!, context);
-                    }
-                  },
-                ),
-              ]
-            : null,
+        actions:
+            canModify
+                ? [
+                  IconButton(
+                    icon: Icon(Icons.edit_note_sharp, color: AppColors.primary),
+                    onPressed: () => _updateScreen(),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      if (leaveId != null) {
+                        leaveLogic.deleteLeave(leaveId!, context);
+                      }
+                    },
+                  ),
+                ]
+                : null,
       ),
       body: LoadingOverlay(
         isLoading: isLoading,
@@ -211,12 +220,13 @@ class _ListoffDetailState extends State<ListoffDetail> {
                   fontStyle: FontStyle.normal,
                 ),
                 SizedBox(height: 8),
-                WorkflowList(
-                  workflows: _leave?.workFlows ?? [],
+                WorkflowList(workflows: _leave?.workFlows ?? []),
+                Obx(
+                  () =>
+                      isshouldShowApproveButtons.value
+                          ? _buildLeaveButtonBrowse(context)
+                          : const SizedBox.shrink(),
                 ),
-                Obx(() => isshouldShowApproveButtons.value
-                    ? _buildLeaveButtonBrowse(context)
-                    : const SizedBox.shrink()),
               ],
             ),
           ),
@@ -253,6 +263,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
               if (value == true) {
                 await controllerApprove.approveOrRejectLeave(
                   _leave!.id.toString(),
+                  _leave!.categoryId ?? '',
                   2,
                   "Cảm ơn, Xếp đã duyệt đơn nghỉ phép!",
                   context,
@@ -271,6 +282,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
               if (value == true) {
                 await controllerApprove.approveOrRejectLeave(
                   _leave!.id.toString(),
+                  _leave!.categoryId ?? '',
                   3,
                   "Chân thành cảm ơn, Xếp đã từ chối đơn nghỉ phép",
                   context,
@@ -288,20 +300,28 @@ class _ListoffDetailState extends State<ListoffDetail> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CustomDetailLeave(title: 'Nhân viên', content: _leave?.fullName ?? '-------'),
-          CustomDetailLeave(title: 'Phòng ban', content: _leave?.department ?? '-------'),
+          CustomDetailLeave(
+            title: 'Nhân viên',
+            content: _leave?.fullName ?? '-------',
+          ),
+          CustomDetailLeave(
+            title: 'Phòng ban',
+            content: _leave?.department ?? '-------',
+          ),
           CustomDetailLeave(
             paddingVertical: 8,
             title: 'Ngày yêu cầu',
-            content: _leave?.createdDate != null
-                ? dateFormatD.format(_leave!.createdDate!)
-                : '-------',
+            content:
+                _leave?.createdDate != null
+                    ? dateFormatD.format(_leave!.createdDate!)
+                    : '-------',
           ),
           CustomDetailLeave(
             title: 'Số ngày nghỉ',
-            content: (_leave != null && _leave!.totalDay != null)
-                ? _leave!.totalDay.toString()
-                : '-------',
+            content:
+                (_leave != null && _leave!.totalDay != null)
+                    ? _leave!.totalDay.toString()
+                    : '-------',
           ),
           Container(
             width: screenWidth,
@@ -311,9 +331,10 @@ class _ListoffDetailState extends State<ListoffDetail> {
                 Expanded(
                   child: CustomDetailLeave(
                     title: 'Từ ngày',
-                    content: _leave?.fromDate != null
-                        ? dateFormatD.format(_leave!.fromDate!)
-                        : '-------',
+                    content:
+                        _leave?.fromDate != null
+                            ? dateFormatD.format(_leave!.fromDate!)
+                            : '-------',
                   ),
                 ),
                 SizedBox(width: 20),
@@ -323,9 +344,10 @@ class _ListoffDetailState extends State<ListoffDetail> {
                     child: CustomDetailLeave(
                       isShowicon: false,
                       title: 'Đến ngày',
-                      content: _leave?.toDate != null
-                          ? dateFormatD.format(_leave!.toDate!)
-                          : '-------',
+                      content:
+                          _leave?.toDate != null
+                              ? dateFormatD.format(_leave!.toDate!)
+                              : '-------',
                     ),
                   ),
                 ),
@@ -340,15 +362,17 @@ class _ListoffDetailState extends State<ListoffDetail> {
           ),
           CustomDetailLeave(
             title: 'Lý do',
-            content: (_leave?.category?.isNotEmpty ?? false)
-                ? _leave!.category
-                : '-------',
+            content:
+                (_leave?.category?.isNotEmpty ?? false)
+                    ? _leave!.category
+                    : '-------',
           ),
           CustomDetailLeave(
             title: 'Ghi chú',
-            content: (_leave?.reason?.isNotEmpty ?? false)
-                ? _leave!.reason
-                : '-------',
+            content:
+                (_leave?.reason?.isNotEmpty ?? false)
+                    ? _leave!.reason
+                    : '-------',
           ),
         ],
       ),

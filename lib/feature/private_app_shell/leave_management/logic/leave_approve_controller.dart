@@ -8,27 +8,38 @@ import 'package:tcs_flutter/src/config/customdialog/customdialog.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/approve_leave_usecase.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/add.leave.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approve_req.dart';
 
 class LeaveApproveController extends GetxController {
   final TextEditingController textController = TextEditingController();
   final LeaveRepositoryInterface leaveManagementRepository;
   late final ApproveLeaveUseCase _approveLeave;
   LeaveApproveController({LeaveRepositoryInterface? repo})
-      : leaveManagementRepository = repo ?? LeaveManagementRepository() {
+    : leaveManagementRepository = repo ?? LeaveManagementRepository() {
     _approveLeave = ApproveLeaveUseCase(leaveManagementRepository);
   }
   RxBool isLoading = false.obs;
 
   Future<void> approveOrRejectLeave(
-      String leaveID, int status, String message, BuildContext context) async {
+    String leaveID,
+    String categoryId,
+    int status,
+    String message,
+    BuildContext context,
+  ) async {
     try {
       isLoading.value = true;
-      final Map<String, dynamic> approveData = {
-        'note': textController.text,
-        'status': status
-      };
+      final ApproveReq approveReq = ApproveReq(
+        categoryId: categoryId,
+        status: status,
+        note: textController.text,
+      );
       final AddDayOffResponseModel response = await _approveLeave(
-          approveData, leaveID, status, context);
+        approveReq.toJson(),
+        leaveID,
+        status,
+        context,
+      );
       print("response: ${response.data}");
       await CustomDialog.show(
         context,
@@ -45,8 +56,9 @@ class LeaveApproveController extends GetxController {
         Navigator.pop(context, true);
         Navigator.pop(context, true);
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(response.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(response.message)));
         Navigator.pop(context, false);
       }
     } catch (e) {
@@ -58,5 +70,5 @@ class LeaveApproveController extends GetxController {
 
   Future<List<Approver>> getListApprover(int? step, String? keyword) {
     return leaveManagementRepository.getListApprover(step, keyword);
-}
+  }
 }
