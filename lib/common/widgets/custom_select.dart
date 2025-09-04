@@ -71,7 +71,9 @@ class _SelectState extends State<CustomSelect> {
     }
     // Kích hoạt gợi ý khi TextField được nhấn
     _focusNode.addListener(() {
-      if (_focusNode.hasFocus && widget.selectList != null && widget.selectList!.isNotEmpty) {
+      if (_focusNode.hasFocus &&
+          widget.selectList != null &&
+          widget.selectList!.isNotEmpty) {
         // Gửi sự kiện để hiển thị gợi ý
         _controller.text = _controller.text; // Kích hoạt suggestionsCallback
       }
@@ -82,7 +84,8 @@ class _SelectState extends State<CustomSelect> {
   void didUpdateWidget(covariant CustomSelect oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Update when selectedId changes
-    if (widget.selectedId != oldWidget.selectedId || widget.selectList != oldWidget.selectList) {
+    if (widget.selectedId != oldWidget.selectedId ||
+        widget.selectList != oldWidget.selectList) {
       if (widget.selectedId != null && (widget.selectList ?? []).isNotEmpty) {
         final selectedItem = widget.selectList!.firstWhere(
           (item) => item.id == widget.selectedId,
@@ -95,7 +98,8 @@ class _SelectState extends State<CustomSelect> {
       }
     }
     // Update when selectedName changes externally
-    if (widget.selectedName != oldWidget.selectedName && (widget.selectedName ?? '').isNotEmpty) {
+    if (widget.selectedName != oldWidget.selectedName &&
+        (widget.selectedName ?? '').isNotEmpty) {
       setState(() {
         _controller.text = widget.selectedName!;
       });
@@ -126,7 +130,7 @@ class _SelectState extends State<CustomSelect> {
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
               color: widget.colorIcon ?? Colors.black,
-              ),
+            ),
           SizedBox(height: 10.h),
           if (widget.searchable)
             TypeAheadField<String>(
@@ -146,17 +150,26 @@ class _SelectState extends State<CustomSelect> {
                       fontSize: 14.sp,
                       fontFamily: 'Inter',
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 8.h,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
                       borderSide: BorderSide(
-                        color: widget.errorText != null ? Colors.red : Colors.grey.shade400,
+                        color:
+                            widget.errorText != null
+                                ? Colors.red
+                                : Colors.grey.shade400,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
                       borderSide: BorderSide(
-                        color: widget.errorText != null ? Colors.red : Colors.grey.shade400,
+                        color:
+                            widget.errorText != null
+                                ? Colors.red
+                                : Colors.grey.shade400,
                       ),
                     ),
                     disabledBorder: OutlineInputBorder(
@@ -164,14 +177,21 @@ class _SelectState extends State<CustomSelect> {
                       borderSide: BorderSide(color: Colors.grey.shade200),
                     ),
                     filled: true,
-                    fillColor: isEnabledEffective ? Colors.white : Colors.grey.shade100,
-                    suffixIcon: isEnabledEffective
-                        ? Icon(
-                            widget.icon ?? Icons.keyboard_arrow_down_rounded,
-                            color: isEnabledEffective ? widget.colorIcon ?? Colors.black : Colors.grey.shade400,
-                            size: 20.sp,
-                          )
-                        : null,
+                    fillColor:
+                        isEnabledEffective
+                            ? Colors.white
+                            : Colors.grey.shade100,
+                    suffixIcon:
+                        isEnabledEffective
+                            ? Icon(
+                              widget.icon ?? Icons.keyboard_arrow_down_rounded,
+                              color:
+                                  isEnabledEffective
+                                      ? widget.colorIcon ?? Colors.black
+                                      : Colors.grey.shade400,
+                              size: 20.sp,
+                            )
+                            : null,
                   ),
                   style: TextStyle(
                     color: Colors.black,
@@ -185,7 +205,8 @@ class _SelectState extends State<CustomSelect> {
                       widget.onTap!.call();
                       return;
                     }
-                    if (widget.selectList != null && widget.selectList!.isNotEmpty) {
+                    if (widget.selectList != null &&
+                        widget.selectList!.isNotEmpty) {
                       // Kích hoạt gợi ý khi nhấn
                       _controller.text = _controller.text; // Gửi sự kiện
                       _focusNode.requestFocus();
@@ -194,17 +215,27 @@ class _SelectState extends State<CustomSelect> {
                 );
               },
               suggestionsCallback: (pattern) async {
-                if (widget.selectList == null || widget.selectList!.isEmpty) return [];
+                if (widget.selectList == null || widget.selectList!.isEmpty)
+                  return [];
                 return widget.selectList!
-                    .where((item) => item.name.toLowerCase().contains(pattern.toLowerCase()))
+                    .where(
+                      (item) => item.name.toLowerCase().contains(
+                        pattern.toLowerCase(),
+                      ),
+                    )
                     .map((item) => item.name)
                     .toList();
               },
               itemBuilder: (context, String suggestion) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: suggestion == _controller.text ? Colors.blue.shade50 : Colors.white,
-                    border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                    color:
+                        suggestion == _controller.text
+                            ? Colors.blue.shade50
+                            : Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade200),
+                    ),
                   ),
                   child: ListTile(
                     title: Text(
@@ -232,29 +263,45 @@ class _SelectState extends State<CustomSelect> {
                   widget.onProjectSelected?.call(selectedItem.id);
                 }
               },
-              constraints: BoxConstraints(maxHeight: Get.height * 0.3),
-              emptyBuilder: (context) => Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-                child: Text(
-                  'Không tìm thấy',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14.sp,
-                    fontFamily: 'Inter',
-                  ),
-                ),
+              constraints: BoxConstraints(
+                maxHeight: Get.height * 0.3,
+                maxWidth: Get.width - 32.w,
               ),
+              decorationBuilder: (context, child) {
+                return Material(
+                  elevation: 8.0,
+                  borderRadius: BorderRadius.circular(12.r),
+                  color: Colors.white,
+                  child: child,
+                );
+              },
+              emptyBuilder:
+                  (context) => Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 12.h,
+                      horizontal: 16.w,
+                    ),
+                    child: Text(
+                      'Không tìm thấy',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 14.sp,
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ),
             )
           else if (widget.onTap != null)
             TextFormField(
               controller: _controller,
               readOnly: true,
               enabled: isEnabledEffective,
-              onTap: isEnabledEffective
-                  ? () async {
-                      await widget.onTap!.call();
-                    }
-                  : null,
+              onTap:
+                  isEnabledEffective
+                      ? () async {
+                        await widget.onTap!.call();
+                      }
+                      : null,
               decoration: InputDecoration(
                 hintText: widget.name ?? 'Chọn một tùy chọn',
                 hintStyle: TextStyle(
@@ -263,17 +310,26 @@ class _SelectState extends State<CustomSelect> {
                   fontSize: 14.sp,
                   fontFamily: 'Inter',
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 8.h,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide(
-                    color: widget.errorText != null ? Colors.red : Colors.grey.shade400,
+                    color:
+                        widget.errorText != null
+                            ? Colors.red
+                            : Colors.grey.shade400,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide(
-                    color: widget.errorText != null ? Colors.red : Colors.grey.shade400,
+                    color:
+                        widget.errorText != null
+                            ? Colors.red
+                            : Colors.grey.shade400,
                   ),
                 ),
                 disabledBorder: OutlineInputBorder(
@@ -281,14 +337,19 @@ class _SelectState extends State<CustomSelect> {
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 filled: true,
-                fillColor: isEnabledEffective ? Colors.white : Colors.grey.shade100,
-                suffixIcon: isEnabledEffective
-                    ? Icon(
-                        widget.icon ?? Icons.keyboard_arrow_down_rounded,
-                        color: isEnabledEffective ? widget.colorIcon ?? Colors.black : Colors.grey.shade400,
-                        size: 20.sp,
-                      )
-                    : null,
+                fillColor:
+                    isEnabledEffective ? Colors.white : Colors.grey.shade100,
+                suffixIcon:
+                    isEnabledEffective
+                        ? Icon(
+                          widget.icon ?? Icons.keyboard_arrow_down_rounded,
+                          color:
+                              isEnabledEffective
+                                  ? widget.colorIcon ?? Colors.black
+                                  : Colors.grey.shade400,
+                          size: 20.sp,
+                        )
+                        : null,
               ),
               style: TextStyle(
                 color: Colors.black,
@@ -300,42 +361,71 @@ class _SelectState extends State<CustomSelect> {
           else
             DropdownButtonFormField<String>(
               value: _selectedId?.isNotEmpty == true ? _selectedId : null,
-              items: (widget.selectList ?? [])
-                  .map((item) => DropdownMenuItem<String>(
-                        value: item.id,
-                        child: Text(
-                          item.name,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontFamily: 'Inter',
+              items:
+                  (widget.selectList ?? [])
+                      .map(
+                        (item) => DropdownMenuItem<String>(
+                          value: item.id,
+                          child: Text(
+                            item.name,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontFamily: 'Inter',
+                            ),
                           ),
                         ),
-                      ))
-                  .toList(),
-              onChanged: isEnabledEffective
-                  ? (val) {
-                      final selectedItem = (widget.selectList ?? [])
-                          .firstWhere((e) => e.id == val, orElse: () => Item(id: '', name: ''));
-                      setState(() {
-                        _selectedId = selectedItem.id;
-                        _controller.text = selectedItem.name;
-                      });
-                      widget.onProjectSelected?.call(selectedItem.id);
-                    }
-                  : null,
+                      )
+                      .toList(),
+              onChanged:
+                  isEnabledEffective
+                      ? (val) {
+                        final selectedItem = (widget.selectList ?? [])
+                            .firstWhere(
+                              (e) => e.id == val,
+                              orElse: () => Item(id: '', name: ''),
+                            );
+                        setState(() {
+                          _selectedId = selectedItem.id;
+                          _controller.text = selectedItem.name;
+                        });
+                        widget.onProjectSelected?.call(selectedItem.id);
+                      }
+                      : null,
+              // Thiết lập chiều cao tối đa cho dropdown menu
+              menuMaxHeight: 300.h,
+              // Đảm bảo dropdown hiển thị trên nền trắng
+              dropdownColor: Colors.white,
+              // Điều chỉnh icon để rõ ràng hơn
+              icon: Icon(
+                Icons.keyboard_arrow_down,
+                color:
+                    isEnabledEffective
+                        ? Colors.black.withOpacity(0.6)
+                        : Colors.grey.shade400,
+                size: 20.sp,
+              ),
               decoration: InputDecoration(
                 hintText: widget.name ?? 'Chọn một tùy chọn',
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 8.h,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide(
-                    color: widget.errorText != null ? Colors.red : Colors.grey.shade400,
+                    color:
+                        widget.errorText != null
+                            ? Colors.red
+                            : Colors.grey.shade400,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide(
-                    color: widget.errorText != null ? Colors.red : Colors.grey.shade400,
+                    color:
+                        widget.errorText != null
+                            ? Colors.red
+                            : Colors.grey.shade400,
                   ),
                 ),
                 disabledBorder: OutlineInputBorder(
@@ -343,7 +433,8 @@ class _SelectState extends State<CustomSelect> {
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 filled: true,
-                fillColor: isEnabledEffective ? Colors.white : Colors.grey.shade100,
+                fillColor:
+                    isEnabledEffective ? Colors.white : Colors.grey.shade100,
               ),
             ),
           if (widget.errorText != null) ...[
