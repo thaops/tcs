@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GogbalStyles {
   // Kiểu chữ tiêu đề chính
@@ -15,7 +16,7 @@ class GogbalStyles {
     color: Colors.black87,
   );
 
-    static const TextStyle heading3 = TextStyle(
+  static const TextStyle heading3 = TextStyle(
     fontSize: 18.0,
     fontWeight: FontWeight.w600,
     color: Colors.black87,
@@ -41,34 +42,32 @@ class GogbalStyles {
     fontWeight: FontWeight.w500,
     color: Colors.black,
   );
-    static const TextStyle bodyText3 = TextStyle(
-    fontSize: 14.0,
+  static TextStyle bodyText3 = TextStyle(
+    fontSize: 14.0.sp,
     fontWeight: FontWeight.w300,
     color: Colors.black,
     fontFamily: 'italic',
   );
 
-    static TextStyle textLeave2 = TextStyle(
-    fontSize: 14.0,
+  static TextStyle textLeave2 = TextStyle(
+    fontSize: 14.0.sp,
     fontWeight: FontWeight.w400,
     color: Colors.black87,
   );
 
-    static TextStyle textLeave1 = TextStyle(
-    fontSize: 14.0,
+  static TextStyle textLeave1 = TextStyle(
+    fontSize: 14.0.sp,
     fontWeight: FontWeight.w500,
     color: Colors.black,
   );
 
-
-  static const TextStyle button = TextStyle(
-    fontSize: 16.0,
+  static TextStyle button = TextStyle(
+    fontSize: 16.0.sp,
     fontWeight: FontWeight.bold,
     color: Colors.white,
   );
-  static  BoxDecoration commonBoxDecoration = BoxDecoration(
-  color: Colors.white,
-  borderRadius: BorderRadius.circular(12),
-);
-
+  static BoxDecoration commonBoxDecoration = BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12.r),
+  );
 }

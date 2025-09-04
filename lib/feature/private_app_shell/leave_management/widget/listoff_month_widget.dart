@@ -54,12 +54,11 @@ class MonthSelector extends StatelessWidget {
                               ? AppColors.primary
                               : AppColors.colorMessageEnemy.withOpacity(0.3),
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: SizedBox(
-                    width: 100.w, // Đặt chiều rộng cụ thể cho Card
+                    width: 100.w,
                     child: Center(
-                      // Sử dụng Center để căn giữa nội dung
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -73,24 +72,20 @@ class MonthSelector extends StatelessWidget {
                           ),
 
                           TextWidget(
-                            paddingHorizontal: 1,
+                            paddingHorizontal: 1.r,
                             text: '/',
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.bold,
                             color:
                                 isSelected ? AppColors.white : AppColors.black,
                           ),
                           TextWidget(
                             text: yearName,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.bold,
                             color:
-                                  isSelected
-                                      ? AppColors.white
-                                      : AppColors.black,
-                              
-                            ),
-                          
+                                isSelected ? AppColors.white : AppColors.black,
+                          ),
                         ],
                       ),
                     ),

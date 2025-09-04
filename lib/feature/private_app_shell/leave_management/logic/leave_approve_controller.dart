@@ -43,7 +43,7 @@ class LeaveApproveController extends GetxController {
       print("response: ${response.data}");
       await CustomDialog.show(
         context,
-        message: "Cảm ơn, sếp đã duyệt ",
+        message: message,
         subMessage: "Chúc sếp luôn vui vẻ, khỏe mạnh",
         icon: Icons.favorite,
         iconColor: Colors.blue,

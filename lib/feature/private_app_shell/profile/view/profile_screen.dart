@@ -11,7 +11,6 @@ import 'package:tcs_flutter/feature/private_app_shell/profile/widget/user_profil
 import 'package:tcs_flutter/src/api/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
- 
 
 class ProfileScreen extends StatefulWidget {
   final bool? flag;
@@ -22,7 +21,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
   Future<void> _phoneCall(String phoneNumber) async {
     launchUrl(Uri.parse('tel:$phoneNumber'));
   }
@@ -40,7 +38,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final apiService = Get.put(ApiService());
 
     final isVision = apiService.isVision;
-    final String userId = Get.arguments ?? controllerProfile.profile?.user?.id ?? '';
+    final String userId =
+        Get.arguments ?? controllerProfile.profile?.user?.id ?? '';
 
     return Obx(
       () => LoadingOverlay(
@@ -61,43 +60,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Stack(
-                              children: [
-                                _buildInformationContact(controllerProfile),
-                                Positioned(
-                                  top: 0,
-                                  left: Get.width / 2 - 80,
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: Lottie.asset(
-                                      fit: BoxFit.cover,
-                                      height: 140,
-                                      Img.roundAvatar,
-                                    ),
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Stack(
+                            children: [
+                              _buildInformationContact(controllerProfile),
+                              Positioned(
+                                top: 0,
+                                left: Get.width / 2 - 80,
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: Lottie.asset(
+                                    fit: BoxFit.cover,
+                                    height: 140,
+                                    Img.roundAvatar,
                                   ),
                                 ),
-                                Positioned(
-                                  top: 17,
-                                  left: Get.width / 2 - 60,
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: CircleAvatar(
-                                      key: ValueKey(
-                                        controllerProfile.profile?.user?.avatar,
-                                      ),
-                                      radius: 50,
-                                      backgroundImage: Image.asset(
-                                        Img.avatarDefault,
-                                      ).image,
+                              ),
+                              Positioned(
+                                top: 17,
+                                left: Get.width / 2 - 60,
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: CircleAvatar(
+                                    key: ValueKey(
+                                      controllerProfile.profile?.user?.avatar,
                                     ),
+                                    radius: 50,
+                                    backgroundImage:
+                                        Image.asset(Img.avatarDefault).image,
                                   ),
                                 ),
-                              ],
-                            )),
+                              ),
+                            ],
+                          ),
+                        ),
                         24.verticalSpace,
-                        _buildPersonalInformation(userId,
-                            controllerProfile, context, isVision),
+                        _buildPersonalInformation(
+                          userId,
+                          controllerProfile,
+                          context,
+                          isVision,
+                        ),
                       ],
                     ),
                   ),
@@ -111,10 +114,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Expanded _buildPersonalInformation(
-      String userId,
-      ProfileLogic controllerProfile,
-      BuildContext context,
-      bool isVision) {
+    String userId,
+    ProfileLogic controllerProfile,
+    BuildContext context,
+    bool isVision,
+  ) {
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
@@ -125,7 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 26),
+          padding: EdgeInsets.symmetric(horizontal: 26.r),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -141,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               //   width: Get.width,
               //   child: GestureDetector(
               //     onTap: () {
-                 
+
               //     },
               //     child: SummaryUserProfile(
               //       title: controllerProfile.extractLetters(
@@ -161,7 +165,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 final List<Map<String, dynamic>> fallback = [];
                 if (p != null) {
                   if ((p.phoneNumber ?? '').isNotEmpty) {
-                    fallback.add({'title': 'Số điện thoại', 'subtitle': p.phoneNumber!});
+                    fallback.add({
+                      'title': 'Số điện thoại',
+                      'subtitle': p.phoneNumber!,
+                    });
                   }
                   if ((p.email).isNotEmpty) {
                     fallback.add({'title': 'Email', 'subtitle': p.email});
@@ -178,37 +185,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
               widget.flag == true
                   ? Container()
                   : Padding(
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: GestureDetector(
-                        onTap: () => controllerProfile.onVision(context),
-                        child: FutureBuilder<void>(
-                          future: controllerProfile.initPackageInfo(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
-                            }
-                            return GestureDetector(
-                              onTap: () {
-                                controllerProfile.tapCount.value++;
-                                controllerProfile.showConfigDialog();
-                              },
-                              child: Center(
-                                child: TextWidget(
-                                  text: isVision
-                                      ? "@TCS - Phiên bản - ${controllerProfile.version.value}"
-                                      : "@TCS - Phiên bản - dev",
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.grey,
-                                ),
+                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                    child: GestureDetector(
+                      onTap: () => controllerProfile.onVision(context),
+                      child: FutureBuilder<void>(
+                        future: controllerProfile.initPackageInfo(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                          return GestureDetector(
+                            onTap: () {
+                              controllerProfile.tapCount.value++;
+                              controllerProfile.showConfigDialog();
+                            },
+                            child: Center(
+                              child: TextWidget(
+                                text:
+                                    isVision
+                                        ? "@TCS - Phiên bản - ${controllerProfile.version.value}"
+                                        : "@TCS - Phiên bản - dev",
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.grey,
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        },
                       ),
                     ),
+                  ),
             ],
           ),
         ),
@@ -229,32 +237,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              40.verticalSpace,
-              Center(
-                child: TextWidget(
-                  color: AppColors.black,
-                  fontSize: 18,
-                  text: controllerProfile.profile?.user?.fullName ??
-                      controllerProfile.profile?.user?.username ??
-                      '',
-                  fontWeight: FontWeight.w600,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                40.verticalSpace,
+                Center(
+                  child: TextWidget(
+                    color: AppColors.black,
+                    fontSize: 18,
+                    text:
+                        controllerProfile.profile?.user?.fullName ??
+                        controllerProfile.profile?.user?.username ??
+                        '',
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              4.verticalSpace,
-              Center(
-                child: TextWidget(
-                  text: '',
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w400,
+                4.verticalSpace,
+                Center(
+                  child: TextWidget(
+                    text: '',
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
-             _buildContact(controllerProfile)
-              
-            ]),
+                _buildContact(controllerProfile),
+              ],
+            ),
           ),
         ),
       ],
@@ -321,31 +331,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   AppBar _buildAppBar(ProfileLogic controllerProfile, BuildContext context) {
     return AppBar(
-        backgroundColor: Colors.transparent,
-        leading: widget.flag != true
-            ? SizedBox()
-            : IconButton(
+      backgroundColor: Colors.transparent,
+      leading:
+          widget.flag != true
+              ? SizedBox()
+              : IconButton(
                 onPressed: () {
                   Get.back();
                 },
-                icon: Icon(
-                  Icons.arrow_back_ios,
-                )),
-        title: TextWidget(
-            text: 'Trang cá nhân', fontSize: 16, fontWeight: FontWeight.w500),
-        centerTitle: true,
-        actions: [
-          widget.flag == true
-              ? Container(width: 0)
-              : IconButton(
-                  icon: Icon(
-                    Icons.logout,
-                    color: AppColors.colorRed,
-                  ),
-                  onPressed: () {
-                    controllerProfile.signOut(context);
-                  },
-                )
-        ]);
+                icon: Icon(Icons.arrow_back_ios),
+              ),
+      title: TextWidget(
+        text: 'Trang cá nhân',
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+      ),
+      centerTitle: true,
+      actions: [
+        widget.flag == true
+            ? Container(width: 0)
+            : IconButton(
+              icon: Icon(Icons.logout, color: AppColors.colorRed),
+              onPressed: () {
+                controllerProfile.signOut(context);
+              },
+            ),
+      ],
+    );
   }
 }

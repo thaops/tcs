@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:app_links/app_links.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -26,9 +27,6 @@ import 'package:tcs_flutter/router/deep_link_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uuid/uuid.dart';
 
-
-
-
 Future<bool> _isIPad() async {
   if (kIsWeb) return false;
 
@@ -37,7 +35,9 @@ Future<bool> _isIPad() async {
     final iosInfo = await deviceInfo.iosInfo;
     return iosInfo.model.toLowerCase().contains('ipad');
   } else if (defaultTargetPlatform == TargetPlatform.android) {
-    final mediaQuery = MediaQueryData.fromWindow(WidgetsBinding.instance.window);
+    final mediaQuery = MediaQueryData.fromWindow(
+      WidgetsBinding.instance.window,
+    );
     final shortestSide = mediaQuery.size.shortestSide;
     return shortestSide >= 600;
   }
@@ -51,22 +51,20 @@ void main() async {
   final appLinks = AppLinks();
   final initialDeepLink = await appLinks.getInitialLink();
   await _initializeServices();
-MediaQueryData.fromWindow(WidgetsBinding.instance.window);
-print("ssss${MediaQueryData.fromWindow(WidgetsBinding.instance.window)}");
-  
+  MediaQueryData.fromWindow(WidgetsBinding.instance.window);
+  print("ssss${MediaQueryData.fromWindow(WidgetsBinding.instance.window)}");
 
-  runApp(CalendarControllerProvider(
+  runApp(
+    CalendarControllerProvider(
       controller: EventController(),
-      child: MyApp(
-        initialDeepLink: initialDeepLink,
-      )));
+      child: MyApp(initialDeepLink: initialDeepLink),
+    ),
+  );
 }
-
-
 
 Future<void> _initializeServices() async {
   await Hive.initFlutter();
-  
+
   final savedBaseUrl = GetStorage().read<String>('base_url');
   if (savedBaseUrl != null && savedBaseUrl.isNotEmpty) {
     Config.baseUrl = savedBaseUrl;
@@ -80,7 +78,8 @@ Future<void> _initializeServices() async {
     debugPrint('Lỗi khi khởi tạo ứng dụng: $e');
   }
 
-  final serviceCheckawaiting = await CheckAwaitingServices.createCheckAwaitingServices();
+  final serviceCheckawaiting =
+      await CheckAwaitingServices.createCheckAwaitingServices();
   CheckAwaitingApproval checkAwaitingApproval = CheckAwaitingApproval();
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
@@ -111,10 +110,7 @@ Future<void> _initializeServices() async {
 class MyApp extends StatefulWidget {
   final Uri? initialDeepLink;
 
-  const MyApp({
-    super.key,
-    this.initialDeepLink,
-  });
+  const MyApp({super.key, this.initialDeepLink});
 
   @override
   MyAppState createState() => MyAppState();
@@ -149,16 +145,17 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       future: _isIPad(),
       builder: (context, snapshot) {
         final isIPad = snapshot.data ?? false;
-        final designSize = isIPad ? const Size(768, 1024) : const Size(375, 812);
+        final designSize =
+            isIPad
+                ? const Size(768, 1024)
+                : const Size(375, 812); //Size(375, 812)
 
         return ScreenUtilInit(
           designSize: designSize,
           minTextAdapt: true,
           splitScreenMode: true,
           builder: (context, child) {
-            return MainApp(
-              initialDeepLink: widget.initialDeepLink,
-            );
+            return MainApp(initialDeepLink: widget.initialDeepLink);
           },
         );
       },
@@ -226,7 +223,6 @@ class _SplashScreenState extends State<SplashScreen> {
       _hasNavigated = true;
       Future.microtask(() async {
         try {
-
           final service = await Services.create();
           final token = await service.getAccessToken();
 
@@ -235,7 +231,6 @@ class _SplashScreenState extends State<SplashScreen> {
           } else {
             await Get.offAllNamed(AppRouter.login);
           }
-
         } catch (e, st) {
           print('Lỗi SplashScreen: $e');
           print(st);
@@ -247,8 +242,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
-    );
+    return const Scaffold(backgroundColor: Colors.white);
   }
 }

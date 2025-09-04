@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/common/share/cache/my_id.dart';
 import 'package:tcs_flutter/common/utils/custom_dialog.dart';
@@ -207,7 +208,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
 
         child: SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.r),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +216,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
                 applicationDetails(dateFormatD, screenWidth),
                 TextWidget(
                   text: "Duyệt Đơn",
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w500,
                   fontStyle: FontStyle.normal,
                 ),
@@ -248,13 +249,14 @@ class _ListoffDetailState extends State<ListoffDetail> {
                     text: "Ý kiến lãnh đạo",
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    paddingVertical: 10,
+                    paddingVertical: 10.r,
                     textAlign: TextAlign.start,
                   ),
                   CustomTextField(
                     controller: controllerApprove.textController,
                     hintText: "Nội dung",
                     maxLines: 5,
+                    textCapitalization: TextCapitalization.sentences,
                   ),
                 ],
               ),
@@ -295,7 +297,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
 
   Padding applicationDetails(DateFormat dateFormatD, double screenWidth) {
     return Padding(
-      padding: const EdgeInsets.all(10.0),
+      padding: EdgeInsets.all(10.0.r),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +311,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
             content: _leave?.department ?? '-------',
           ),
           CustomDetailLeave(
-            paddingVertical: 8,
+            paddingVertical: 8.r,
             title: 'Ngày yêu cầu',
             content:
                 _leave?.createdDate != null
@@ -337,7 +339,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
                             : '-------',
                   ),
                 ),
-                SizedBox(width: 20),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Align(
                     alignment: Alignment.centerLeft,
@@ -357,7 +359,7 @@ class _ListoffDetailState extends State<ListoffDetail> {
           CustomDetailLeave(
             title: 'Trạng thái',
             content: _leave?.statusLabel,
-            paddingVertical: 8,
+            paddingVertical: 8.r,
             colorText: _getStatusColor(_leave?.statusLabel),
           ),
           CustomDetailLeave(
