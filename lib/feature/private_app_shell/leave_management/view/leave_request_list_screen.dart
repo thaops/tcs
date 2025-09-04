@@ -44,8 +44,7 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
     _lastFetchedEnd = lastDay;
   }
 
-  // Default date range: prefer months[1] (current month per business rule),
-  // fallback to current month's first/next-month-first if months is not ready.
+
   DateTimeRange _getDefaultRange() {
     if (listController.months.length > 1 &&
         listController.months[1]['firstDay'] != null &&

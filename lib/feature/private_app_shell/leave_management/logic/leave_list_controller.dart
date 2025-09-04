@@ -10,7 +10,7 @@ class LeaveListController extends GetxController {
   late final GetListOffUseCase _getListOff;
 
   LeaveListController({LeaveRepositoryInterface? repo})
-      : repository = repo ?? LeaveManagementRepository() {
+    : repository = repo ?? LeaveManagementRepository() {
     _getListOff = GetListOffUseCase(repository);
   }
 
@@ -31,15 +31,33 @@ class LeaveListController extends GetxController {
   void generateMonths() {
     months.clear();
     final DateTime now = DateTime.now();
-    final DateTime startMonth = (now.month == 12)
-        ? DateTime(now.year + 1, 1, 1)
-        : DateTime(now.year, now.month + 1, 1);
+    final DateTime startMonth =
+        (now.month == 12)
+            ? DateTime(now.year + 1, 1, 1)
+            : DateTime(now.year, now.month + 1, 1);
 
     for (int i = 0; i < 12; i++) {
       // Month anchor for iteration
-      final DateTime targetFirst = DateTime(startMonth.year, startMonth.month - i, 1);
-      final DateTime firstDay = DateTime(targetFirst.year, targetFirst.month, 1, 0, 0, 0, 0, 0);
-      final DateTime lastDateOfMonth = DateTime(targetFirst.year, targetFirst.month + 1, 0);
+      final DateTime targetFirst = DateTime(
+        startMonth.year,
+        startMonth.month - i,
+        1,
+      );
+      final DateTime firstDay = DateTime(
+        targetFirst.year,
+        targetFirst.month,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+      );
+      final DateTime lastDateOfMonth = DateTime(
+        targetFirst.year,
+        targetFirst.month + 1,
+        0,
+      );
       final DateTime lastDay = DateTime(
         lastDateOfMonth.year,
         lastDateOfMonth.month,
@@ -54,19 +72,59 @@ class LeaveListController extends GetxController {
     }
   }
 
-  Future<void> fetchListOff(DateTime firstDay, DateTime lastDay, {bool forceFetch = false}) async {
+  Future<void> fetchListOff(
+    DateTime firstDay,
+    DateTime lastDay, {
+    bool forceFetch = false,
+  }) async {
     if (!forceFetch && isDataLoaded) return;
 
     try {
       isLoading.value = true;
       final response = await _getListOff(firstDay, lastDay);
       print("response.getListOff: ${response}");
-      listOff.value = response ?? [];
+
+      // Client-side filtering to ensure only leaves completely within the selected month are shown
+      // This fixes the bug where leaves from 01/10 – 02/10/2025 were shown when filtering by September 2025
+      List<Employee> filteredEmployees = [];
+      if (response != null) {
+        filteredEmployees =
+            response.where((employee) {
+              final fromDate = employee.fromDate;
+              final toDate = employee.toDate;
+
+              // Skip if dates are null
+              if (fromDate == null || toDate == null) {
+                return false;
+              }
+
+              // Strict filtering: Only show leaves where BOTH fromDate AND toDate are within the selected month
+              // This ensures that leaves like 01/10 – 02/10 don't appear when filtering by September
+              final fromDateInMonth =
+                  fromDate.isAfter(firstDay.subtract(Duration(days: 1))) &&
+                  fromDate.isBefore(lastDay.add(Duration(days: 1)));
+              final toDateInMonth =
+                  toDate.isAfter(firstDay.subtract(Duration(days: 1))) &&
+                  toDate.isBefore(lastDay.add(Duration(days: 1)));
+
+              // Only include leaves where both start and end dates are within the selected month
+              return fromDateInMonth && toDateInMonth;
+            }).toList();
+      }
+
+      listOff.value = filteredEmployees;
+
       // Diagnostics
-      final missingCount = listOff.where((e) => (e.department ?? '').trim().isEmpty).length;
+      final missingCount =
+          listOff.where((e) => (e.department ?? '').trim().isEmpty).length;
       if (kDebugMode) {
         // ignore: avoid_print
-        print('[LeaveListController] without department: $missingCount / ${listOff.length}');
+        print(
+          '[LeaveListController] Filtered ${response?.length ?? 0} -> ${filteredEmployees.length} leaves for month ${firstDay.month}/${firstDay.year} (range: ${firstDay.day}/${firstDay.month} - ${lastDay.day}/${lastDay.month})',
+        );
+        print(
+          '[LeaveListController] without department: $missingCount / ${listOff.length}',
+        );
       }
       isDataLoaded = true;
     } catch (e) {
