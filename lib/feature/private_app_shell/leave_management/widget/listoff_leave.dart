@@ -232,7 +232,7 @@ class _ListoffLeaveState extends State<ListoffLeave> {
         children: [
           TextWidget(
             text: widget.label1,
-            fontSize: 16.sp,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
           SizedBox(height: 10.h),

@@ -170,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       'subtitle': p.phoneNumber!,
                     });
                   }
-                  if ((p.email).isNotEmpty) {
+                  if ((p.email)!.isNotEmpty) {
                     fallback.add({'title': 'Email', 'subtitle': p.email});
                   }
                 }

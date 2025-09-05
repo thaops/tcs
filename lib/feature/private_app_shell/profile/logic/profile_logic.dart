@@ -51,7 +51,7 @@ class ProfileLogic extends GetxController {
   Future<void> loadUserData() async {
     try {
       final u = profile?.user;
-      if (u != null && u.id.isNotEmpty) {
+      if (u != null && u.id!.isNotEmpty) {
         final email = (u.email).toString();
 
         userProfileData.value = [

@@ -23,13 +23,8 @@ class TaskNoteSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextWidget(
-         text:  label,
-         fontSize: 16.sp,
-         fontWeight: FontWeight.w600,
-
-        ),
-         SizedBox(height: 10.h),
+        TextWidget(text: label, fontSize: 14.sp, fontWeight: FontWeight.w600),
+        SizedBox(height: 10.h),
         CustomTextField(
           controller: controllerNote,
           hintText: note,

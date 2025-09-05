@@ -30,7 +30,10 @@ class TaskDate extends StatelessWidget {
   }
 
   Widget _buildDateTimeColumns(
-      String? label, DateTime dateTime, BuildContext context) {
+    String? label,
+    DateTime dateTime,
+    BuildContext context,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
@@ -41,28 +44,34 @@ class TaskDate extends StatelessWidget {
               label == null
                   ? Container()
                   : TextWidget(
-                      text: label,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.black,
-                      fontSize: 16.sp,
-                    ),
+                    text: label,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.black,
+                    fontSize: 14.sp,
+                  ),
             ],
           ),
           SizedBox(height: 10.h),
-          AbsorbPointer( // Chặn tương tác khi isEnabled = false
+          AbsorbPointer(
+            // Chặn tương tác khi isEnabled = false
             absorbing: !isEnabled!,
             child: Row(
               children: [
                 Expanded(
                   flex: 3,
                   child: GestureDetector(
-                    onTap: isEnabled == true
-                        ? () {
-                            _selectDate(context, dateTime);
-                          }
-                        : null,
+                    onTap:
+                        isEnabled == true
+                            ? () {
+                              _selectDate(context, dateTime);
+                            }
+                            : null,
                     child: _buildDateOrTimeRow(
-                        'Chọn ngày', _formatDate(dateTime), Icons.calendar_today, context),
+                      'Chọn ngày',
+                      _formatDate(dateTime),
+                      Icons.calendar_today,
+                      context,
+                    ),
                   ),
                 ),
                 if (isHour == true) SizedBox(width: 16.h),
@@ -70,13 +79,18 @@ class TaskDate extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: GestureDetector(
-                      onTap: isEnabled == true
-                          ? () {
-                              _selectTime(context, dateTime);
-                            }
-                          : null,
+                      onTap:
+                          isEnabled == true
+                              ? () {
+                                _selectTime(context, dateTime);
+                              }
+                              : null,
                       child: _buildDateOrTimeRow(
-                          'Chọn giờ', _formatTime(dateTime), Icons.access_time, context),
+                        'Chọn giờ',
+                        _formatTime(dateTime),
+                        Icons.access_time,
+                        context,
+                      ),
                     ),
                   ),
               ],
@@ -88,15 +102,25 @@ class TaskDate extends StatelessWidget {
   }
 
   Widget _buildDateOrTimeRow(
-      String label, String value, IconData icon, BuildContext context) {
+    String label,
+    String value,
+    IconData icon,
+    BuildContext context,
+  ) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isEnabled == true ? Colors.white : Colors.grey.shade100, // Nền xám khi vô hiệu hóa
+        color:
+            isEnabled == true
+                ? Colors.white
+                : Colors.grey.shade100, // Nền xám khi vô hiệu hóa
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           width: 1.w,
-          color: isEnabled == true ? Colors.grey.shade400 : Colors.grey.shade200, // Viền mờ khi vô hiệu hóa
+          color:
+              isEnabled == true
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade200, // Viền mờ khi vô hiệu hóa
         ),
       ),
       child: Padding(
@@ -107,13 +131,10 @@ class TaskDate extends StatelessWidget {
             TextWidget(
               text: value,
               fontWeight: FontWeight.w500,
-              color: Colors.black.withValues(alpha: 0.6), 
+              color: Colors.black.withValues(alpha: 0.6),
               fontSize: 14.sp,
             ),
-            Icon(
-              icon,
-              color: Colors.black.withValues(alpha: 0.6), 
-            ),
+            Icon(icon, color: Colors.black.withValues(alpha: 0.6)),
           ],
         ),
       ),
@@ -129,7 +150,8 @@ class TaskDate extends StatelessWidget {
   }
 
   Future<void> _selectDate(BuildContext context, DateTime initialDate) async {
-    if (isEnabled == false) return; // Ngăn không hiển thị picker khi vô hiệu hóa
+    if (isEnabled == false)
+      return; // Ngăn không hiển thị picker khi vô hiệu hóa
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -150,7 +172,8 @@ class TaskDate extends StatelessWidget {
   }
 
   Future<void> _selectTime(BuildContext context, DateTime initialDate) async {
-    if (isEnabled == false) return; // Ngăn không hiển thị picker khi vô hiệu hóa
+    if (isEnabled == false)
+      return; // Ngăn không hiển thị picker khi vô hiệu hóa
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(initialDate),

@@ -127,7 +127,7 @@ class _SelectState extends State<CustomSelect> {
           if (widget.label1 != null)
             TextWidget(
               text: widget.label1 ?? '',
-              fontSize: 16.sp,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w600,
               color: widget.colorIcon ?? Colors.black,
             ),

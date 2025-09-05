@@ -24,10 +24,10 @@ class Profile {
 }
 
 class User {
-  final String id;
+  final String? id;
   final int? hrId;
-  final String username;
-  final String email;
+  final String? username;
+  final String? email;
   final String? phoneNumber;
   final String? password;
   final String? firstName;
@@ -35,13 +35,13 @@ class User {
   final String? fullNameNoAccent;
   final String? firstNameUnsign;
   final String? lastNameUnsign;
-  final String? gender;
+  final bool? gender;
   final String? refreshToken;
   final String? avatar;
   final String? doB;
   final String? fullName;
-  final bool isDeleted;
-  final String createdDate;
+  final bool? isDeleted;
+  final String? createdDate;
   final String? updatedDate;
   final String? creator;
   final String? modifier;
@@ -49,10 +49,10 @@ class User {
   final String? updatedById;
 
   User({
-    required this.id,
+    this.id,
     this.hrId,
-    required this.username,
-    required this.email,
+    this.username,
+    this.email,
     this.phoneNumber,
     this.password,
     this.firstName,
@@ -65,8 +65,8 @@ class User {
     this.avatar,
     this.doB,
     this.fullName,
-    required this.isDeleted,
-    required this.createdDate,
+    this.isDeleted,
+    this.createdDate,
     this.updatedDate,
     this.creator,
     this.modifier,
@@ -77,26 +77,26 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? '',
-      hrId: json['hrId'],
+      hrId: json['hrId'] ?? '',
       username: json['username'] ?? '',
       email: json['email'] ?? '',
-      phoneNumber: json['phoneNumber'],
-      password: json['password'],
-      firstName: json['firstName'],
-      lastName: json['lastName'],
-      fullNameNoAccent: json['fullNameNoAccent'],
-      firstNameUnsign: json['firstNameUnsign'],
-      lastNameUnsign: json['lastNameUnsign'],
-      gender: json['gender'],
-      refreshToken: json['refreshToken'],
-      avatar: json['avatar'],
+      phoneNumber: json['phoneNumber'] ?? '',
+      password: json['password'] ?? '',
+      firstName: json['firstName'] ?? '',
+      lastName: json['lastName'] ?? '',
+      fullNameNoAccent: json['fullNameNoAccent'] ?? '',
+      firstNameUnsign: json['firstNameUnsign'] ?? '',
+      lastNameUnsign: json['lastNameUnsign'] ?? '',
+      gender: json['gender'] ?? false,
+      refreshToken: json['refreshToken'] ?? '',
+      avatar: json['avatar'] ?? '',
       doB: json['doB'],
       fullName: json['fullName'],
       isDeleted: json['isDeleted'] ?? false,
       createdDate: json['createdDate'] ?? '',
       updatedDate: json['updatedDate'],
-      creator: json['creator'],
-      modifier: json['modifier'],
+      creator: json['creator'] ?? '',
+      modifier: json['modifier'] ?? '',
       createdById: json['createdById'],
       updatedById: json['updatedById'],
     );

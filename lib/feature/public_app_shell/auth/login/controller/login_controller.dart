@@ -17,7 +17,7 @@ import 'package:tcs_flutter/src/services/lib/services/auth_service.dart';
 class LoginController extends GetxController {
   DioApi dioApi = DioApi();
   Dio dio = Dio();
-  
+
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final AuthService authService = AuthService();
@@ -49,20 +49,19 @@ class LoginController extends GetxController {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) =>
-          const Center(child: CircularProgressIndicator()),
+      builder:
+          (BuildContext context) =>
+              const Center(child: CircularProgressIndicator()),
     );
     isFetchingUrl.value = true;
     isLoadingMicrosoft.value = true;
 
     try {
-      final response = await dio.get(
-        ApiEndpoints.loginUrlMicrosoft(0, 1),
-      );
+      final response = await dio.get(ApiEndpoints.loginUrlMicrosoft(0, 1));
       Navigator.pop(context);
       print(response.data);
       print(ApiEndpoints.loginUrlMicrosoft(0, 1));
-      
+
       if (response.statusCode == response.data['statusCode']) {
         microsoftRedirectUrl?.value = response.data['data']['url'];
         print(microsoftRedirectUrl?.value);
@@ -81,10 +80,11 @@ class LoginController extends GetxController {
   }
 
   Future<void> goMicrosoftLogin() async {
-    Get.toNamed(AppRouter.loginWithMicrosoft, arguments: {
-      'url': microsoftRedirectUrl?.value,
-    })?.then((value) {
-      if(value == false){
+    Get.toNamed(
+      AppRouter.loginWithMicrosoft,
+      arguments: {'url': microsoftRedirectUrl?.value},
+    )?.then((value) {
+      if (value == false) {
         Get.snackbar("Thông báo", "Đăng nhập thất bại");
         return;
       }
@@ -101,25 +101,25 @@ class LoginController extends GetxController {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) =>
-          const Center(child: CircularProgressIndicator()),
+      builder:
+          (BuildContext context) =>
+              const Center(child: CircularProgressIndicator()),
     );
     try {
       final response = await dio.post(
         ApiEndpoints.loginMicrosoft,
-        data: {
-          'token': code,
-        },
+        data: {'token': code},
       );
       print("response.datasss: ${response.data}");
       if (response.statusCode == 200) {
         final accessToken = response.data['data']['accessToken'].toString();
         saveLoginRouter(services, accessToken, context);
       } else {
-        Get.snackbar("Thông báo", "Đăng nhập thất bại: ${response.statusCode}");
+        Get.snackbar("Thông báo", "Đăng nhập thất bại Vui lòng thử lại");
       }
     } catch (e) {
-      Get.snackbar("Thông báo", "Lỗi khi đăng nhập: $e");
+      print("Lỗi loginWithMicrosoftCode: $e");
+      Get.snackbar("Thông báo", "Đăng nhập thất bại Vui lòng thử lại");
     } finally {
       isLoadingMicrosoft.value = false;
       Navigator.pop(context);
@@ -137,10 +137,13 @@ class LoginController extends GetxController {
         Get.snackbar("Thông báo", "Tài khoản không đúng");
         return;
       }
-      final response = await dioApi.post(ApiEndpoints.loginFrame, data: {
-        "userName": usernameController.text,
-        "password": passwordController.text
-      });
+      final response = await dioApi.post(
+        ApiEndpoints.loginFrame,
+        data: {
+          "userName": usernameController.text,
+          "password": passwordController.text,
+        },
+      );
       if (response.data['statusCode'] == 500) {
         Get.snackbar("Thông báo", "Tài khoản không đúng");
         return;
@@ -155,7 +158,6 @@ class LoginController extends GetxController {
     }
   }
 
- 
   void showConfigDialog() {
     ShowDialogSetUrl().showConfigDialog(
       baseUrlController: baseUrlController,
@@ -165,7 +167,10 @@ class LoginController extends GetxController {
   }
 
   void saveLoginRouter(
-      Services services, String accessTokenId, BuildContext context) async {
+    Services services,
+    String accessTokenId,
+    BuildContext context,
+  ) async {
     if (accessTokenId.isEmpty) {
       return;
     }

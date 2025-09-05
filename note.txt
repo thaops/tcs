@@ -1,0 +1,4 @@
+storePassword=namphuongsotcs
+keyPassword=namphuongsotcs
+keyAlias=namphuongsotcs
+storeFile=keystoretcs.jks
