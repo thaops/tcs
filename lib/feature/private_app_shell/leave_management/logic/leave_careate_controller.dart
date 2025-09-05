@@ -85,7 +85,6 @@ class LeaveCareateController extends GetxController {
     }
   }
 
-  // Kiểm tra tính hợp lệ của dữ liệu
   bool _validateLeaveData(
     leaveID,
     usersID,
@@ -101,14 +100,10 @@ class LeaveCareateController extends GetxController {
       _showSnackBar(context, 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
       return false;
     }
-    // if (_startDate.value.isBefore(DateTime.now().add(Duration(days: 1)))) {
-    //   _showSnackBar(context, 'Bạn phải xin nghỉ trước ít nhất 2 ngày.');
-    //   return false;
-    // }
+
     return true;
   }
 
-  // Hiển thị thông báo Snackbar
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(
       context,
@@ -143,10 +138,8 @@ class LeaveCareateController extends GetxController {
   void updateStartDate(DateTime newStartDate) {
     startDate.value = newStartDate;
 
-    // Nếu dueDate nhỏ hơn hoặc bằng startDate, tự động tăng dueDate lên 1 ngày
     if (dueDate.value.isBefore(newStartDate) ||
         isSameDay(dueDate.value, newStartDate)) {
-      // Tự động set dueDate thành ngày hôm sau của startDate với thời gian 23:59
       dueDate.value = DateTime(
         newStartDate.year,
         newStartDate.month,
@@ -157,7 +150,20 @@ class LeaveCareateController extends GetxController {
     }
   }
 
-  // Phương thức kiểm tra xem hai ngày có cùng ngày không
+  void updateDueDate(DateTime newDueDate) {
+    dueDate.value = newDueDate;
+
+    if (startDate.value.isAfter(newDueDate)) {
+      startDate.value = DateTime(
+        newDueDate.year,
+        newDueDate.month,
+        newDueDate.day,
+        0,
+        0,
+      );
+    }
+  }
+
   bool isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
         date1.month == date2.month &&

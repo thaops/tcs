@@ -124,8 +124,8 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                           label: 'Đến ngày',
                           selectedDate: controllerCreate.dueDate.value,
                           onDateSelected: (date) {
-                            controllerCreate.dueDate.value =
-                                date; // Cập nhật ngày hạn
+                            // Sử dụng method mới để tự động cập nhật startDate nếu cần
+                            controllerCreate.updateDueDate(date);
                           },
                         ),
                       ),
