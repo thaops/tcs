@@ -15,7 +15,7 @@ class LeaveCareateController extends GetxController {
   late final GetLeaveTypesUseCase _getLeaveTypes;
   late final AddLeaveUseCase _addLeave;
   LeaveCareateController({LeaveRepositoryInterface? repo})
-      : leaveManagementRepository = repo ?? LeaveManagementRepository() {
+    : leaveManagementRepository = repo ?? LeaveManagementRepository() {
     _getLeaveTypes = GetLeaveTypesUseCase(leaveManagementRepository);
     _addLeave = AddLeaveUseCase(leaveManagementRepository);
   }
@@ -25,13 +25,20 @@ class LeaveCareateController extends GetxController {
   String? usersID;
   String? leaveID;
   Rx<DateTime> startDate = Rx<DateTime>(
-      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
-  Rx<DateTime> dueDate = Rx<DateTime>(DateTime(
-      DateTime.now().year, DateTime.now().month, DateTime.now().day, 23, 59));
+    DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+  );
+  Rx<DateTime> dueDate = Rx<DateTime>(
+    DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+      23,
+      59,
+    ),
+  );
   RxBool isloadingSave = false.obs;
 
   late TextEditingController controllerNote;
-  
 
   @override
   void onInit() async {
@@ -80,7 +87,12 @@ class LeaveCareateController extends GetxController {
 
   // Kiểm tra tính hợp lệ của dữ liệu
   bool _validateLeaveData(
-      leaveID, usersID, _dueDate, _startDate, BuildContext context) {
+    leaveID,
+    usersID,
+    _dueDate,
+    _startDate,
+    BuildContext context,
+  ) {
     if (leaveID == null || usersID == null) {
       _showSnackBar(context, 'Vui lòng điền đầy đủ thông tin');
       return false;
@@ -98,8 +110,9 @@ class LeaveCareateController extends GetxController {
 
   // Hiển thị thông báo Snackbar
   void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> fetchLeave() async {
@@ -124,5 +137,30 @@ class LeaveCareateController extends GetxController {
     } else {
       dueDate.value = newDate;
     }
+  }
+
+  // Phương thức cập nhật startDate và tự động điều chỉnh dueDate
+  void updateStartDate(DateTime newStartDate) {
+    startDate.value = newStartDate;
+
+    // Nếu dueDate nhỏ hơn hoặc bằng startDate, tự động tăng dueDate lên 1 ngày
+    if (dueDate.value.isBefore(newStartDate) ||
+        isSameDay(dueDate.value, newStartDate)) {
+      // Tự động set dueDate thành ngày hôm sau của startDate với thời gian 23:59
+      dueDate.value = DateTime(
+        newStartDate.year,
+        newStartDate.month,
+        newStartDate.day,
+        23,
+        59,
+      );
+    }
+  }
+
+  // Phương thức kiểm tra xem hai ngày có cùng ngày không
+  bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 }

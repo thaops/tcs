@@ -47,16 +47,40 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                     children: [
                       CustomSelect(
                         label1: "Nhân viên",
-                        name: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
+                        name:
+                            _selectedEmployeeName ??
+                            controllerCreate
+                                .controllerProfile
+                                .profile
+                                ?.user
+                                ?.fullName,
                         searchable: false,
                         isEnabled: false,
-                        selectedName: _selectedEmployeeName ?? controllerCreate.controllerProfile.profile?.user?.fullName,
+                        selectedName:
+                            _selectedEmployeeName ??
+                            controllerCreate
+                                .controllerProfile
+                                .profile
+                                ?.user
+                                ?.fullName,
                         onTap: () async {
                           final result = await Get.to(() => FilterUserView());
                           if (result is Map) {
                             // Support both single and multi-select return shapes
-                            final id = (result['id'] ?? (result['ids'] is List && result['ids'].isNotEmpty ? result['ids'][0] : null))?.toString();
-                            final name = (result['name'] ?? (result['names'] is List && result['names'].isNotEmpty ? result['names'][0] : null))?.toString();
+                            final id =
+                                (result['id'] ??
+                                        (result['ids'] is List &&
+                                                result['ids'].isNotEmpty
+                                            ? result['ids'][0]
+                                            : null))
+                                    ?.toString();
+                            final name =
+                                (result['name'] ??
+                                        (result['names'] is List &&
+                                                result['names'].isNotEmpty
+                                            ? result['names'][0]
+                                            : null))
+                                    ?.toString();
                             if (id != null && name != null) {
                               setState(() {
                                 controllerCreate.usersID = id;
@@ -67,7 +91,9 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                         },
                       ),
                       Obx(() {
-                        final leaveList = controllerCreate.leaves.toList(growable: false);
+                        final leaveList = controllerCreate.leaves.toList(
+                          growable: false,
+                        );
                         return ListoffLeave(
                           label1: "Lý do",
                           leaveList: leaveList,
@@ -86,8 +112,8 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                             label: 'Nghỉ từ ngày',
                             selectedDate: controllerCreate.startDate.value,
                             onDateSelected: (date) {
-                              controllerCreate.startDate.value =
-                                  date; 
+                              // Sử dụng method mới để tự động cập nhật dueDate
+                              controllerCreate.updateStartDate(date);
                             },
                           ),
                         ),
@@ -124,5 +150,4 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
       ),
     );
   }
-
 }
