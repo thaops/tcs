@@ -21,7 +21,6 @@ import 'package:tcs_flutter/common/utils/check_awaiting_approval.dart';
 import 'package:tcs_flutter/common/utils/check_awaiting_services.dart';
 import 'package:tcs_flutter/common/utils/navigation_utils.dart';
 import 'package:tcs_flutter/core/configs/theme/app_theme.dart';
-import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logic.dart';
 import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/router/deep_link_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';

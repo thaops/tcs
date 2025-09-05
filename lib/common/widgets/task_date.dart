@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
@@ -154,6 +156,21 @@ class TaskDate extends StatelessWidget {
     if (isEnabled == false)
       return; // Ngăn không hiển thị picker khi vô hiệu hóa
 
+    // Kiểm tra nền tảng và sử dụng picker phù hợp
+    if (Theme.of(context).platform == TargetPlatform.iOS ||
+        (!kIsWeb && Platform.isIOS)) {
+      // Sử dụng Cupertino Date Picker cho iOS
+      await _showCupertinoDatePicker(context, initialDate);
+    } else {
+      // Sử dụng Material Date Picker cho Android và các nền tảng khác
+      await _showMaterialDatePicker(context, initialDate);
+    }
+  }
+
+  Future<void> _showCupertinoDatePicker(
+    BuildContext context,
+    DateTime initialDate,
+  ) async {
     DateTime selectedDate = initialDate;
 
     await showModalBottomSheet(
@@ -295,10 +312,58 @@ class TaskDate extends StatelessWidget {
     );
   }
 
+  Future<void> _showMaterialDatePicker(
+    BuildContext context,
+    DateTime initialDate,
+  ) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(
+              context,
+            ).colorScheme.copyWith(primary: AppColors.primary),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null) {
+      final DateTime updatedDateTime = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        initialDate.hour,
+        initialDate.minute,
+      );
+      onDateSelected(updatedDateTime);
+    }
+  }
+
   Future<void> _selectTime(BuildContext context, DateTime initialDate) async {
     if (isEnabled == false)
       return; // Ngăn không hiển thị picker khi vô hiệu hóa
 
+    // Kiểm tra nền tảng và sử dụng picker phù hợp
+    if (Theme.of(context).platform == TargetPlatform.iOS ||
+        (!kIsWeb && Platform.isIOS)) {
+      // Sử dụng Cupertino Time Picker cho iOS
+      await _showCupertinoTimePicker(context, initialDate);
+    } else {
+      // Sử dụng Material Time Picker cho Android và các nền tảng khác
+      await _showMaterialTimePicker(context, initialDate);
+    }
+  }
+
+  Future<void> _showCupertinoTimePicker(
+    BuildContext context,
+    DateTime initialDate,
+  ) async {
     DateTime selectedDateTime = initialDate;
 
     await showModalBottomSheet(
@@ -436,5 +501,36 @@ class TaskDate extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _showMaterialTimePicker(
+    BuildContext context,
+    DateTime initialDate,
+  ) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initialDate),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(
+              context,
+            ).colorScheme.copyWith(primary: AppColors.primary),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime != null) {
+      final DateTime updatedDateTime = DateTime(
+        initialDate.year,
+        initialDate.month,
+        initialDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
+      );
+      onDateSelected(updatedDateTime);
+    }
   }
 }

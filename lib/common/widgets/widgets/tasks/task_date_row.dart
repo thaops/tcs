@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:intl/intl.dart';
 
 class TaskDateRow extends StatelessWidget {
@@ -99,9 +101,24 @@ class TaskDateRow extends StatelessWidget {
     DateTime initialDate,
     bool isStartDate,
   ) async {
+    // Kiểm tra nền tảng và sử dụng picker phù hợp
+    if (Theme.of(context).platform == TargetPlatform.iOS ||
+        (!kIsWeb && Platform.isIOS)) {
+      // Sử dụng Cupertino Date Time Picker cho iOS
+      await _showCupertinoDateTimePicker(context, initialDate, isStartDate);
+    } else {
+      // Sử dụng Material Date Time Picker cho Android
+      await _showMaterialDateTimePicker(context, initialDate, isStartDate);
+    }
+  }
+
+  Future<void> _showCupertinoDateTimePicker(
+    BuildContext context,
+    DateTime initialDate,
+    bool isStartDate,
+  ) async {
     DateTime selectedDateTime = initialDate;
 
-    // Hiển thị Cupertino Date Time Picker
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -272,5 +289,40 @@ class TaskDateRow extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _showMaterialDateTimePicker(
+    BuildContext context,
+    DateTime initialDate,
+    bool isStartDate,
+  ) async {
+    // Chọn ngày trước
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate != null) {
+      // Chọn giờ sau khi chọn ngày
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(initialDate),
+      );
+
+      if (pickedTime != null) {
+        final DateTime newDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+
+        // Cập nhật ngày và giờ
+        onDateSelected(newDateTime, isStartDate);
+      }
+    }
   }
 }
