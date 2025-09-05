@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
@@ -152,42 +153,288 @@ class TaskDate extends StatelessWidget {
   Future<void> _selectDate(BuildContext context, DateTime initialDate) async {
     if (isEnabled == false)
       return; // Ngăn không hiển thị picker khi vô hiệu hóa
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
 
-    if (pickedDate != null) {
-      final DateTime updatedDateTime = DateTime(
-        pickedDate.year,
-        pickedDate.month,
-        pickedDate.day,
-        initialDate.hour,
-        initialDate.minute,
-      );
-      onDateSelected(updatedDateTime);
-    }
+    DateTime selectedDate = initialDate;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Container(
+            height: 320,
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Header với nút Cancel và Done
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          'Hủy',
+                          style: TextStyle(
+                            color: Colors.red.shade400,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      Text(
+                        'Chọn ngày',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
+                      CupertinoButton(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Xong',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        onPressed: () {
+                          final DateTime updatedDateTime = DateTime(
+                            selectedDate.year,
+                            selectedDate.month,
+                            selectedDate.day,
+                            initialDate.hour,
+                            initialDate.minute,
+                          );
+                          onDateSelected(updatedDateTime);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                // Divider
+                Container(
+                  height: 1,
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        Colors.grey.shade200,
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                // Cupertino Date Picker
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.date,
+                      initialDateTime: initialDate,
+                      minimumDate: DateTime(2000),
+                      maximumDate: DateTime(2100),
+                      backgroundColor: Colors.transparent,
+                      onDateTimeChanged: (DateTime date) {
+                        selectedDate = date;
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _selectTime(BuildContext context, DateTime initialDate) async {
     if (isEnabled == false)
       return; // Ngăn không hiển thị picker khi vô hiệu hóa
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(initialDate),
-    );
 
-    if (pickedTime != null) {
-      final DateTime updatedDateTime = DateTime(
-        initialDate.year,
-        initialDate.month,
-        initialDate.day,
-        pickedTime.hour,
-        pickedTime.minute,
-      );
-      onDateSelected(updatedDateTime);
-    }
+    DateTime selectedDateTime = initialDate;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Container(
+            height: 320,
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Header với nút Cancel và Done
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          'Hủy',
+                          style: TextStyle(
+                            color: Colors.red.shade400,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      Text(
+                        'Chọn giờ',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
+                      CupertinoButton(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Xong',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        onPressed: () {
+                          final DateTime updatedDateTime = DateTime(
+                            initialDate.year,
+                            initialDate.month,
+                            initialDate.day,
+                            selectedDateTime.hour,
+                            selectedDateTime.minute,
+                          );
+                          onDateSelected(updatedDateTime);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                // Divider
+                Container(
+                  height: 1,
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        Colors.grey.shade200,
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                // Cupertino Time Picker
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.time,
+                      initialDateTime: initialDate,
+                      backgroundColor: Colors.transparent,
+                      onDateTimeChanged: (DateTime time) {
+                        selectedDateTime = time;
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
