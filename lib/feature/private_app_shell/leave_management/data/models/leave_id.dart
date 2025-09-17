@@ -20,6 +20,13 @@ class LeaveID {
   final bool? isDeleted;
   final List<WorkFlow>? workFlows;
 
+  // Thêm các field mới từ API response
+  final String? employeeCode;
+  final String? jobTitle;
+  final int? quota;
+  final int? leaveDaysLeft;
+  final List<Attachment>? attachments;
+
   LeaveID({
     required this.numberOfDaysOffRemaining,
     this.id,
@@ -41,15 +48,16 @@ class LeaveID {
     this.createdDate,
     this.isDeleted,
     this.workFlows,
+    this.employeeCode,
+    this.jobTitle,
+    this.quota,
+    this.leaveDaysLeft,
+    this.attachments,
   });
 
   factory LeaveID.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
-      return LeaveID(
-        numberOfDaysOffRemaining: 0,
-        fullName: '',
-        reason: '',
-      );
+      return LeaveID(numberOfDaysOffRemaining: 0, fullName: '', reason: '');
     }
 
     return LeaveID(
@@ -59,36 +67,57 @@ class LeaveID {
       department: json['department'] ?? '',
       avatarUrl: json['avatarUrl'] ?? '',
       fullName: json['fullName'] ?? '',
-      fromDate: json['fromDate'] != null 
-          ? DateTime.tryParse(json['fromDate'] as String) 
-          : null,
-      toDate: json['toDate'] != null 
-          ? DateTime.tryParse(json['toDate'] as String) 
-          : null,
+      fromDate:
+          json['fromDate'] != null
+              ? DateTime.tryParse(json['fromDate'] as String)
+              : null,
+      toDate:
+          json['toDate'] != null
+              ? DateTime.tryParse(json['toDate'] as String)
+              : null,
       totalDay: json['totalDay'],
       categoryId: json['categoryId'] ?? '',
       category: json['category'] ?? '',
       status: json['status'] as int?,
       statusLabel: json['statusLabel'] ?? '',
-      approvalDate: json['approvalDate'] != null 
-          ? DateTime.tryParse(json['approvalDate'] as String) 
-          : null,
-      lastApprovalDate: json['lastApprovalDate'] != null 
-          ? DateTime.tryParse(json['lastApprovalDate'] as String) 
-          : null,
+      approvalDate:
+          json['approvalDate'] != null
+              ? DateTime.tryParse(json['approvalDate'] as String)
+              : null,
+      lastApprovalDate:
+          json['lastApprovalDate'] != null
+              ? DateTime.tryParse(json['lastApprovalDate'] as String)
+              : null,
       reason: json['reason'] ?? '',
       note: json['note'] ?? '',
-      createdDate: json['createdDate'] != null 
-          ? DateTime.tryParse(json['createdDate'] as String) 
-          : null,
+      createdDate:
+          json['createdDate'] != null
+              ? DateTime.tryParse(json['createdDate'] as String)
+              : null,
       isDeleted: json['isDeleted'] as bool?,
-      workFlows: json['workFlows'] != null
-          ? (json['workFlows'] as List<dynamic>)
-              .map((workflow) => WorkFlow.fromJson(workflow as Map<String, dynamic>?))
-              .where((workflow) => workflow != null)
-              .cast<WorkFlow>()
-              .toList()
-          : null,
+      workFlows:
+          json['workFlows'] != null
+              ? (json['workFlows'] as List<dynamic>)
+                  .map(
+                    (workflow) =>
+                        WorkFlow.fromJson(workflow as Map<String, dynamic>?),
+                  )
+                  .toList()
+              : null,
+      employeeCode: json['employeeCode'] ?? '',
+      jobTitle: json['jobTitle'] ?? '',
+      quota: json['quota'] as int?,
+      leaveDaysLeft: json['leaveDaysLeft'] as int?,
+      attachments:
+          json['attachments'] != null
+              ? (json['attachments'] as List<dynamic>)
+                  .map(
+                    (attachment) => Attachment.fromJson(
+                      attachment as Map<String, dynamic>?,
+                    ),
+                  )
+                  .toList()
+              : null,
     );
   }
 
@@ -114,14 +143,54 @@ class LeaveID {
       'createdDate': createdDate?.toIso8601String(),
       'isDeleted': isDeleted,
       'workFlows': workFlows?.map((workflow) => workflow.toJson()).toList(),
+      'employeeCode': employeeCode,
+      'jobTitle': jobTitle,
+      'quota': quota,
+      'leaveDaysLeft': leaveDaysLeft,
+      'attachments':
+          attachments?.map((attachment) => attachment.toJson()).toList(),
     };
+  }
+}
+
+class Attachment {
+  final String id;
+  final String name;
+  final String url;
+  final String type;
+  final int size;
+
+  Attachment({
+    required this.id,
+    required this.name,
+    required this.url,
+    required this.type,
+    required this.size,
+  });
+
+  factory Attachment.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return Attachment(id: '', name: '', url: '', type: '', size: 0);
+    }
+
+    return Attachment(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      url: json['url'] ?? '',
+      type: json['type'] ?? '',
+      size: json['size'] as int? ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'url': url, 'type': type, 'size': size};
   }
 }
 
 class WorkFlow {
   final String id;
   final String approverId;
-  final String approver;
+  final String? approver;
   final DateTime? approvalDate;
   final int? step;
   final int? status;
@@ -129,11 +198,12 @@ class WorkFlow {
   final String? note;
   final DateTime? createdDate;
   final bool? isDeleted;
+  final String? receiver;
 
   WorkFlow({
     required this.id,
     required this.approverId,
-    required this.approver,
+    this.approver,
     this.approvalDate,
     this.step,
     this.status,
@@ -141,32 +211,32 @@ class WorkFlow {
     this.note,
     this.createdDate,
     this.isDeleted,
+    this.receiver,
   });
 
   factory WorkFlow.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
-      return WorkFlow(
-        id: '',
-        approverId: '',
-        approver: '',
-      );
+      return WorkFlow(id: '', approverId: '', approver: '');
     }
 
     return WorkFlow(
       id: json['id'] ?? '' ?? '',
       approverId: json['approverId'] ?? '' ?? '',
-      approver: json['approver'] ?? '' ?? '',
-      approvalDate: json['approvalDate'] != null 
-          ? DateTime.tryParse(json['approvalDate'] as String) 
-          : null,
+      approver: json['approver'],
+      approvalDate:
+          json['approvalDate'] != null
+              ? DateTime.tryParse(json['approvalDate'] as String)
+              : null,
       step: json['step'] as int?,
       status: json['status'] as int?,
       statusLabel: json['statusLabel'] ?? '',
       note: json['note'] ?? '',
-      createdDate: json['createdDate'] != null 
-          ? DateTime.tryParse(json['createdDate'] as String) 
-          : null,
+      createdDate:
+          json['createdDate'] != null
+              ? DateTime.tryParse(json['createdDate'] as String)
+              : null,
       isDeleted: json['isDeleted'] as bool?,
+      receiver: json['receiver'] ?? '',
     );
   }
 
@@ -182,6 +252,7 @@ class WorkFlow {
       'note': note,
       'createdDate': createdDate?.toIso8601String(),
       'isDeleted': isDeleted,
+      'receiver': receiver,
     };
   }
 }

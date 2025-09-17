@@ -28,12 +28,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Khởi tạo controller một lần
-    Get.put(ProfileLogic());
+    // Khởi tạo controller một cách an toàn
+    if (!Get.isRegistered<ProfileLogic>()) {
+      Get.put(ProfileLogic());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Kiểm tra an toàn controller
+    if (!Get.isRegistered<ProfileLogic>()) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     final controllerProfile = Get.find<ProfileLogic>();
     final apiService = Get.put(ApiService());
 
@@ -43,7 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Obx(
       () => LoadingOverlay(
-        isLoading: controllerProfile.isloading.value,
+        isLoading: controllerProfile.isLoadingSafe,
         child: Scaffold(
           backgroundColor: Colors.white,
           appBar: _buildAppBar(controllerProfile, context),
@@ -53,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             child: Obx(
               () => LoadingOverlay(
-                isLoading: controllerProfile.isloading.value,
+                isLoading: controllerProfile.isLoadingSafe,
                 child: SingleChildScrollView(
                   child: IntrinsicHeight(
                     child: Column(
@@ -66,7 +73,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _buildInformationContact(controllerProfile),
                               Positioned(
                                 top: 0,
-                                left: Get.width / 2 - 80,
+                                left:
+                                    MediaQuery.of(context).size.width / 2 - 80,
                                 child: Align(
                                   alignment: Alignment.topCenter,
                                   child: Lottie.asset(
@@ -78,7 +86,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               Positioned(
                                 top: 17,
-                                left: Get.width / 2 - 60,
+                                left:
+                                    MediaQuery.of(context).size.width / 2 - 60,
                                 child: Align(
                                   alignment: Alignment.topCenter,
                                   child: CircleAvatar(
@@ -197,14 +206,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           }
                           return GestureDetector(
                             onTap: () {
-                              controllerProfile.tapCount.value++;
+                              controllerProfile.tapCount.value =
+                                  controllerProfile.tapCountSafe + 1;
                               controllerProfile.showConfigDialog();
                             },
                             child: Center(
                               child: TextWidget(
                                 text:
                                     isVision
-                                        ? "@TCS - Phiên bản - ${controllerProfile.version.value}"
+                                        ? "@TCS - Phiên bản - ${controllerProfile.versionSafe}"
                                         : "@TCS - Phiên bản - dev",
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
@@ -230,7 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         80.verticalSpace,
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16),
-          width: Get.width,
+          width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
             color: AppColors.colorbackgroundProfile,
             borderRadius: BorderRadius.circular(24),

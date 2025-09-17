@@ -57,6 +57,9 @@ class LoginController extends GetxController {
     isLoadingMicrosoft.value = true;
 
     try {
+      print(
+        "ApiEndpoints.loginUrlMicrosoft(0, 1): ${ApiEndpoints.loginUrlMicrosoft(0, 1)}",
+      );
       final response = await dio.get(ApiEndpoints.loginUrlMicrosoft(0, 1));
       Navigator.pop(context);
       print(response.data);
@@ -84,11 +87,14 @@ class LoginController extends GetxController {
       AppRouter.loginWithMicrosoft,
       arguments: {'url': microsoftRedirectUrl?.value},
     )?.then((value) {
+      print("valueMS: $value");
       if (value == false) {
         Get.snackbar("Thông báo", "Đăng nhập thất bại");
         return;
       }
       if (value != null) {
+        print("valueMS: $value");
+
         loginWithMicrosoftCode(value['code'], Get.context!);
       }
     });

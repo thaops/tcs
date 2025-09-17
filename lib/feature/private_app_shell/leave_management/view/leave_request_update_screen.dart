@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:tcs_flutter/common/widgets/attachment_widget.dart';
 import 'package:tcs_flutter/common/widgets/custom_select.dart';
 import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
 import 'package:tcs_flutter/common/widgets/task_date.dart';
@@ -33,9 +34,7 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              children: [
-                fill_create(screenWidth, controllerUpdate.canEdit),
-              ],
+              children: [fill_create(screenWidth, controllerUpdate.canEdit)],
             ),
           ),
         ),
@@ -52,7 +51,7 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
               Get.back();
             },
             child: Container(
-              width: Get.width,
+              width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
                 color: AppColors.grey.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(12.0),
@@ -79,7 +78,7 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
                 await controllerUpdate.leaveUpdate(context);
               },
               child: Container(
-                width: Get.width,
+                width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12.0),
@@ -107,94 +106,127 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
     return Expanded(
       flex: 1,
       child: SingleChildScrollView(
-        child: IntrinsicHeight(
-          child: SizedBox(
-            height: Get.height * 0.9,
-            child: Column(
-              children: [
-                CustomSelect(
+        child: Column(
+          children: [
+            Opacity(
+              opacity: 0.6,
+              child: AbsorbPointer(
+                absorbing: true,
+                child: CustomSelect(
                   label1: "Nhân viên",
                   name: controllerUpdate.leave.value?.fullName,
-                  selectList: controllerUpdate.users!
-                      .map((e) => Item(
-                          id: e.id.toString(), name: e.fullName.toString()))
-                      .toList(),
-                  isEnabled: canEdit,
+                  selectList:
+                      controllerUpdate.users!
+                          .map(
+                            (e) => Item(
+                              id: e.id.toString(),
+                              name: e.fullName.toString(),
+                            ),
+                          )
+                          .toList(),
+                  isEnabled: false,
                   onProjectSelected: (value) {
                     controllerUpdate.usersID = value;
                   },
                 ),
-                Opacity(
-                  opacity: canEdit ? 1.0 : 0.6,
-                  child: AbsorbPointer(
-                    absorbing: !canEdit,
-                    child: ListoffLeave(
-                      label1: "Lý do ",
-                      leaveList: controllerUpdate.leaves,
-                      name: controllerUpdate.leaves
+              ),
+            ),
+            Opacity(
+              opacity: canEdit ? 1.0 : 0.6,
+              child: AbsorbPointer(
+                absorbing: !canEdit,
+                child: ListoffLeave(
+                  label1: "Lý do ",
+                  leaveList: controllerUpdate.leaves,
+                  name:
+                      controllerUpdate.leaves
                           ?.firstWhere(
                             (leaveType) =>
                                 leaveType.id ==
                                 controllerUpdate.leave.value?.categoryId,
-                            orElse: () => LeaveType(id: "1", name: 'Default Name'),
+                            orElse:
+                                () => LeaveType(id: "1", name: 'Default Name'),
                           )
                           .name,
-                      onProjectSelected: (selectedUser) {
-                        setState(() {
-                          controllerUpdate.leaveID = selectedUser!.id;
-                        });
-                      },
-                    ),
-                  ),
+                  onProjectSelected: (selectedUser) {
+                    setState(() {
+                      controllerUpdate.leaveID = selectedUser!.id;
+                    });
+                  },
                 ),
-                Obx(
-                  () => Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: TaskDate(
-                      colorIcon: AppColors.black,
-                      label: 'Nghỉ từ ngày',
-                      selectedDate:
-                          controllerUpdate.startDate.value ?? DateTime.now(),
-                      isEnabled: canEdit,
-                      onDateSelected: (date) {
-                        controllerUpdate.startDate.value =
-                            date; // Cập nhật ngày bắt đầu
-                      },
-                    ),
-                  ),
-                ),
-                Obx(
-                  () => TaskDate(
-                    colorIcon: AppColors.black,
-                    label: 'Đến ngày',
-                    selectedDate:
-                        controllerUpdate.dueDate.value ?? DateTime.now(),
-                    isEnabled: canEdit,
-                    onDateSelected: (date) {
-                      controllerUpdate.dueDate.value =
-                          date; // Cập nhật ngày hạn
-                    },
-                  ),
-                ),
-                8.verticalSpace,
-                Opacity(
-                  opacity: canEdit ? 1.0 : 0.6,
-                  child: AbsorbPointer(
-                    absorbing: !canEdit,
-                    child: TaskNoteSection(
-                      label: 'Ghi chú',
-                      note: '',
-                      screenWidth: screenWidth,
-                      controllerNote: controllerUpdate.controllerNote,
-                      isEnabled: canEdit,
-                    ),
-                  ),
-                ),
-                30.verticalSpace,
-                button_seve(screenWidth, context, canEdit),
-              ],
+              ),
             ),
-          ),
+            Obx(
+              () => Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: TaskDate(
+                  colorIcon: AppColors.black,
+                  label: 'Nghỉ từ ngày',
+                  selectedDate:
+                      controllerUpdate.startDate.value ?? DateTime.now(),
+                  isEnabled: canEdit,
+                  onDateSelected: (date) {
+                    controllerUpdate.startDate.value =
+                        date; // Cập nhật ngày bắt đầu
+                  },
+                ),
+              ),
+            ),
+            Obx(
+              () => TaskDate(
+                colorIcon: AppColors.black,
+                label: 'Đến ngày',
+                selectedDate: controllerUpdate.dueDate.value ?? DateTime.now(),
+                isEnabled: canEdit,
+                onDateSelected: (date) {
+                  controllerUpdate.dueDate.value = date; // Cập nhật ngày hạn
+                },
+              ),
+            ),
+            8.verticalSpace,
+            Opacity(
+              opacity: canEdit ? 1.0 : 0.6,
+              child: AbsorbPointer(
+                absorbing: !canEdit,
+                child: TaskNoteSection(
+                  label: 'Lý do nghỉ phép',
+                  note: 'Nhập lý do nghỉ phép...',
+                  screenWidth: screenWidth,
+                  controllerNote: controllerUpdate.controllerNote,
+                  isEnabled: canEdit,
+                ),
+              ),
+            ),
+            16.verticalSpace,
+            Opacity(
+              opacity: canEdit ? 1.0 : 0.6,
+              child: AbsorbPointer(
+                absorbing: !canEdit,
+                child: AttachmentWidget(
+                  label: 'File đính kèm',
+                  attachmentIds: controllerUpdate.attachmentIds,
+                  onAttachmentsChanged: (attachments) {
+                    controllerUpdate.attachmentIds = attachments;
+                  },
+                  onAttachmentFilesChanged: (files) {
+                    controllerUpdate.attachmentFiles = files;
+                  },
+                  maxFiles: 3,
+                  allowedExtensions: [
+                    'pdf',
+                    'doc',
+                    'docx',
+                    'jpg',
+                    'jpeg',
+                    'png',
+                  ],
+                  isEnabled: canEdit,
+                ),
+              ),
+            ),
+            30.verticalSpace,
+            button_seve(screenWidth, context, canEdit),
+          ],
         ),
       ),
     );

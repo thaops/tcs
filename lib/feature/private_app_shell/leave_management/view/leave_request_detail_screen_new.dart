@@ -11,7 +11,6 @@ import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/le
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/service/attachment_download_service.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/service/image_gallery_service.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/leave_request_dialogs.dart';
-import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
 
 /// Screen hiển thị chi tiết leave request - đã được refactor
 class ListoffDetail extends StatelessWidget {
@@ -77,8 +76,7 @@ class ListoffDetail extends StatelessWidget {
 
                         // Workflow Card
                         LeaveRequestWorkflowCard(
-                          workflows:
-                              controller.leave?.workFlows?.cast<WorkFlow>(),
+                          workflows: controller.leave?.workFlows,
                         ),
                         SizedBox(height: 20.h),
 

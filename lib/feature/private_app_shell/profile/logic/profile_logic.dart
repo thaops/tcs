@@ -18,7 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:tcs_flutter/common/share/auth/sign_out_clear.dart';
 
 class ProfileLogic extends GetxController {
-  final SignOutClear _signOutClear = Get.find<SignOutClear>();
+  late final SignOutClear _signOutClear;
   DioApi dioApi = DioApi();
   final AuthService _authService = AuthService();
 
@@ -33,11 +33,19 @@ class ProfileLogic extends GetxController {
 
   final RxString version = ''.obs;
   final RxInt tapCount = 0.obs;
+
+  // Getter an toàn để tránh lỗi null check
+  bool get isLoadingSafe => isloading.value;
+  String get versionSafe => version.value;
+  int get tapCountSafe => tapCount.value;
   final baseUrlController = TextEditingController();
 
   @override
   void onInit() {
     super.onInit();
+    // SignOutClear đã được khởi tạo trong main.dart
+    _signOutClear = Get.find<SignOutClear>();
+
     userProfileData.clear();
     getProfile();
     initPackageInfo();
@@ -81,7 +89,6 @@ class ProfileLogic extends GetxController {
               'title': "Ngày bắt đầu",
               'subtitle': DateUtilsCustom.formatStringDate(u.createdDate),
             },
-            
         ];
       }
     } catch (e) {
@@ -107,18 +114,21 @@ class ProfileLogic extends GetxController {
   }
 
   Future<void> getProfile() async {
-     final checkAwaitingServices = CheckAwaitingServices(GetStorage());
-     final ischeckApple = await checkAwaitingServices.getawaiting();
+    final checkAwaitingServices = CheckAwaitingServices(GetStorage());
+    final ischeckApple = await checkAwaitingServices.getawaiting();
     MyId myId = await MyId.create();
 
     try {
       isloading.value = true;
-      final respon = await dioApi.get(ischeckApple ? ApiEndpoints.usersProfileApple : ApiEndpoints.profile);
+      final respon = await dioApi.get(
+        ischeckApple ? ApiEndpoints.usersProfileApple : ApiEndpoints.profile,
+      );
       print("respon.profile: ${respon.data}");
       final data = (respon.data ?? {})['data'] ?? {};
-      profile =ischeckApple ? Profile(
-        user: User.fromJson(data),
-      ) : Profile.fromJson(data as Map<String, dynamic>);
+      profile =
+          ischeckApple
+              ? Profile(user: User.fromJson(data))
+              : Profile.fromJson(data as Map<String, dynamic>);
       myId.saveMyId(profile?.user?.id ?? '');
 
       await loadUserData();
@@ -325,33 +335,12 @@ class ProfileLogic extends GetxController {
     }
   }
 
-  DateTime? _parseWorkStart(String? iso) {
-    if (iso == null || iso.isEmpty) return null;
-    try {
-      return DateTime.parse(iso);
-    } catch (_) {
-      final m = RegExp(
-        r'^(.*T\d{2}:\d{2}:\d{2})(?:\.(\d+))?(Z|[+\-].*)?$',
-      ).firstMatch(iso.trim());
-      if (m != null) {
-        final head = m.group(1) ?? '';
-        final frac = m.group(2);
-        final tz = m.group(3) ?? '';
-        String rebuilt;
-        if (frac == null || frac.isEmpty) {
-          rebuilt = '$head$tz';
-        } else {
-          final trimmed =
-              frac.length > 6 ? frac.substring(0, 6) : frac.padRight(6, '0');
-          rebuilt = '$head.$trimmed$tz';
-        }
-        try {
-          return DateTime.parse(rebuilt);
-        } catch (_) {
-          return null;
-        }
-      }
-      return null;
-    }
+  /// Reset profile data về trạng thái ban đầu
+  void resetProfile() {
+    profile = null;
+    isloading.value = false;
+    userProfileData.clear();
+    summaryData.clear();
+    userId.value = null;
   }
 }

@@ -14,8 +14,8 @@ class DioApi {
   NetworkController networkController = Get.put(NetworkController());
   static final RxBool _hasShownDialog = false.obs;
 
-  final dioLib.Dio dio = dioLib.Dio()
-    ..options.validateStatus = (status) => status! < 500;
+  final dioLib.Dio dio =
+      dioLib.Dio()..options.validateStatus = (status) => status! < 500;
 
   Map<String, dynamic> header = {
     "X_API_ID": "VN_CREW_2017",
@@ -120,7 +120,6 @@ class DioApi {
     //   return _cache['accessToken'];
     // }
     final accessToken = await services.getAccessToken();
-    print("Access Token: $accessToken");
     // _cache['accessToken'] = accessToken;
     // _tokenCacheTime = DateTime.now();
     return accessToken;
@@ -144,7 +143,8 @@ class DioApi {
       CupertinoAlertDialog(
         title: const Text('No Internet Connection'),
         content: const Text(
-            'We couldn’t connect to the server. Please check your internet connection and try again.'),
+          'We couldn’t connect to the server. Please check your internet connection and try again.',
+        ),
         actions: [
           CupertinoDialogAction(
             child: const Text('Close'),
@@ -161,10 +161,12 @@ class DioApi {
     _hasShownDialog.value = false;
   }
 
-  Future<dioLib.Response> get(String url,
-      {Map<String, dynamic>? params,
-      Map<String, dynamic>? data,
-      dioLib.CancelToken? cancelToken}) async {
+  Future<dioLib.Response> get(
+    String url, {
+    Map<String, dynamic>? params,
+    Map<String, dynamic>? data,
+    dioLib.CancelToken? cancelToken,
+  }) async {
     await _checkNetwork();
     await _buildHeader();
     try {
@@ -181,8 +183,11 @@ class DioApi {
     }
   }
 
-  Future<dioLib.Response> post(String url,
-      {dynamic data, dioLib.Options? options}) async {
+  Future<dioLib.Response> post(
+    String url, {
+    dynamic data,
+    dioLib.Options? options,
+  }) async {
     await _checkNetwork();
     await _buildHeader();
     try {
@@ -197,8 +202,11 @@ class DioApi {
     }
   }
 
-  Future<dioLib.Response> put(String url,
-      {dynamic data, dioLib.Options? options}) async {
+  Future<dioLib.Response> put(
+    String url, {
+    dynamic data,
+    dioLib.Options? options,
+  }) async {
     await _checkNetwork();
     await _buildHeader();
     try {
@@ -213,8 +221,10 @@ class DioApi {
     }
   }
 
-  Future<dioLib.Response> delete(String url,
-      {Map<String, dynamic>? params}) async {
+  Future<dioLib.Response> delete(
+    String url, {
+    Map<String, dynamic>? params,
+  }) async {
     await _checkNetwork();
     await _buildHeader();
     try {
@@ -230,7 +240,7 @@ class DioApi {
   }
 
   dioLib.Response _handleResponse(dioLib.Response response) {
-    if(response.statusCode == HttpStatusCodes.STATUS_CODE_UNAUTHORIZED){ 
+    if (response.statusCode == HttpStatusCodes.STATUS_CODE_UNAUTHORIZED) {
       SignOutClear().signOut();
       throw Exception('Unauthorized');
     }

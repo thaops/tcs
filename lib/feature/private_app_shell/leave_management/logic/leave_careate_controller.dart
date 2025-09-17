@@ -22,20 +22,40 @@ class LeaveCareateController extends GetxController {
   final RxList<LeaveType> leaves = <LeaveType>[].obs;
   RxBool isLoading = false.obs;
 
-  String? usersID;
-  String? leaveID;
-  Rx<DateTime> startDate = Rx<DateTime>(
-    DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
-  );
-  Rx<DateTime> dueDate = Rx<DateTime>(
+  // Các trường dữ liệu chính
+  String? employeeId; // ID nhân viên
+  String? fullName; // Tên đầy đủ nhân viên
+  String? categoryId; // ID loại nghỉ phép
+  Rx<DateTime> fromDate = Rx<DateTime>(
     DateTime(
       DateTime.now().year,
       DateTime.now().month,
       DateTime.now().day,
-      23,
-      59,
+      8,
+      0,
     ),
   );
+  Rx<DateTime> toDate = Rx<DateTime>(
+    DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+      17,
+      30,
+    ),
+  );
+  String? reason; // Lý do nghỉ phép
+  List<String> attachmentIds = []; // Danh sách ID file đính kèm
+  List<Map<String, dynamic>> attachmentFiles = []; // Danh sách file thực tế
+
+  // Các trường cũ để tương thích ngược
+  String? get usersID => employeeId;
+  set usersID(String? value) => employeeId = value;
+  String? get leaveID => categoryId;
+  set leaveID(String? value) => categoryId = value;
+  Rx<DateTime> get startDate => fromDate;
+  Rx<DateTime> get dueDate => toDate;
+
   RxBool isloadingSave = false.obs;
 
   late TextEditingController controllerNote;
@@ -45,7 +65,9 @@ class LeaveCareateController extends GetxController {
     super.onInit();
     controllerNote = TextEditingController();
     MyId myId = await MyId.create();
-    usersID = await myId.getMyId();
+    employeeId = await myId.getMyId();
+    // Lấy tên đầy đủ từ profile
+    fullName = controllerProfile.profile?.user?.fullName;
     // fetchUsers();
   }
 
@@ -57,15 +79,18 @@ class LeaveCareateController extends GetxController {
 
   // Lưu tạo mới đơn nghỉ phép
   Future<void> save_create(BuildContext context) async {
-    if (!_validateLeaveData(leaveID, usersID, dueDate, startDate, context))
+    if (!_validateLeaveData(categoryId, employeeId, toDate, fromDate, context))
       return;
 
     final Map<String, dynamic> addData = {
-      'reason': controllerNote.text,
-      'fromDate': startDate.value.toIso8601String(),
-      'toDate': dueDate.value.toIso8601String(),
-      'categoryId': leaveID,
-      'employeeId': usersID,
+      'employeeId': employeeId,
+      'fullName': fullName,
+      'fromDate': fromDate.value.toIso8601String(),
+      'toDate': toDate.value.toIso8601String(),
+      'categoryId': categoryId,
+      'reason': controllerNote.text.isNotEmpty ? controllerNote.text : reason,
+      'attachmentIds': attachmentIds,
+      'attachmentFiles': attachmentFiles,
     };
 
     try {
@@ -86,17 +111,30 @@ class LeaveCareateController extends GetxController {
   }
 
   bool _validateLeaveData(
-    leaveID,
-    usersID,
-    _dueDate,
-    _startDate,
+    categoryId,
+    employeeId,
+    _toDate,
+    _fromDate,
     BuildContext context,
   ) {
-    if (leaveID == null || usersID == null) {
-      _showSnackBar(context, 'Vui lòng điền đầy đủ thông tin');
+    // Kiểm tra các trường bắt buộc
+    if (categoryId == null || categoryId.isEmpty) {
+      _showSnackBar(context, 'Vui lòng chọn loại nghỉ phép');
       return false;
     }
-    if (_dueDate.value.isBefore(_startDate.value)) {
+
+    if (employeeId == null || employeeId.isEmpty) {
+      _showSnackBar(context, 'Vui lòng chọn nhân viên');
+      return false;
+    }
+
+    if (controllerNote.text.trim().isEmpty) {
+      _showSnackBar(context, 'Vui lòng nhập lý do nghỉ phép');
+      return false;
+    }
+
+    // Kiểm tra ngày tháng
+    if (_toDate.value.isBefore(_fromDate.value)) {
       _showSnackBar(context, 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
       return false;
     }
@@ -126,39 +164,31 @@ class LeaveCareateController extends GetxController {
     }
   }
 
-  void _updateDate(DateTime newDate, bool isStartDate) {
-    if (isStartDate) {
-      startDate.value = newDate;
-    } else {
-      dueDate.value = newDate;
-    }
-  }
-
-  // Phương thức cập nhật startDate và tự động điều chỉnh dueDate
+  // Phương thức cập nhật fromDate và tự động điều chỉnh toDate
   void updateStartDate(DateTime newStartDate) {
-    startDate.value = newStartDate;
+    fromDate.value = newStartDate;
 
-    if (dueDate.value.isBefore(newStartDate) ||
-        isSameDay(dueDate.value, newStartDate)) {
-      dueDate.value = DateTime(
+    if (toDate.value.isBefore(newStartDate) ||
+        isSameDay(toDate.value, newStartDate)) {
+      toDate.value = DateTime(
         newStartDate.year,
         newStartDate.month,
         newStartDate.day,
-        23,
-        59,
+        17,
+        30,
       );
     }
   }
 
   void updateDueDate(DateTime newDueDate) {
-    dueDate.value = newDueDate;
+    toDate.value = newDueDate;
 
-    if (startDate.value.isAfter(newDueDate)) {
-      startDate.value = DateTime(
+    if (fromDate.value.isAfter(newDueDate)) {
+      fromDate.value = DateTime(
         newDueDate.year,
         newDueDate.month,
         newDueDate.day,
-        0,
+        8,
         0,
       );
     }
@@ -168,5 +198,39 @@ class LeaveCareateController extends GetxController {
     return date1.year == date2.year &&
         date1.month == date2.month &&
         date1.day == date2.day;
+  }
+
+  // Phương thức quản lý file đính kèm
+  void addAttachment(
+    String attachmentId, {
+    String? filePath,
+    String? fileName,
+    int? fileSize,
+  }) {
+    if (!attachmentIds.contains(attachmentId)) {
+      attachmentIds.add(attachmentId);
+      attachmentFiles.add({
+        'id': attachmentId,
+        'path': filePath,
+        'name': fileName ?? 'File đính kèm',
+        'size': fileSize ?? 0,
+      });
+    }
+  }
+
+  void removeAttachment(String attachmentId) {
+    attachmentIds.remove(attachmentId);
+    attachmentFiles.removeWhere((file) => file['id'] == attachmentId);
+  }
+
+  void clearAttachments() {
+    attachmentIds.clear();
+    attachmentFiles.clear();
+  }
+
+  // Phương thức cập nhật thông tin nhân viên
+  void updateEmployeeInfo(String? id, String? name) {
+    employeeId = id;
+    fullName = name;
   }
 }

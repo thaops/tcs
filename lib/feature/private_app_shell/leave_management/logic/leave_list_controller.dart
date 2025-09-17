@@ -82,33 +82,51 @@ class LeaveListController extends GetxController {
     try {
       isLoading.value = true;
       final response = await _getListOff(firstDay, lastDay);
-      print("response.getListOff: ${response}");
 
-      // Client-side filtering to ensure only leaves completely within the selected month are shown
-      // This fixes the bug where leaves from 01/10 – 02/10/2025 were shown when filtering by September 2025
+      // Client-side filtering to ensure only employees with leave requests within the selected month are shown
       List<Employee> filteredEmployees = [];
       if (response != null) {
         filteredEmployees =
             response.where((employee) {
-              final fromDate = employee.fromDate;
-              final toDate = employee.toDate;
+              // For new API format, check employee's own fromDate/toDate instead of dayOffs
+              if (employee.dayOffs.isNotEmpty) {
+                // Old format: Check if any dayOff falls within the selected month range
+                return employee.dayOffs.any((dayOff) {
+                  final fromDate = dayOff.fromDate;
+                  final toDate = dayOff.toDate;
 
-              // Skip if dates are null
-              if (fromDate == null || toDate == null) {
-                return false;
+                  // Check if the dayOff period overlaps with the selected month
+                  final fromDateInMonth =
+                      fromDate.isAfter(firstDay.subtract(Duration(days: 1))) &&
+                      fromDate.isBefore(lastDay.add(Duration(days: 1)));
+                  final toDateInMonth =
+                      toDate.isAfter(firstDay.subtract(Duration(days: 1))) &&
+                      toDate.isBefore(lastDay.add(Duration(days: 1)));
+
+                  // Include if the dayOff period overlaps with the selected month
+                  return fromDateInMonth || toDateInMonth;
+                });
+              } else {
+                // New format: Check employee's own fromDate/toDate
+                final fromDate = employee.fromDate;
+                final toDate = employee.toDate;
+
+                // Skip if dates are null
+                if (fromDate == null || toDate == null) {
+                  return false;
+                }
+
+                // Check if the leave request period overlaps with the selected month
+                final fromDateInMonth =
+                    fromDate.isAfter(firstDay.subtract(Duration(days: 1))) &&
+                    fromDate.isBefore(lastDay.add(Duration(days: 1)));
+                final toDateInMonth =
+                    toDate.isAfter(firstDay.subtract(Duration(days: 1))) &&
+                    toDate.isBefore(lastDay.add(Duration(days: 1)));
+
+                // Include if the leave request period overlaps with the selected month
+                return fromDateInMonth || toDateInMonth;
               }
-
-              // Strict filtering: Only show leaves where BOTH fromDate AND toDate are within the selected month
-              // This ensures that leaves like 01/10 – 02/10 don't appear when filtering by September
-              final fromDateInMonth =
-                  fromDate.isAfter(firstDay.subtract(Duration(days: 1))) &&
-                  fromDate.isBefore(lastDay.add(Duration(days: 1)));
-              final toDateInMonth =
-                  toDate.isAfter(firstDay.subtract(Duration(days: 1))) &&
-                  toDate.isBefore(lastDay.add(Duration(days: 1)));
-
-              // Only include leaves where both start and end dates are within the selected month
-              return fromDateInMonth && toDateInMonth;
             }).toList();
       }
 

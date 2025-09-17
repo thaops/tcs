@@ -55,21 +55,25 @@ class ApiEndpoints {
     return "${Config.baseUrl}/dayoff/get-list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
   }
 
-  static String getLeaveID(String leaveId) =>
-      "${Config.baseUrl}/dayoff/get-detail-day-off/$leaveId";
-  static String updateLeaveID(String leaveId) =>
-      "${Config.baseUrl}/dayoff/update-day-off/$leaveId";
-  static String deleteLeaveID(String leaveId) =>
-      "${Config.baseUrl}/dayoff/delete-day-off/$leaveId";
-  static String createLeaveID() => "${Config.baseUrl}/dayoff/add-day-off";
-  static String getLeave = "${Config.baseUrl}/dayoff/get-list-category";
-  static String approveLeave(String approveId) =>
-      "${Config.baseUrl}/dayoff/approve-day-off/$approveId";
+  static String listoffV2 =
+      "${Config.baseUrl}/dayoff/get-list-day-off-schedule";
+  static String listoffListView =
+      "${Config.baseUrl}/dayoff/get-list-day-off-list-view";
 
-  static String getListApprover(int? step, String? keyword) =>
-      "${Config.baseUrl}/dayoff/get-list-approval-orders";
-  static String getListApprovalByUser(String leaveOffId) =>
-      "${Config.baseUrl}/dayoff/get-list-approval-by/$leaveOffId";
+  static String getLeaveIDV2(String leaveId) =>
+      "${Config.baseUrl}/dayoffv2/get-detail-day-off-v2/$leaveId";
+  static String updateLeaveIDV2(String leaveId) =>
+      "${Config.baseUrl}/dayoffv2/update-day-off-v2/$leaveId";
+  static String deleteLeaveIDV2(String leaveId) =>
+      "${Config.baseUrl}/dayoffv2/delete-day-off-v2/$leaveId";
+  static String createLeaveIDV2() => "${Config.baseUrl}/dayoffv2/add-day-off-v2";
+  static String getLeaveV2 = "${Config.baseUrl}/dayoffv2/get-list-category-v2";
+  static String approveLeaveV2(String approveId) =>
+      "${Config.baseUrl}/dayoffv2/approve-day-off-v2/$approveId";
+  static String getListApproverV2(int? step, String? keyword) =>
+      "${Config.baseUrl}/dayoffv2/get-list-approval-orders-v2";
+  static String getListApprovalByUserV2(String leaveOffId) =>
+      "${Config.baseUrl}/dayoffv2/get-list-approval-by-v2/$leaveOffId";
 
   static String fetchListOff(
     DateTime firstDayOfMonth,

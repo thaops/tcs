@@ -1,9 +1,17 @@
+import 'dayoff_model.dart';
+
 class Employee {
   final String id;
-  final String employeeId;
+  final String employeeCode;
+  final String? fullName;
+  final String? departmentName;
+  final String? unionName;
+  final List<DayOff> dayOffs;
+
+  // Legacy fields for backward compatibility
+  final String? employeeId;
   final String? department;
   final String? avatarUrl;
-  final String? fullName;
   final DateTime? fromDate;
   final DateTime? toDate;
   final dynamic totalDay;
@@ -20,22 +28,28 @@ class Employee {
 
   Employee({
     required this.id,
-    required this.employeeId,
+    required this.employeeCode,
+    this.fullName,
+    this.departmentName,
+    this.unionName,
+    this.dayOffs = const [],
+
+    // Legacy fields
+    this.employeeId,
     this.department,
     this.avatarUrl,
-     this.fullName,
-     this.fromDate,
-     this.toDate,
-     this.totalDay,
+    this.fromDate,
+    this.toDate,
+    this.totalDay,
     this.categoryId,
-     this.category,
-     this.status,
-     this.statusLabel,
+    this.category,
+    this.status,
+    this.statusLabel,
     this.approvalDate,
     this.lastApprovalDate,
-     this.reason,
+    this.reason,
     this.note,
-     this.createdDate,
+    this.createdDate,
     this.isDeleted,
   });
 
@@ -52,8 +66,12 @@ class Employee {
     bool _looksLikeUuid(String s) {
       final v = s.toLowerCase();
       // simple UUID v4-ish check
-      return RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}').hasMatch(v) ||
-             RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$').hasMatch(v);
+      return RegExp(
+            r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+          ).hasMatch(v) ||
+          RegExp(
+            r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+          ).hasMatch(v);
     }
 
     // Robust department parsing: support String, Map, or fallback from departmentId
@@ -85,29 +103,51 @@ class Employee {
         if (mapped != null && mapped.isNotEmpty) return mapped;
       }
       // 5) Alternative name keys at root
-      final alt = (source['departmentName'] as String?) ?? (source['deptName'] as String?);
+      final alt =
+          (source['departmentName'] as String?) ??
+          (source['deptName'] as String?);
       if (alt != null && alt.trim().isNotEmpty) return alt.trim();
       return null;
     }
 
     DateTime? _safeParse(String? v) {
       if (v == null || v.isEmpty) return null;
-      try { return DateTime.parse(v); } catch (_) { return null; }
+      try {
+        return DateTime.parse(v);
+      } catch (_) {
+        return null;
+      }
     }
 
     final String? depName = _parseDepartment(json['department'], json);
 
+    // Parse dayOffs array
+    List<DayOff> dayOffsList = [];
+    if (json['dayOffs'] is List) {
+      dayOffsList =
+          (json['dayOffs'] as List)
+              .map((dayOffJson) => DayOff.fromJson(dayOffJson))
+              .toList();
+    }
+
     return Employee(
       id: json['id'] ?? '',
-      employeeId: json['employeeId'] ?? '',
+      employeeCode: json['employeeCode'] ?? '',
+      fullName: json['fullName'] ?? '',
+      departmentName: json['departmentName'] ?? depName,
+      unionName: json['unionName'] ?? '',
+      dayOffs: dayOffsList,
+
+      // Legacy fields for backward compatibility
+      employeeId: json['employeeId'] ?? json['employeeCode'] ?? '',
       department: depName,
       avatarUrl: json['avatarUrl'],
-      fullName: json['fullName'] ?? '',
       fromDate: _safeParse(json['fromDate']?.toString()),
       toDate: _safeParse(json['toDate']?.toString()),
-      totalDay: (json['totalDay'] is double)
-          ? json['totalDay']
-          : (json['totalDay']?.toInt() ?? 0),
+      totalDay:
+          (json['totalDay'] is double)
+              ? json['totalDay']
+              : (json['totalDay']?.toInt() ?? 0),
       categoryId: json['categoryId'],
       category: json['category'] ?? '',
       status: json['status'] ?? 0,
@@ -123,8 +163,10 @@ class Employee {
 
   @override
   String toString() {
-    return 'Employee{id: $id, employeeId: $employeeId, department: $department, avatarUrl: $avatarUrl, '
-        'fullName: $fullName, fromDate: $fromDate, toDate: $toDate, totalDay: $totalDay, '
+    return 'Employee{id: $id, employeeCode: $employeeCode, fullName: $fullName, '
+        'departmentName: $departmentName, unionName: $unionName, dayOffs: ${dayOffs.length} items, '
+        'employeeId: $employeeId, department: $department, avatarUrl: $avatarUrl, '
+        'fromDate: $fromDate, toDate: $toDate, totalDay: $totalDay, '
         'categoryId: $categoryId, category: $category, status: $status, statusLabel: $statusLabel, '
         'approvalDate: $approvalDate, lastApprovalDate: $lastApprovalDate, reason: $reason, '
         'note: $note, createdDate: $createdDate, isDeleted: $isDeleted}';

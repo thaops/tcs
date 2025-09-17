@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:get_storage/get_storage.dart';
+import 'package:dio/dio.dart';
 import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
-import 'package:tcs_flutter/common/utils/check_awaiting_services.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approval_list_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
 import 'package:tcs_flutter/src/api/models/employee_model.dart';
 import 'package:tcs_flutter/src/config/constants/url/url.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/add.leave.dart';
@@ -27,29 +27,38 @@ class LeaveManagementRepository extends ChangeNotifier
     DateTime firstDayOfMonth,
     DateTime lastDayOfMonth,
   ) async {
-    final checkAwaitingServices = CheckAwaitingServices(GetStorage());
-    final ischeckApple = await checkAwaitingServices.getawaiting();
     try {
       isLoading = true;
-      final response = await dio.get(
-        ischeckApple
-            ? ApiEndpoints.listoffApple(firstDayOfMonth, lastDayOfMonth)
-            : ApiEndpoints.listoff(firstDayOfMonth, lastDayOfMonth),
+      final response = await dio.post(
+        ApiEndpoints.listoffListView,
+        data: {
+          "FromDate": firstDayOfMonth.toIso8601String(),
+          "ToDate": lastDayOfMonth.toIso8601String(),
+          "PageIndex": 1,
+          "PageSize": 50,
+        },
       );
-      print("response.getListOffss: ${response.data}");
       if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
-        final List<dynamic> employeeJson = jsonResponse['data'];
-        List<Employee> employee =
-            employeeJson
-                .map((employeeJson) => Employee.fromJson(employeeJson))
+        final List<dynamic> leaveRequestJson = jsonResponse['data'];
+
+        // Parse new API response format
+        List<LeaveRequest> leaveRequests =
+            leaveRequestJson
+                .map((json) => LeaveRequest.fromJson(json))
                 .toList();
-        return employee;
+
+        // Convert to Employee for backward compatibility
+        List<Employee> employees =
+            leaveRequests
+                .map((leaveRequest) => leaveRequest.toEmployee())
+                .toList();
+
+        return employees;
       } else {
         return null;
       }
     } catch (e) {
-      print('Error: $e');
       return null;
     } finally {
       isLoading = false;
@@ -60,19 +69,16 @@ class LeaveManagementRepository extends ChangeNotifier
   Future<LeaveID?> getLeaveID(String leaveId, BuildContext context) async {
     try {
       isLoading = true;
-      final response = await dio.get(ApiEndpoints.getLeaveID(leaveId));
-      print("response.getLeaveID: ${response.data}");
+      final response = await dio.get(ApiEndpoints.getLeaveIDV2(leaveId));
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final Map<String, dynamic> leaveJson = jsonResponse['data'];
         return LeaveID.fromJson(leaveJson);
       } else {
-        print('Failed to load task');
         return null;
       }
     } catch (e) {
-      print('Error: $e');
       return null;
     } finally {
       isLoading = false;
@@ -82,7 +88,7 @@ class LeaveManagementRepository extends ChangeNotifier
 
   Future<List<LeaveType>?> getLeave(BuildContext context) async {
     try {
-      final response = await dio.get(ApiEndpoints.getLeave);
+      final response = await dio.get(ApiEndpoints.getLeaveV2);
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> leaveJson = jsonResponse['data'];
@@ -95,24 +101,22 @@ class LeaveManagementRepository extends ChangeNotifier
         return null;
       }
     } catch (e) {
-      print('Error: $e');
       return null;
     }
   }
 
   Future<bool> deleteLeave(String dayyOffId, BuildContext context) async {
     try {
-      final response = await dio.delete(ApiEndpoints.deleteLeaveID(dayyOffId));
+      final response = await dio.delete(
+        ApiEndpoints.deleteLeaveIDV2(dayyOffId),
+      );
 
       if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
-        print('Task deleted successfully');
         return true;
       } else {
-        print('Failed to delete task');
         return false;
       }
     } catch (e) {
-      print('Error: $e');
       return false;
     }
   }
@@ -123,11 +127,48 @@ class LeaveManagementRepository extends ChangeNotifier
     BuildContext context,
   ) async {
     try {
+      // Tạo map dữ liệu cho FormData
+      final Map<String, dynamic> formDataMap = {
+        'EmployeeId': addData['employeeId'] ?? '',
+        'FullName': addData['fullName'] ?? '',
+        'FromDate': addData['fromDate'] ?? '',
+        'ToDate': addData['toDate'] ?? '',
+        'CategoryId': addData['categoryId'] ?? '',
+        'Reason': addData['reason'] ?? '',
+      };
+
+      // Thêm file đính kèm nếu có
+      if (addData['attachmentFiles'] != null &&
+          addData['attachmentFiles'] is List) {
+        final List<Map<String, dynamic>> attachmentFiles =
+            addData['attachmentFiles'] as List<Map<String, dynamic>>;
+
+        for (int i = 0; i < attachmentFiles.length; i++) {
+          final Map<String, dynamic> file = attachmentFiles[i];
+          final String? filePath = file['path'];
+          final String fileName = file['name'] ?? 'attachment';
+
+          if (filePath != null && filePath.isNotEmpty) {
+            // Gửi file thực tế
+            formDataMap['AttachmentIds'] = await MultipartFile.fromFile(
+              filePath,
+              filename: fileName,
+            );
+          } else {
+            // Gửi ID nếu không có file path
+            formDataMap['AttachmentIds'] = file['id'] ?? '';
+          }
+        }
+      }
+
+      // Tạo FormData từ map
+      final formData = FormData.fromMap(formDataMap);
+
       final response = await dio.post(
-        ApiEndpoints.careateleave,
-        data: jsonEncode(addData),
+        ApiEndpoints.createLeaveIDV2(), // Sử dụng endpoint v2
+        data: formData,
+        // Không cần thiết lập headers, Dio sẽ tự động xử lý
       );
-      print("response.addLeave: ${response.data}");
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> data = response.data as Map<String, dynamic>;
@@ -159,9 +200,47 @@ class LeaveManagementRepository extends ChangeNotifier
     BuildContext context,
   ) async {
     try {
+      // Tạo map dữ liệu cho FormData
+      final Map<String, dynamic> formDataMap = {
+        'EmployeeId': updateData['employeeId'] ?? '',
+        'FullName': updateData['fullName'] ?? '',
+        'FromDate': updateData['fromDate'] ?? '',
+        'ToDate': updateData['toDate'] ?? '',
+        'CategoryId': updateData['categoryId'] ?? '',
+        'Reason': updateData['reason'] ?? '',
+      };
+
+      // Thêm file đính kèm nếu có
+      if (updateData['attachmentFiles'] != null &&
+          updateData['attachmentFiles'] is List) {
+        final List<Map<String, dynamic>> attachmentFiles =
+            updateData['attachmentFiles'] as List<Map<String, dynamic>>;
+
+        for (int i = 0; i < attachmentFiles.length; i++) {
+          final Map<String, dynamic> file = attachmentFiles[i];
+          final String? filePath = file['path'];
+          final String fileName = file['name'] ?? 'attachment';
+
+          if (filePath != null && filePath.isNotEmpty) {
+            // Gửi file thực tế
+            formDataMap['AttachmentIds'] = await MultipartFile.fromFile(
+              filePath,
+              filename: fileName,
+            );
+          } else {
+            // Gửi ID nếu không có file path
+            formDataMap['AttachmentIds'] = file['id'] ?? '';
+          }
+        }
+      }
+
+      // Tạo FormData từ map
+      final formData = FormData.fromMap(formDataMap);
+
       final response = await dio.put(
-        ApiEndpoints.updateleave(leaveId),
-        data: jsonEncode(updateData),
+        ApiEndpoints.updateLeaveIDV2(leaveId), // Sử dụng endpoint v2
+        data: formData,
+        // Không cần thiết lập headers, Dio sẽ tự động xử lý
       );
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
@@ -195,10 +274,9 @@ class LeaveManagementRepository extends ChangeNotifier
   ) async {
     try {
       final response = await dio.post(
-        ApiEndpoints.approveLeave(approveId),
+        ApiEndpoints.approveLeaveV2(approveId),
         data: jsonEncode(approveData),
       );
-      print("response.approveLeave: ${response.data}");
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> data = response.data as Map<String, dynamic>;
@@ -251,7 +329,6 @@ class LeaveManagementRepository extends ChangeNotifier
       }
       return <String>[];
     } catch (e) {
-      print('Error fetching departments: $e');
       return <String>[];
     }
   }
@@ -260,9 +337,8 @@ class LeaveManagementRepository extends ChangeNotifier
   Future<List<Approver>> getListApprover(int? step, String? keyword) async {
     try {
       final response = await dio.get(
-        ApiEndpoints.getListApprover(step, keyword),
+        ApiEndpoints.getListApproverV2(step, keyword),
       );
-      print("response.getListApprover: ${response.data}");
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final list =
             (response.data is Map && response.data['data'] is List)
@@ -273,7 +349,6 @@ class LeaveManagementRepository extends ChangeNotifier
       }
       return <Approver>[];
     } catch (e) {
-      print('Error fetching approvers: $e');
       return <Approver>[];
     }
   }
@@ -282,9 +357,8 @@ class LeaveManagementRepository extends ChangeNotifier
   Future<List<ApprovalData>> getListApprovalByUser(String leaveOffId) async {
     try {
       final response = await dio.get(
-        ApiEndpoints.getListApprovalByUser(leaveOffId),
+        ApiEndpoints.getListApprovalByUserV2(leaveOffId),
       );
-      print("response.getListApprovalByUser: ${response.data}");
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final list =
             (response.data is Map && response.data['data'] is List)
@@ -295,7 +369,6 @@ class LeaveManagementRepository extends ChangeNotifier
       }
       return <ApprovalData>[];
     } catch (e) {
-      print('Error fetching approval list by user: $e');
       return <ApprovalData>[];
     }
   }

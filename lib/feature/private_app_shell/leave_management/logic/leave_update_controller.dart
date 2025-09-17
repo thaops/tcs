@@ -23,11 +23,15 @@ class LeaveUpdateController extends GetxController {
   RxBool isLoading = false.obs;
   late TextEditingController controllerNote;
 
+  // Các trường cho file đính kèm
+  List<String> attachmentIds = [];
+  List<Map<String, dynamic>> attachmentFiles = [];
+
   final LeaveRepositoryInterface leaveManagementRepository;
   late final GetLeaveTypesUseCase _getLeaveTypes;
   late final UpdateLeaveUseCase _updateLeave;
   LeaveUpdateController({LeaveRepositoryInterface? repo})
-      : leaveManagementRepository = repo ?? LeaveManagementRepository() {
+    : leaveManagementRepository = repo ?? LeaveManagementRepository() {
     _getLeaveTypes = GetLeaveTypesUseCase(leaveManagementRepository);
     _updateLeave = UpdateLeaveUseCase(leaveManagementRepository);
   }
@@ -66,16 +70,22 @@ class LeaveUpdateController extends GetxController {
   }
 
   Future<void> leaveUpdate(BuildContext context) async {
-    if (leaveID == null || usersID == null ) {
+    if (leaveID == null || usersID == null) {
       Get.snackbar('Thông báo', 'Vui lòng điền đầy đủ thông tin');
       return;
     }
     if (startDate.value == null || dueDate.value == null) {
-      Get.snackbar('Thông báo', 'Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.');
+      Get.snackbar(
+        'Thông báo',
+        'Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.',
+      );
       return;
     }
     if (dueDate.value!.isBefore(startDate.value!)) {
-      Get.snackbar('Thông báo', 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
+      Get.snackbar(
+        'Thông báo',
+        'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.',
+      );
       return;
     }
 
@@ -87,6 +97,8 @@ class LeaveUpdateController extends GetxController {
       'toDate': dueDate.value!.toIso8601String(),
       'categoryId': leaveID,
       'employeeId': usersID,
+      'attachmentIds': attachmentIds,
+      'attachmentFiles': attachmentFiles,
     };
 
     try {
@@ -105,8 +117,7 @@ class LeaveUpdateController extends GetxController {
     }
   }
 
-
-    Future<void> fetchLeave() async {
+  Future<void> fetchLeave() async {
     try {
       isLoading.value = true;
       final ctx = Get.context;
@@ -129,4 +140,31 @@ class LeaveUpdateController extends GetxController {
     return !isApproved;
   }
 
+  // Phương thức quản lý file đính kèm
+  void addAttachment(
+    String attachmentId, {
+    String? filePath,
+    String? fileName,
+    int? fileSize,
+  }) {
+    if (!attachmentIds.contains(attachmentId)) {
+      attachmentIds.add(attachmentId);
+      attachmentFiles.add({
+        'id': attachmentId,
+        'path': filePath,
+        'name': fileName ?? 'File đính kèm',
+        'size': fileSize ?? 0,
+      });
+    }
+  }
+
+  void removeAttachment(String attachmentId) {
+    attachmentIds.remove(attachmentId);
+    attachmentFiles.removeWhere((file) => file['id'] == attachmentId);
+  }
+
+  void clearAttachments() {
+    attachmentIds.clear();
+    attachmentFiles.clear();
+  }
 }

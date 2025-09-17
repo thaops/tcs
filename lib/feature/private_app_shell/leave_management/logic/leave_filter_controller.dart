@@ -23,7 +23,7 @@ class LeaveFilterController extends GetxController {
   final LeaveRepositoryInterface leaveRepository;
   late final GetDepartmentsUseCase _getDepartments;
   LeaveFilterController({LeaveRepositoryInterface? repo})
-      : leaveRepository = repo ?? LeaveManagementRepository() {
+    : leaveRepository = repo ?? LeaveManagementRepository() {
     _getDepartments = GetDepartmentsUseCase(leaveRepository);
   }
   RxBool isLoading = false.obs;
@@ -43,7 +43,9 @@ class LeaveFilterController extends GetxController {
     // Đặt mốc đầu/cuối tháng tại thời điểm khởi tạo (bao gồm giờ phút giây)
     final now = DateTime.now();
     final months = listController.months;
-    if (months.length > 1 && months[1]['firstDay'] != null && months[1]['lastDay'] != null) {
+    if (months.length > 1 &&
+        months[1]['firstDay'] != null &&
+        months[1]['lastDay'] != null) {
       startDate.value = months[1]['firstDay']!;
       endDate.value = months[1]['lastDay']!;
     } else {
@@ -57,8 +59,10 @@ class LeaveFilterController extends GetxController {
   bool isValidDateRange() {
     if (startDate.value.isAfter(endDate.value)) {
       Get.snackbar(
-          "Ngày không hợp lệ", "Ngày bắt đầu không được lớn hơn ngày kết thúc.",
-          backgroundColor: AppColors.white);
+        "Ngày không hợp lệ",
+        "Ngày bắt đầu không được lớn hơn ngày kết thúc.",
+        backgroundColor: AppColors.white,
+      );
       return false;
     }
     return true;
@@ -67,9 +71,22 @@ class LeaveFilterController extends GetxController {
   void setStartAndEndDates() {
     DateTime currentDate = DateTime.now();
 
-    startDate.value = DateTime(currentDate.year, currentDate.month, 1, 0, 0, 0, 0, 0);
+    startDate.value = DateTime(
+      currentDate.year,
+      currentDate.month,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+    );
 
-    final lastDateOfMonth = DateTime(currentDate.year, currentDate.month + 1, 0);
+    final lastDateOfMonth = DateTime(
+      currentDate.year,
+      currentDate.month + 1,
+      0,
+    );
     endDate.value = DateTime(
       lastDateOfMonth.year,
       lastDateOfMonth.month,
@@ -85,12 +102,13 @@ class LeaveFilterController extends GetxController {
   // Helpers for department filter
   void setDepartmentsFromNames(List<String> departmentNames) {
     final hasUnknown = departmentNames.any((e) => (e).trim().isEmpty);
-    final unique = departmentNames
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final unique =
+        departmentNames
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
     final items = unique.map((name) => Item(id: name, name: name)).toList();
     final List<Item> result = [Item(id: '', name: 'Tất cả')] + items;
     if (hasUnknown) {
@@ -125,18 +143,29 @@ class LeaveFilterController extends GetxController {
   }
 
   // Xây danh sách phòng ban từ FilterUserController (API phòng ban mới)
-  void setDepartmentsFromController(FilterUserController controller, List<leave_model.Employee> employees) {
+  void setDepartmentsFromController(
+    FilterUserController controller,
+    List<leave_model.Employee> employees,
+  ) {
     // Chỉ lấy các phòng thực sự xuất hiện trong danh sách xin nghỉ (theo tháng/khoảng thời gian hiện tại)
-    final presentDeps = employees
-        .map((e) => (controller.departmentNameForEmployee(e.employeeId) ?? (e.department ?? '')).trim())
-        .where((name) => name.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final presentDeps =
+        employees
+            .map(
+              (e) =>
+                  (controller.departmentNameForEmployee(e.employeeId) ??
+                          (e.department ?? ''))
+                      .trim(),
+            )
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
 
     // detect unknown: có nhân viên mà không map được tên phòng
     final hasUnknown = employees.any((e) {
-      final dep = controller.departmentNameForEmployee(e.employeeId) ?? (e.department ?? '');
+      final dep =
+          controller.departmentNameForEmployee(e.employeeId) ??
+          (e.department ?? '');
       return dep.trim().isEmpty;
     });
 
@@ -155,14 +184,17 @@ class LeaveFilterController extends GetxController {
 
   // Xây danh sách trạng thái từ danh sách xin nghỉ hiện tại
   void setStatusesFromEmployees(List<leave_model.Employee> employees) {
-    final names = employees
-        .map((e) => (e.statusLabel ?? '').trim())
-        .where((e) => e.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final names =
+        employees
+            .map((e) => (e.statusLabel ?? '').trim())
+            .where((e) => e.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
 
-    final hasUnknown = employees.any((e) => (e.statusLabel ?? '').trim().isEmpty);
+    final hasUnknown = employees.any(
+      (e) => (e.statusLabel ?? '').trim().isEmpty,
+    );
 
     final items = names.map((n) => Item(id: n, name: n)).toList();
     final List<Item> result = [Item(id: '', name: 'Tất cả'), ...items];
@@ -174,6 +206,27 @@ class LeaveFilterController extends GetxController {
     final sttIds = statusItems.map((e) => e.id).toSet();
     if (!sttIds.contains(statusId.value)) {
       statusId.value = '';
+    }
+  }
+
+  /// Reset tất cả filters về trạng thái ban đầu
+  void resetFilters() {
+    departmentId.value = '';
+    statusId.value = '';
+    departmentItems.clear();
+    statusItems.clear();
+
+    // Reset về tháng hiện tại
+    final now = DateTime.now();
+    final months = listController.months;
+    if (months.length > 1 &&
+        months[1]['firstDay'] != null &&
+        months[1]['lastDay'] != null) {
+      startDate.value = months[1]['firstDay']!;
+      endDate.value = months[1]['lastDay']!;
+    } else {
+      startDate.value = _firstDayOfMonth(now);
+      endDate.value = _lastDayOfMonth(now);
     }
   }
 }

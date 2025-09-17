@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/common/widgets/app_bar_widget.dart';
+import 'package:tcs_flutter/common/widgets/attachment_widget.dart';
 import 'package:tcs_flutter/common/widgets/custom_select.dart';
 import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
 import 'package:tcs_flutter/common/widgets/task_date.dart';
@@ -83,7 +84,7 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                                     ?.toString();
                             if (id != null && name != null) {
                               setState(() {
-                                controllerCreate.usersID = id;
+                                controllerCreate.updateEmployeeInfo(id, name);
                                 _selectedEmployeeName = name;
                               });
                             }
@@ -95,11 +96,11 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                           growable: false,
                         );
                         return ListoffLeave(
-                          label1: "Lý do",
+                          label1: "Loại nghỉ phép",
                           leaveList: leaveList,
                           onProjectSelected: (selectedUser) {
                             setState(() {
-                              controllerCreate.leaveID = selectedUser?.id;
+                              controllerCreate.categoryId = selectedUser?.id;
                             });
                           },
                         );
@@ -110,9 +111,9 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                           child: TaskDate(
                             colorIcon: AppColors.black,
                             label: 'Nghỉ từ ngày',
-                            selectedDate: controllerCreate.startDate.value,
+                            selectedDate: controllerCreate.fromDate.value,
                             onDateSelected: (date) {
-                              // Sử dụng method mới để tự động cập nhật dueDate
+                              // Sử dụng method mới để tự động cập nhật toDate
                               controllerCreate.updateStartDate(date);
                             },
                           ),
@@ -122,9 +123,9 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                         () => TaskDate(
                           colorIcon: AppColors.black,
                           label: 'Đến ngày',
-                          selectedDate: controllerCreate.dueDate.value,
+                          selectedDate: controllerCreate.toDate.value,
                           onDateSelected: (date) {
-                            // Sử dụng method mới để tự động cập nhật startDate nếu cần
+                            // Sử dụng method mới để tự động cập nhật fromDate nếu cần
                             controllerCreate.updateDueDate(date);
                           },
                         ),
@@ -135,10 +136,32 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                 8.verticalSpace,
                 RepaintBoundary(
                   child: TaskNoteSection(
-                    label: 'Ghi chú',
-                    note: '',
+                    label: 'Lý do nghỉ phép',
+                    note: 'Nhập lý do nghỉ phép...',
                     screenWidth: screenWidth,
                     controllerNote: controllerCreate.controllerNote,
+                  ),
+                ),
+                16.verticalSpace,
+                RepaintBoundary(
+                  child: AttachmentWidget(
+                    label: 'File đính kèm',
+                    attachmentIds: controllerCreate.attachmentIds,
+                    onAttachmentsChanged: (attachments) {
+                      controllerCreate.attachmentIds = attachments;
+                    },
+                    onAttachmentFilesChanged: (files) {
+                      controllerCreate.attachmentFiles = files;
+                    },
+                    maxFiles: 3,
+                    allowedExtensions: [
+                      'pdf',
+                      'doc',
+                      'docx',
+                      'jpg',
+                      'jpeg',
+                      'png',
+                    ],
                   ),
                 ),
                 30.verticalSpace,
