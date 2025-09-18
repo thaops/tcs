@@ -93,7 +93,7 @@ class LeaveRequestHeaderSection extends StatelessWidget {
               ),
               SizedBox(width: 8.w),
               Text(
-                leave?.statusLabel ?? 'Unknown',
+                leave?.statusLabel ?? '',
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
@@ -101,23 +101,6 @@ class LeaveRequestHeaderSection extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-        Spacer(),
-        // Leave ID
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.r, vertical: 6.r),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Text(
-            'ID: ${leave?.id?.substring(0, 8) ?? 'N/A'}',
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
-            ),
           ),
         ),
       ],
@@ -149,7 +132,7 @@ class LeaveRequestHeaderSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "${leave?.fullName ?? 'Unknown Employee'} (${leave?.employeeCode ?? '-------'})",
+                "${leave?.fullName ?? ''} - ${leave?.employeeCode ?? '-------'}",
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
@@ -157,11 +140,11 @@ class LeaveRequestHeaderSection extends StatelessWidget {
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.start,
               ),
               SizedBox(height: 4.h),
               Text(
-                leave?.jobTitle ?? 'Unknown Position',
+                leave?.jobTitle ?? '',
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
@@ -169,11 +152,11 @@ class LeaveRequestHeaderSection extends StatelessWidget {
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.start,
               ),
               SizedBox(height: 2.h),
               Text(
-                leave?.department ?? 'Unknown Department',
+                leave?.department ?? '',
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w400,
@@ -181,7 +164,7 @@ class LeaveRequestHeaderSection extends StatelessWidget {
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.start,
               ),
             ],
           ),

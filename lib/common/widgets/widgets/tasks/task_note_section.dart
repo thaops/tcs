@@ -30,6 +30,7 @@ class TaskNoteSection extends StatelessWidget {
           hintText: note,
           maxLines: 4,
           borderRadius: 24,
+          fontSize: 14.sp,
           textCapitalization: TextCapitalization.sentences,
           isEnabled: isEnabled,
         ),

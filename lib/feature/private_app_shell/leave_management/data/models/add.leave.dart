@@ -19,7 +19,7 @@ class AddDayOffResponseModel {
         : int.tryParse(rawStatus.toString()) ?? 500;
 
     final String message =
-        (json['message'] ?? json['Message'] ?? 'Unknown error').toString();
+        (json['message'] ?? json['Message'] ?? '').toString();
 
     final dynamic rawTotal = json['totalRecord'] ?? json['TotalRecord'] ?? 0;
     final int totalRecord = rawTotal is int

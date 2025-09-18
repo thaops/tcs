@@ -27,16 +27,18 @@ class SignOutClear extends GetxService {
       final GetStorage storage = GetStorage();
       await storage.erase();
 
-      // 5. Navigate to login screen trước
+      // 5. Navigate to login screen trước khi clear controllers
       if (Get.context != null) {
         Get.offAllNamed(AppRouter.login);
       }
 
-      // 6. Delay một chút rồi mới clear controllers để tránh lỗi UI
-      await Future.delayed(Duration(milliseconds: 100));
-      ControllerCacheClear.clearAllControllers();
+      // 6. Delay để đảm bảo navigation hoàn tất trước khi clear
+      await Future.delayed(Duration(milliseconds: 300));
 
-      // 7. Clear OneSignal cached token (nếu cần)
+      // 7. Clear controllers nhưng KHÔNG reset GetX hoàn toàn
+      ControllerCacheClear.clearControllersOnly();
+
+      // 8. Clear OneSignal cached token (nếu cần)
       // await OneSignalService.clearCachedToken();
     } catch (e) {
       // Log error nhưng vẫn navigate về login
@@ -71,8 +73,8 @@ class SignOutClear extends GetxService {
       await _myId.deleteMyId();
       await _myId.deleteMyName();
 
-      // Clear controllers cache
-      ControllerCacheClear.clearAllControllers();
+      // Clear controllers cache (không reset GetX)
+      ControllerCacheClear.clearControllersOnly();
     } catch (e) {
       print('Error clearing cache: $e');
     }

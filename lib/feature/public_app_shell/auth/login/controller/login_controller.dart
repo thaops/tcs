@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -83,21 +82,44 @@ class LoginController extends GetxController {
   }
 
   Future<void> goMicrosoftLogin() async {
-    Get.toNamed(
-      AppRouter.loginWithMicrosoft,
-      arguments: {'url': microsoftRedirectUrl?.value},
-    )?.then((value) {
-      print("valueMS: $value");
-      if (value == false) {
-        Get.snackbar("Thông báo", "Đăng nhập thất bại");
-        return;
-      }
-      if (value != null) {
-        print("valueMS: $value");
+    // Kiểm tra GetX context trước khi navigation
+    if (Get.context == null) {
+      print("❌ GetX context is null, cannot navigate to Microsoft login");
+      Get.snackbar("Lỗi", "Không thể đăng nhập. Vui lòng thử lại.");
+      return;
+    }
 
-        loginWithMicrosoftCode(value['code'], Get.context!);
-      }
-    });
+    try {
+      Get.toNamed(
+        AppRouter.loginWithMicrosoft,
+        arguments: {'url': microsoftRedirectUrl?.value},
+      )?.then((value) {
+        print("valueMS: $value");
+        if (value == false) {
+          Get.snackbar("Thông báo", "Đăng nhập thất bại");
+          return;
+        }
+        if (value != null) {
+          print("valueMS: $value");
+          // Kiểm tra context trước khi gọi loginWithMicrosoftCode
+          if (Get.context != null) {
+            loginWithMicrosoftCode(value['code'], Get.context!);
+          } else {
+            print("❌ GetX context is null in callback");
+            Get.snackbar(
+              "Lỗi",
+              "Không thể hoàn tất đăng nhập. Vui lòng thử lại.",
+            );
+          }
+        }
+      });
+    } catch (e) {
+      print("❌ Error navigating to Microsoft login: $e");
+      Get.snackbar(
+        "Lỗi",
+        "Không thể mở trang đăng nhập Microsoft. Vui lòng thử lại.",
+      );
+    }
   }
 
   Future<void> loginWithMicrosoftCode(String code, BuildContext context) async {

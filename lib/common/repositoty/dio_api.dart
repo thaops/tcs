@@ -91,9 +91,9 @@ class DioApi {
       };
     } else {
       info = {
-        'platform': 'unknown',
-        'deviceName': 'unknown',
-        'osVersion': 'unknown',
+        'platform': '',
+        'deviceName': '',
+        'osVersion': '',
       };
     }
     _cache['deviceInfo'] = info;

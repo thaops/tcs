@@ -10,7 +10,7 @@ class UserDepartmentModel {
   // Phương thức khởi tạo từ JSON
   factory UserDepartmentModel.fromJson(Map<String, dynamic> json) {
     return UserDepartmentModel(
-      name: json['name'] ?? 'Unknown Department', // Kiểm tra null
+      name: json['name'] ?? '', // Kiểm tra null
       employees: (json['employees'] as List?)?.map((e) => Employee.fromJson(e)).toList() ?? [], // Kiểm tra null và xử lý danh sách
     );
   }
@@ -18,7 +18,7 @@ class UserDepartmentModel {
   // Phương thức chuyển về JSON
   Map<String, dynamic> toJson() {
     return {
-      'name': name ?? 'Unknown Department', // Kiểm tra null
+      'name': name ?? '', // Kiểm tra null
       'employees': employees?.map((e) => e.toJson()).toList() ?? [], // Kiểm tra null
     };
   }
@@ -26,7 +26,7 @@ class UserDepartmentModel {
   // Ghi đè phương thức toString để hiển thị chi tiết phòng ban
   @override
   String toString() {
-    return 'Department: ${name ?? 'Unknown'}, Employees: ${employees?.length ?? 0}';
+    return 'Department: ${name ?? ''}, Employees: ${employees?.length ?? 0}';
   }
 }
 
@@ -46,9 +46,9 @@ class Employee {
   // Phương thức khởi tạo từ JSON
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
-      id: json['id'] ?? 'Unknown ID', // Kiểm tra null
-      fullName: json['fullName'] ?? 'Unknown Name', // Kiểm tra null
-      email: json['email'] ?? 'Unknown Email', // Kiểm tra null
+      id: json['id'] ?? '', // Kiểm tra null
+      fullName: json['fullName'] ?? 'e', // Kiểm tra null
+      email: json['email'] ?? '', // Kiểm tra null
       avatarUrl: json['avatarUrl'] ?? '', // Kiểm tra null
     );
   }
@@ -56,9 +56,9 @@ class Employee {
   // Phương thức chuyển về JSON
   Map<String, dynamic> toJson() {
     return {
-      'id': id ?? 'Unknown ID', // Kiểm tra null
-      'fullName': fullName ?? 'Unknown Name', // Kiểm tra null
-      'email': email ?? 'Unknown Email', // Kiểm tra null
+      'id': id ?? '', // Kiểm tra null
+      'fullName': fullName ?? '', // Kiểm tra null
+      'email': email ?? '', // Kiểm tra null
       'avatarUrl': avatarUrl ?? '', // Kiểm tra null
     };
   }

@@ -87,7 +87,7 @@ class DeviceService {
     } catch (e) {
       print('Error getting device name: $e');
     }
-    return 'Unknown Device';
+    return '';
   }
 
   Future<String> _getPushToken() async {
@@ -98,12 +98,12 @@ class DeviceService {
     return DeviceInfo(
       udid: _uuid.v4(),
       platform: Platform.operatingSystem,
-      deviceName: 'Unknown',
-      deviceType: 'Unknown',
-      osVersion: 'Unknown',
-      appId: 'Unknown',
-      appBuild: 'Unknown',
-      appVersion: 'Unknown',
+      deviceName: '',
+      deviceType: '',
+      osVersion: '',
+      appId: '',
+      appBuild: '',
+      appVersion: '',
       pushToken: '',
     );
   }

@@ -112,10 +112,10 @@ class FilterUserController extends GetxController {
       employeeIdToDepartment.clear();
       for (final item in dataList) {
         if (item is! Map<String, dynamic>) continue;
-        final deptName = (item['departmentName'] ?? 'Unknown Department').toString().trim();
+        final deptName = (item['departmentName'] ?? '').toString().trim();
         final empId = (item['accountId'] ?? item['id'] ?? '').toString().trim();
         if (empId.isEmpty) continue;
-        final empName = (item['employeeName'] ?? 'Unknown').toString();
+        final empName = (item['employeeName'] ?? '').toString();
         final empEmail = (item['employeeEmail'] ?? '').toString();
         groups.putIfAbsent(deptName, () => <Employee>[]);
         groups[deptName]!.add(Employee(

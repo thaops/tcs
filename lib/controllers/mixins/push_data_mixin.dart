@@ -23,7 +23,7 @@ mixin PushDataMixin<T> on BaseController {
       setStatus(ControllerStatus.loading);
       final response = await apiCall();
       if (response.data['statusCode'] != HttpStatusCodes.STATUS_CODE_OK) {
-        final error = response.data['message'] ?? 'Unknown error';
+        final error = response.data['message'] ?? '';
         setStatus(ControllerStatus.error, error: error);
         CustomSnackbar.show(error);
         return;

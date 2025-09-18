@@ -66,7 +66,8 @@ class ApiEndpoints {
       "${Config.baseUrl}/dayoffv2/update-day-off-v2/$leaveId";
   static String deleteLeaveIDV2(String leaveId) =>
       "${Config.baseUrl}/dayoffv2/delete-day-off-v2/$leaveId";
-  static String createLeaveIDV2() => "${Config.baseUrl}/dayoffv2/add-day-off-v2";
+  static String createLeaveIDV2() =>
+      "${Config.baseUrl}/dayoffv2/add-day-off-v2";
   static String getLeaveV2 = "${Config.baseUrl}/dayoffv2/get-list-category-v2";
   static String approveLeaveV2(String approveId) =>
       "${Config.baseUrl}/dayoffv2/approve-day-off-v2/$approveId";
@@ -74,6 +75,12 @@ class ApiEndpoints {
       "${Config.baseUrl}/dayoffv2/get-list-approval-orders-v2";
   static String getListApprovalByUserV2(String leaveOffId) =>
       "${Config.baseUrl}/dayoffv2/get-list-approval-by-v2/$leaveOffId";
+
+  // Leave comments endpoints
+  static String getLeaveCommentsV2(String dayOffId) =>
+      "${Config.baseUrl}/dayoffv2/get-list-day-off-comments-v2/$dayOffId";
+  static String addLeaveCommentV2 =
+      "${Config.baseUrl}/dayoffv2/add-day-off-comment-v2";
 
   static String fetchListOff(
     DateTime firstDayOfMonth,

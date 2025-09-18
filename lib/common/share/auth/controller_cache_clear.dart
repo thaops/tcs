@@ -6,7 +6,42 @@ import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logi
 
 /// Service để clear cache của các controllers cụ thể
 class ControllerCacheClear {
-  /// Clear tất cả controllers và reset state
+  /// Clear tất cả controllers và reset state (KHÔNG reset GetX hoàn toàn)
+  static void clearControllersOnly() {
+    try {
+      // Clear Leave Management Controllers
+      if (Get.isRegistered<LeaveListController>()) {
+        final leaveListController = Get.find<LeaveListController>();
+        leaveListController.listOff.clear();
+        leaveListController.isDataLoaded = false;
+        leaveListController.months.clear();
+      }
+
+      if (Get.isRegistered<LeaveFilterController>()) {
+        final leaveFilterController = Get.find<LeaveFilterController>();
+        leaveFilterController.resetFilters();
+      }
+
+      // Clear Filter User Controller
+      if (Get.isRegistered<FilterUserController>()) {
+        final filterUserController = Get.find<FilterUserController>();
+        filterUserController.employeeIdToDepartment.clear();
+        filterUserController.userList.clear();
+      }
+
+      // Clear Profile Controller
+      if (Get.isRegistered<ProfileLogic>()) {
+        final profileController = Get.find<ProfileLogic>();
+        profileController.resetProfile();
+      }
+
+      // KHÔNG gọi Get.reset() để tránh xóa GetMaterialApp context
+    } catch (e) {
+      print('Error clearing controllers: $e');
+    }
+  }
+
+  /// Clear tất cả controllers và reset state (DÀNH CHO TRƯỜNG HỢP ĐẶC BIỆT)
   static void clearAllControllers() {
     try {
       // Clear Leave Management Controllers
@@ -35,7 +70,7 @@ class ControllerCacheClear {
         profileController.resetProfile();
       }
 
-      // Clear tất cả GetX dependencies
+      // Clear tất cả GetX dependencies (CHỈ DÙNG KHI CẦN THIẾT)
       Get.reset();
     } catch (e) {
       print('Error clearing controllers: $e');

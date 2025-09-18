@@ -261,7 +261,7 @@ class _ListoffLeaveState extends State<ListoffLeave> {
                 children: [
                   Expanded(
                     child: TextWidget(
-                      text: _selectedUser?.name ?? widget.name ?? 'Lý do',
+                      text: _selectedUser?.name ?? widget.name ?? 'Loại nghỉ',
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
                       color:

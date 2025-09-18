@@ -11,6 +11,7 @@ import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/le
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/service/attachment_download_service.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/service/image_gallery_service.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/leave_request_dialogs.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/leave_comments_section.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
 
 /// Screen hiển thị chi tiết leave request - đã được refactor
@@ -26,74 +27,84 @@ class ListoffDetail extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color(0xFFF8FAFC),
       appBar: _buildAppBar(controller),
-      body: Obx(
-        () => LoadingOverlay(
-          isLoading: controller.isLoading.value,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFFF8FAFC), Colors.white],
+      body: GestureDetector(
+        onTap: () {
+          // Ẩn keyboard khi tap ngoài
+          FocusScope.of(context).unfocus();
+        },
+        child: Obx(
+          () => LoadingOverlay(
+            isLoading: controller.isLoading.value,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFF8FAFC), Colors.white],
+                ),
               ),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Header với thông tin chính
-                  LeaveRequestHeaderSection(
-                    leave: controller.leave,
-                    getStatusColor: controller.getStatusColor,
-                  ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Header với thông tin chính
+                    LeaveRequestHeaderSection(
+                      leave: controller.leave,
+                      getStatusColor: controller.getStatusColor,
+                    ),
 
-                  // Content cards
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.r),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 8.h),
+                    // Content cards
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.r),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 8.h),
 
-                        // Attachments Card
-                        if (controller.leave?.attachments?.isNotEmpty ==
-                            true) ...[
-                          LeaveRequestAttachmentCard(
-                            attachments: controller.leave?.attachments,
-                            onDownloadAttachment:
-                                (attachment) => _handleDownloadAttachment(
-                                  context,
-                                  attachment,
-                                  downloadService,
-                                ),
-                            onShowImageGallery:
-                                (attachment) => _handleShowImageGallery(
-                                  context,
-                                  attachment,
-                                  controller.leave?.attachments ?? [],
-                                  galleryService,
-                                ),
+                          // Attachments Card
+                          if (controller.leave?.attachments?.isNotEmpty ==
+                              true) ...[
+                            LeaveRequestAttachmentCard(
+                              attachments: controller.leave?.attachments,
+                              onDownloadAttachment:
+                                  (attachment) => _handleDownloadAttachment(
+                                    context,
+                                    attachment,
+                                    downloadService,
+                                  ),
+                              onShowImageGallery:
+                                  (attachment) => _handleShowImageGallery(
+                                    context,
+                                    attachment,
+                                    controller.leave?.attachments ?? [],
+                                    galleryService,
+                                  ),
+                            ),
+                            SizedBox(height: 20.h),
+                          ],
+
+                          // Workflow Card
+                          LeaveRequestWorkflowCard(
+                            workflows:
+                                controller.leave?.workFlows?.cast<WorkFlow>(),
                           ),
                           SizedBox(height: 20.h),
+
+                          // Comments Section
+                          LeaveCommentsSection(),
+                          SizedBox(height: 20.h),
+
+                          // Action Buttons
+                          Obx(
+                            () =>
+                                controller.shouldShowApproveButtons.value
+                                    ? _buildActionButtons(controller)
+                                    : const SizedBox.shrink(),
+                          ),
+                          SizedBox(height: 32.h),
                         ],
-
-                        // Workflow Card
-                        LeaveRequestWorkflowCard(
-                          workflows:
-                              controller.leave?.workFlows?.cast<WorkFlow>(),
-                        ),
-                        SizedBox(height: 20.h),
-
-                        // Action Buttons
-                        Obx(
-                          () =>
-                              controller.shouldShowApproveButtons.value
-                                  ? _buildActionButtons(controller)
-                                  : const SizedBox.shrink(),
-                        ),
-                        SizedBox(height: 32.h),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

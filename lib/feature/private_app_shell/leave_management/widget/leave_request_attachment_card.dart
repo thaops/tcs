@@ -157,7 +157,7 @@ class LeaveRequestAttachmentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  attachment.name ?? 'Unknown file',
+                  attachment.name ?? '',
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -225,7 +225,7 @@ class LeaveRequestAttachmentCard extends StatelessWidget {
   }
 
   String _formatFileSize(int? size) {
-    if (size == null) return 'Unknown size';
+    if (size == null) return '';
     if (size < 1024) return '${size} B';
     if (size < 1024 * 1024) return '${(size / 1024).toStringAsFixed(1)} KB';
     return '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';

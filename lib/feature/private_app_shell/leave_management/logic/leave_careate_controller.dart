@@ -28,18 +28,18 @@ class LeaveCareateController extends GetxController {
   String? categoryId; // ID loại nghỉ phép
   Rx<DateTime> fromDate = Rx<DateTime>(
     DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
+      DateTime.now().add(Duration(days: 1)).year,
+      DateTime.now().add(Duration(days: 1)).month,
+      DateTime.now().add(Duration(days: 1)).day,
       8,
       0,
     ),
   );
   Rx<DateTime> toDate = Rx<DateTime>(
     DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
+      DateTime.now().add(Duration(days: 1)).year,
+      DateTime.now().add(Duration(days: 1)).month,
+      DateTime.now().add(Duration(days: 1)).day,
       17,
       30,
     ),
@@ -168,6 +168,7 @@ class LeaveCareateController extends GetxController {
   void updateStartDate(DateTime newStartDate) {
     fromDate.value = newStartDate;
 
+    // Nếu ngày kết thúc trước hoặc bằng ngày bắt đầu, cập nhật ngày kết thúc
     if (toDate.value.isBefore(newStartDate) ||
         isSameDay(toDate.value, newStartDate)) {
       toDate.value = DateTime(
@@ -183,6 +184,7 @@ class LeaveCareateController extends GetxController {
   void updateDueDate(DateTime newDueDate) {
     toDate.value = newDueDate;
 
+    // Nếu ngày bắt đầu sau ngày kết thúc, cập nhật ngày bắt đầu
     if (fromDate.value.isAfter(newDueDate)) {
       fromDate.value = DateTime(
         newDueDate.year,

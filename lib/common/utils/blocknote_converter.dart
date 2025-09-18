@@ -297,7 +297,7 @@ class BlocknoteConverter {
             op['attributes'] = {'a': url};
             deltaOps.add(op);
           } else {
-            deltaOps.add({'insert': name?.isNotEmpty == true ? name! : 'Unknown file'});
+            deltaOps.add({'insert': name?.isNotEmpty == true ? name! : ''});
           }
           // Normal newline without custom attributes
           deltaOps.add({'insert': '\n', if (blockAttrs != null) 'attributes': blockAttrs});
