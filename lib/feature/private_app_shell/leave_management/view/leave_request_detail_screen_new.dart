@@ -18,85 +18,89 @@ class ListoffDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LeaveRequestDetailController());
     final downloadService = AttachmentDownloadService();
     final galleryService = ImageGalleryService();
 
-    return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
-      appBar: _buildAppBar(controller),
-      body: Obx(
-        () => LoadingOverlay(
-          isLoading: controller.isLoading.value,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFFF8FAFC), Colors.white],
-              ),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Header với thông tin chính
-                  LeaveRequestHeaderSection(
-                    leave: controller.leave,
-                    getStatusColor: controller.getStatusColor,
+    return GetBuilder<LeaveRequestDetailController>(
+      builder: (controller) {
+        return Scaffold(
+          backgroundColor: Color(0xFFF8FAFC),
+          appBar: _buildAppBar(controller),
+          body: Obx(
+            () => LoadingOverlay(
+              isLoading: controller.isLoading.value,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFF8FAFC), Colors.white],
                   ),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Header với thông tin chính
+                      LeaveRequestHeaderSection(
+                        leave: controller.leave,
+                        getStatusColor: controller.getStatusColor,
+                      ),
 
-                  // Content cards
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.r),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 8.h),
+                      // Content cards
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.r),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 8.h),
 
-                        // Attachments Card
-                        if (controller.leave?.attachments?.isNotEmpty ==
-                            true) ...[
-                          LeaveRequestAttachmentCard(
-                            attachments: controller.leave?.attachments,
-                            onDownloadAttachment:
-                                (attachment) => _handleDownloadAttachment(
-                                  context,
-                                  attachment,
-                                  downloadService,
-                                ),
-                            onShowImageGallery:
-                                (attachment) => _handleShowImageGallery(
-                                  context,
-                                  attachment,
-                                  controller.leave?.attachments ?? [],
-                                  galleryService,
-                                ),
-                          ),
-                          SizedBox(height: 20.h),
-                        ],
+                            // Attachments Card
+                            if (controller.leave?.attachments?.isNotEmpty ==
+                                true) ...[
+                              LeaveRequestAttachmentCard(
+                                attachments: controller.leave?.attachments,
+                                onDownloadAttachment:
+                                    (attachment) => _handleDownloadAttachment(
+                                      context,
+                                      attachment,
+                                      downloadService,
+                                    ),
+                                onShowImageGallery:
+                                    (attachment) => _handleShowImageGallery(
+                                      context,
+                                      attachment,
+                                      controller.leave?.attachments ?? [],
+                                      galleryService,
+                                    ),
+                              ),
+                              SizedBox(height: 20.h),
+                            ],
 
-                        // Workflow Card
-                        LeaveRequestWorkflowCard(
-                          workflows: controller.leave?.workFlows,
+                            // Workflow Card
+                            LeaveRequestWorkflowCard(
+                              workflows: controller.leave?.workFlows,
+                            ),
+                            SizedBox(height: 20.h),
+
+                            // Action Buttons
+                            Obx(
+                              () =>
+                                  controller.shouldShowApproveButtons.value
+                                      ? _buildActionButtons(controller)
+                                      : const SizedBox.shrink(),
+                            ),
+
+                            SizedBox(height: 32.h),
+                          ],
                         ),
-                        SizedBox(height: 20.h),
-
-                        // Action Buttons
-                        Obx(
-                          () =>
-                              controller.shouldShowApproveButtons.value
-                                  ? _buildActionButtons(controller)
-                                  : const SizedBox.shrink(),
-                        ),
-                        SizedBox(height: 32.h),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -121,28 +125,35 @@ class ListoffDetail extends StatelessWidget {
         color: Color(0xFF1F2937),
       ),
       centerTitle: true,
-      actions:
-          controller.canShowModifyButtons
-              ? [
-                IconButton(
-                  icon: Icon(
-                    Icons.edit_note_sharp,
-                    color: Color(0xFF3B82F6),
-                    size: 22.sp,
+      actions: [
+        Obx(() {
+          final canShow = controller.canShowModifyButtons.value;
+          return canShow
+              ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.edit_note_sharp,
+                      color: Color(0xFF3B82F6),
+                      size: 22.sp,
+                    ),
+                    onPressed: () => controller.navigateToUpdate(),
                   ),
-                  onPressed: () => controller.navigateToUpdate(),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: Color(0xFFEF4444),
-                    size: 22.sp,
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: Color(0xFFEF4444),
+                      size: 22.sp,
+                    ),
+                    onPressed: () => controller.deleteLeave(),
                   ),
-                  onPressed: () => controller.deleteLeave(),
-                ),
-                SizedBox(width: 8.w),
-              ]
-              : [SizedBox(width: 8.w)],
+                  SizedBox(width: 8.w),
+                ],
+              )
+              : SizedBox(width: 8.w);
+        }),
+      ],
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(1.h),
         child: Container(

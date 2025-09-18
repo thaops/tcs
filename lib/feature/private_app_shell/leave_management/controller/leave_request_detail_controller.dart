@@ -23,6 +23,7 @@ class LeaveRequestDetailController extends GetxController {
   LeaveID? leave;
   final RxBool isLoading = false.obs;
   final RxBool shouldShowApproveButtons = false.obs;
+  final RxBool canShowModifyButtons = false.obs;
 
   // Comments state
   final RxList<LeaveComment> comments = <LeaveComment>[].obs;
@@ -53,6 +54,13 @@ class LeaveRequestDetailController extends GetxController {
   }
 
   @override
+  void onReady() {
+    super.onReady();
+    debugPrint('Controller onReady - checking canShowModifyButtons');
+    debugPrint('canShowModifyButtons: ${canShowModifyButtons.value}');
+  }
+
+  @override
   void onClose() {
     commentController.dispose();
     super.onClose();
@@ -68,12 +76,26 @@ class LeaveRequestDetailController extends GetxController {
 
       if (result != null) {
         leave = result;
-        update(); // Notify UI to rebuild
+        debugPrint('loadLeaveData SUCCESS:');
+        debugPrint('  - leave.employeeId: ${leave!.employeeId}');
+        debugPrint('  - leave.status: ${leave!.status}');
+        debugPrint('  - leave.statusLabel: ${leave!.statusLabel}');
+        debugPrint('  - myId: $myId');
+
+        // Update modify buttons visibility
+        _updateCanShowModifyButtons();
+
+        update(); // Notify UI to rebuild AFTER updating canShowModifyButtons
 
         // Recompute approve buttons visibility if myId is available
         if (myId != null) {
           await _updateApproveButtonsVisibility();
         }
+
+        // Force check canShowModifyButtons after data loaded
+        debugPrint(
+          'After loadLeaveData - canShowModifyButtons: ${canShowModifyButtons.value}',
+        );
       } else {
         debugPrint('Failed to load leave data');
       }
@@ -91,12 +113,22 @@ class LeaveRequestDetailController extends GetxController {
       final id = await create.getMyId();
 
       myId = id;
-      update(); // Notify UI to rebuild
+      debugPrint('loadMyId SUCCESS: myId = $myId');
+
+      // Update modify buttons visibility
+      _updateCanShowModifyButtons();
+
+      update(); // Notify UI to rebuild AFTER updating canShowModifyButtons
 
       // If leave is available, recompute approve buttons visibility
       if (leave != null) {
         await _updateApproveButtonsVisibility();
       }
+
+      // Force check canShowModifyButtons after myId loaded
+      debugPrint(
+        'After loadMyId - canShowModifyButtons: ${canShowModifyButtons.value}',
+      );
     } catch (e) {
       debugPrint('Failed to load myId: $e');
     }
@@ -163,20 +195,61 @@ class LeaveRequestDetailController extends GetxController {
     return false;
   }
 
-  /// Check if current user can modify the leave request
-  bool get canShowModifyButtons {
-    if (leave == null || myId == null) return false;
+  /// Update canShowModifyButtons reactive variable
+  void _updateCanShowModifyButtons() {
+    debugPrint('_updateCanShowModifyButtons called');
+    if (leave == null || myId == null) {
+      debugPrint('_updateCanShowModifyButtons: leave=$leave, myId=$myId');
+      debugPrint(
+        '  - Setting canShowModifyButtons.value from ${canShowModifyButtons.value} to false',
+      );
+      canShowModifyButtons.value = false;
+      debugPrint(
+        '  - canShowModifyButtons.value is now: ${canShowModifyButtons.value}',
+      );
+      return;
+    }
 
     final int? status = leave!.status;
+    final String? statusLabel = leave!.statusLabel;
+    final String? employeeId = leave!.employeeId;
+
+    debugPrint('_updateCanShowModifyButtons DEBUG:');
+    debugPrint('  - myId: $myId');
+    debugPrint('  - employeeId: $employeeId');
+    debugPrint('  - status: $status');
+    debugPrint('  - statusLabel: $statusLabel');
+    debugPrint('  - isOwner: ${myId == employeeId}');
+
     final bool isApprovedOrRejected =
         (status == 2) ||
         (status == 3) ||
-        (leave!.statusLabel == 'Đã duyệt') ||
-        (leave!.statusLabel == 'Từ chối');
+        (statusLabel == 'Đã duyệt') ||
+        (statusLabel == 'Từ chối');
 
-    if (isApprovedOrRejected) return false;
+    debugPrint('  - isApprovedOrRejected: $isApprovedOrRejected');
 
-    return myId == leave!.employeeId;
+    if (isApprovedOrRejected) {
+      debugPrint('  - Result: false (đơn đã duyệt/từ chối)');
+      debugPrint(
+        '  - Setting canShowModifyButtons.value from ${canShowModifyButtons.value} to false',
+      );
+      canShowModifyButtons.value = false;
+      debugPrint(
+        '  - canShowModifyButtons.value is now: ${canShowModifyButtons.value}',
+      );
+      return;
+    }
+
+    final bool canModify = myId == employeeId;
+    debugPrint('  - Result: $canModify');
+    debugPrint(
+      '  - Setting canShowModifyButtons.value from ${canShowModifyButtons.value} to $canModify',
+    );
+    canShowModifyButtons.value = canModify;
+    debugPrint(
+      '  - canShowModifyButtons.value is now: ${canShowModifyButtons.value}',
+    );
   }
 
   /// Check if comment input should be shown
@@ -360,5 +433,15 @@ class LeaveRequestDetailController extends GetxController {
       default:
         return Color(0xFF374151); // Gray 700
     }
+  }
+
+  /// Force rebuild UI - for debugging
+  void forceRebuild() {
+    debugPrint('Force rebuild called');
+    _updateCanShowModifyButtons();
+    debugPrint(
+      'Current state: myId=$myId, leave=${leave?.id}, canShowModifyButtons=${canShowModifyButtons.value}',
+    );
+    update();
   }
 }

@@ -134,28 +134,35 @@ class ListoffDetail extends StatelessWidget {
         color: Color(0xFF1F2937),
       ),
       centerTitle: true,
-      actions:
-          controller.canShowModifyButtons
-              ? [
-                IconButton(
-                  icon: Icon(
-                    Icons.edit_note_sharp,
-                    color: Color(0xFF3B82F6),
-                    size: 22.sp,
+      actions: [
+        Obx(() {
+          final canShow = controller.canShowModifyButtons.value;
+          return canShow
+              ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.edit_note_sharp,
+                      color: Color(0xFF3B82F6),
+                      size: 22.sp,
+                    ),
+                    onPressed: () => controller.navigateToUpdate(),
                   ),
-                  onPressed: () => controller.navigateToUpdate(),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: Color(0xFFEF4444),
-                    size: 22.sp,
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: Color(0xFFEF4444),
+                      size: 22.sp,
+                    ),
+                    onPressed: () => controller.deleteLeave(),
                   ),
-                  onPressed: () => controller.deleteLeave(),
-                ),
-                SizedBox(width: 8.w),
-              ]
-              : [SizedBox(width: 8.w)],
+                  SizedBox(width: 8.w),
+                ],
+              )
+              : SizedBox(width: 8.w);
+        }),
+      ],
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(1.h),
         child: Container(
