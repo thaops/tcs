@@ -26,6 +26,7 @@ class LeaveUpdateController extends GetxController {
   // Các trường cho file đính kèm
   List<String> attachmentIds = [];
   List<Map<String, dynamic>> attachmentFiles = [];
+  List<String> deletedAttachmentIds = []; // Danh sách ID file bị xóa
 
   final LeaveRepositoryInterface leaveManagementRepository;
   late final GetLeaveTypesUseCase _getLeaveTypes;
@@ -50,6 +51,9 @@ class LeaveUpdateController extends GetxController {
       startDate.value = leave.value!.fromDate;
       dueDate.value = leave.value!.toDate;
       controllerNote = TextEditingController(text: leave.value!.reason);
+
+      // Load existing attachments từ leave request hiện tại
+      _loadExistingAttachments();
     } else {
       controllerNote = TextEditingController(text: '');
     }
@@ -91,14 +95,23 @@ class LeaveUpdateController extends GetxController {
 
     final String leaveId = leave.value?.id.toString() ?? '';
 
+    // Chỉ gửi file mới (có path) lên API
+    final List<Map<String, dynamic>> newFiles =
+        attachmentFiles
+            .where(
+              (file) =>
+                  file['path'] != null && file['path'].toString().isNotEmpty,
+            )
+            .toList();
+
     Map<String, dynamic> updateData = {
       'reason': controllerNote.text,
       'fromDate': startDate.value!.toIso8601String(),
       'toDate': dueDate.value!.toIso8601String(),
       'categoryId': leaveID,
       'employeeId': usersID,
-      'attachmentIds': attachmentIds,
-      'attachmentFiles': attachmentFiles,
+      'attachmentFiles': newFiles, // Chỉ gửi file mới
+      'deletedAttachmentIds': deletedAttachmentIds, // Gửi danh sách file bị xóa
     };
 
     try {
@@ -166,5 +179,29 @@ class LeaveUpdateController extends GetxController {
   void clearAttachments() {
     attachmentIds.clear();
     attachmentFiles.clear();
+  }
+
+  /// Load existing attachments từ leave request hiện tại
+  void _loadExistingAttachments() {
+    if (leave.value?.attachments != null &&
+        leave.value!.attachments!.isNotEmpty) {
+      attachmentIds.clear();
+      attachmentFiles.clear();
+      deletedAttachmentIds.clear(); // Reset danh sách xóa
+
+      for (final attachment in leave.value!.attachments!) {
+        attachmentIds.add(attachment.id);
+        attachmentFiles.add({
+          'id': attachment.id,
+          'name': attachment.name,
+          'url': attachment.url,
+          'type': attachment.type,
+          'size': attachment.size,
+          'originalId': attachment.id, // Lưu ID gốc để theo dõi
+        });
+      }
+
+      debugPrint("Loaded ${attachmentIds.length} existing attachments");
+    }
   }
 }

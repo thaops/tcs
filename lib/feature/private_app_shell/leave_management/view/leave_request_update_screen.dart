@@ -205,11 +205,20 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
                 child: AttachmentWidget(
                   label: 'File đính kèm',
                   attachmentIds: controllerUpdate.attachmentIds,
+                  existingAttachmentFiles: controllerUpdate.attachmentFiles,
                   onAttachmentsChanged: (attachments) {
                     controllerUpdate.attachmentIds = attachments;
                   },
                   onAttachmentFilesChanged: (files) {
                     controllerUpdate.attachmentFiles = files;
+                  },
+                  onAttachmentDeleted: (attachmentId) {
+                    // Thêm ID vào danh sách file bị xóa
+                    if (!controllerUpdate.deletedAttachmentIds.contains(
+                      attachmentId,
+                    )) {
+                      controllerUpdate.deletedAttachmentIds.add(attachmentId);
+                    }
                   },
                   maxFiles: 3,
                   allowedExtensions: [

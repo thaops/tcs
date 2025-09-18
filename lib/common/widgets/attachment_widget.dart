@@ -10,9 +10,11 @@ class AttachmentWidget extends StatefulWidget {
   final List<String> attachmentIds;
   final Function(List<String>) onAttachmentsChanged;
   final Function(List<Map<String, dynamic>>)? onAttachmentFilesChanged;
+  final Function(String)? onAttachmentDeleted; // Callback khi file bị xóa
   final bool isEnabled;
   final int maxFiles;
   final List<String> allowedExtensions;
+  final List<Map<String, dynamic>>? existingAttachmentFiles;
 
   const AttachmentWidget({
     Key? key,
@@ -20,9 +22,11 @@ class AttachmentWidget extends StatefulWidget {
     required this.attachmentIds,
     required this.onAttachmentsChanged,
     this.onAttachmentFilesChanged,
+    this.onAttachmentDeleted,
     this.isEnabled = true,
     this.maxFiles = 5,
     this.allowedExtensions = const ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+    this.existingAttachmentFiles,
   }) : super(key: key);
 
   @override
@@ -39,11 +43,29 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   }
 
   void _initializeAttachments() {
-    // Khởi tạo danh sách file từ attachmentIds
-    _attachments =
-        widget.attachmentIds
-            .map((id) => AttachmentFile(id: id, name: 'File đính kèm', size: 0))
-            .toList();
+    // Khởi tạo danh sách file từ existingAttachmentFiles hoặc attachmentIds
+    if (widget.existingAttachmentFiles != null &&
+        widget.existingAttachmentFiles!.isNotEmpty) {
+      _attachments =
+          widget.existingAttachmentFiles!
+              .map(
+                (file) => AttachmentFile(
+                  id: file['id'] ?? '',
+                  name: file['name'] ?? 'File đính kèm',
+                  size: file['size'] ?? 0,
+                  path: file['path'],
+                  url: file['url'],
+                ),
+              )
+              .toList();
+    } else {
+      _attachments =
+          widget.attachmentIds
+              .map(
+                (id) => AttachmentFile(id: id, name: 'File đính kèm', size: 0),
+              )
+              .toList();
+    }
   }
 
   Future<void> _pickFiles() async {
@@ -83,7 +105,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
         // Cập nhật danh sách file thực tế
         if (widget.onAttachmentFilesChanged != null) {
-          List<Map<String, dynamic>> newFiles =
+          List<Map<String, dynamic>> allFiles =
               _attachments
                   .map(
                     (file) => {
@@ -91,10 +113,11 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
                       'path': file.path,
                       'name': file.name,
                       'size': file.size,
+                      'url': file.url,
                     },
                   )
                   .toList();
-          widget.onAttachmentFilesChanged!(newFiles);
+          widget.onAttachmentFilesChanged!(allFiles);
         }
       }
     } catch (e) {
@@ -103,9 +126,17 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   }
 
   void _removeAttachment(int index) {
+    final removedAttachment = _attachments[index];
+
     setState(() {
       _attachments.removeAt(index);
     });
+
+    // Thông báo file bị xóa nếu có originalId (file hiện có từ server)
+    if (widget.onAttachmentDeleted != null && removedAttachment.url != null) {
+      // Đây là file hiện có từ server, cần thông báo để xóa
+      widget.onAttachmentDeleted!(removedAttachment.id);
+    }
 
     // Cập nhật danh sách ID
     List<String> newIds = _attachments.map((file) => file.id).toList();
@@ -113,7 +144,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
     // Cập nhật danh sách file thực tế
     if (widget.onAttachmentFilesChanged != null) {
-      List<Map<String, dynamic>> newFiles =
+      List<Map<String, dynamic>> remainingFiles =
           _attachments
               .map(
                 (file) => {
@@ -121,10 +152,11 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
                   'path': file.path,
                   'name': file.name,
                   'size': file.size,
+                  'url': file.url,
                 },
               )
               .toList();
-      widget.onAttachmentFilesChanged!(newFiles);
+      widget.onAttachmentFilesChanged!(remainingFiles);
     }
   }
 
@@ -163,18 +195,53 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.r),
-        child:
-            attachment.path != null
-                ? Image.file(
-                  File(attachment.path!),
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildImagePlaceholder();
-                  },
-                )
-                : _buildImagePlaceholder(),
+        child: _buildImageContent(attachment),
       ),
     );
+  }
+
+  Widget _buildImageContent(AttachmentFile attachment) {
+    // Ưu tiên hiển thị ảnh từ file local (file mới được chọn)
+    if (attachment.path != null) {
+      return Image.file(
+        File(attachment.path!),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImagePlaceholder();
+        },
+      );
+    }
+
+    // Hiển thị ảnh từ URL (attachment hiện có từ server)
+    if (attachment.url != null && attachment.url!.isNotEmpty) {
+      return Image.network(
+        attachment.url!,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: Colors.grey.shade200,
+            child: Center(
+              child: CircularProgressIndicator(
+                value:
+                    loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImagePlaceholder();
+        },
+      );
+    }
+
+    // Fallback: hiển thị placeholder
+    return _buildImagePlaceholder();
   }
 
   Widget _buildFilePreview(AttachmentFile attachment) {
@@ -223,11 +290,15 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
   Widget _buildImagePlaceholder() {
     return Container(
+      width: 120.w,
+      height: 120.h,
       decoration: BoxDecoration(
         color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(12.r),
       ),
-      child: Icon(Icons.image, color: Colors.grey.shade400, size: 30.sp),
+      child: Center(
+        child: Icon(Icons.image, color: Colors.grey.shade400, size: 30.sp),
+      ),
     );
   }
 
@@ -399,11 +470,13 @@ class AttachmentFile {
   final String name;
   final int size;
   final String? path;
+  final String? url;
 
   AttachmentFile({
     required this.id,
     required this.name,
     required this.size,
     this.path,
+    this.url,
   });
 }

@@ -147,6 +147,7 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                   child: AttachmentWidget(
                     label: 'File đính kèm',
                     attachmentIds: controllerCreate.attachmentIds,
+                    existingAttachmentFiles: controllerCreate.attachmentFiles,
                     onAttachmentsChanged: (attachments) {
                       controllerCreate.attachmentIds = attachments;
                     },

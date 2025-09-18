@@ -220,6 +220,9 @@ class LeaveManagementRepository extends ChangeNotifier
         final List<Map<String, dynamic>> attachmentFiles =
             updateData['attachmentFiles'] as List<Map<String, dynamic>>;
 
+        // Tạo danh sách MultipartFile cho multiple files
+        List<MultipartFile> attachmentFilesList = [];
+
         for (int i = 0; i < attachmentFiles.length; i++) {
           final Map<String, dynamic> file = attachmentFiles[i];
           final String? filePath = file['path'];
@@ -227,14 +230,33 @@ class LeaveManagementRepository extends ChangeNotifier
 
           if (filePath != null && filePath.isNotEmpty) {
             // Gửi file thực tế
-            formDataMap['AttachmentIds'] = await MultipartFile.fromFile(
+            final multipartFile = await MultipartFile.fromFile(
               filePath,
               filename: fileName,
             );
-          } else {
-            // Gửi ID nếu không có file path
-            formDataMap['AttachmentIds'] = file['id'] ?? '';
+            attachmentFilesList.add(multipartFile);
           }
+        }
+
+        // Gán danh sách files vào FormData (giống như addLeave)
+        if (attachmentFilesList.isNotEmpty) {
+          formDataMap['attachmentIds'] = attachmentFilesList;
+          print(
+            'Update: Sending ${attachmentFilesList.length} files as attachmentIds',
+          );
+        }
+      }
+
+      // Thêm danh sách file bị xóa
+      if (updateData['deletedAttachmentIds'] != null &&
+          updateData['deletedAttachmentIds'] is List) {
+        final List<String> deletedIds =
+            (updateData['deletedAttachmentIds'] as List).cast<String>();
+        if (deletedIds.isNotEmpty) {
+          formDataMap['deleteAttachmentIds'] = deletedIds;
+          print(
+            'Update: Deleting ${deletedIds.length} attachments: $deletedIds',
+          );
         }
       }
 
