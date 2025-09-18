@@ -143,21 +143,25 @@ class LeaveManagementRepository extends ChangeNotifier
         final List<Map<String, dynamic>> attachmentFiles =
             addData['attachmentFiles'] as List<Map<String, dynamic>>;
 
+        // Tạo danh sách MultipartFile cho multiple files
+        List<MultipartFile> attachmentFilesList = [];
+
         for (int i = 0; i < attachmentFiles.length; i++) {
           final Map<String, dynamic> file = attachmentFiles[i];
           final String? filePath = file['path'];
           final String fileName = file['name'] ?? 'attachment';
 
           if (filePath != null && filePath.isNotEmpty) {
-            // Gửi file thực tế
-            formDataMap['AttachmentIds'] = await MultipartFile.fromFile(
-              filePath,
-              filename: fileName,
+            // Thêm file thực tế vào danh sách
+            attachmentFilesList.add(
+              await MultipartFile.fromFile(filePath, filename: fileName),
             );
-          } else {
-            // Gửi ID nếu không có file path
-            formDataMap['AttachmentIds'] = file['id'] ?? '';
           }
+        }
+
+        // Gán danh sách files vào FormData
+        if (attachmentFilesList.isNotEmpty) {
+          formDataMap['AttachmentIds'] = attachmentFilesList;
         }
       }
 
