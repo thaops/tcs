@@ -66,8 +66,8 @@ class LeaveCareateController extends GetxController {
     controllerNote = TextEditingController();
     MyId myId = await MyId.create();
     employeeId = await myId.getMyId();
-    // Lấy tên đầy đủ từ profile
-    fullName = controllerProfile.profile?.user?.fullName;
+    // Lấy tên đầy đủ từ profile (đã sửa để sử dụng .value)
+    fullName = controllerProfile.profile.value?.user?.fullName ?? '';
     // fetchUsers();
   }
 

@@ -53,6 +53,7 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                             controllerCreate
                                 .controllerProfile
                                 .profile
+                                .value
                                 ?.user
                                 ?.fullName,
                         searchable: false,
@@ -62,6 +63,7 @@ class _ListoffAddScreenState extends State<ListoffAddScreen> {
                             controllerCreate
                                 .controllerProfile
                                 .profile
+                                .value
                                 ?.user
                                 ?.fullName,
                         onTap: () async {

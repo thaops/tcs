@@ -1,12 +1,13 @@
-class Profile {
-  final User? user;
+// Model riêng cho Apple để tránh conflict với code cũ
+class AppleProfile {
+  final AppleUser? user;
   final List<String> permissions;
 
-  Profile({this.user, this.permissions = const []});
+  AppleProfile({this.user, this.permissions = const []});
 
-  factory Profile.fromJson(Map<String, dynamic> json) {
-    return Profile(
-      user: json['user'] != null ? User.fromJson(json['user']) : null,
+  factory AppleProfile.fromJson(Map<String, dynamic> json) {
+    return AppleProfile(
+      user: json['user'] != null ? AppleUser.fromJson(json['user']) : null,
       permissions:
           (json['permissions'] as List<dynamic>?)
               ?.map((e) => e.toString())
@@ -20,7 +21,7 @@ class Profile {
   }
 }
 
-class User {
+class AppleUser {
   final String? id;
   final int? hrId;
   final String? username;
@@ -51,11 +52,8 @@ class User {
   final String? departmentId;
   final String? workStartDate;
   final String? avatarUrl;
-  // Thêm các field từ API thông thường
-  final String? jobTitle;
-  final String? jobTitleCode;
 
-  User({
+  AppleUser({
     this.id,
     this.hrId,
     this.username,
@@ -86,13 +84,10 @@ class User {
     this.departmentId,
     this.workStartDate,
     this.avatarUrl,
-    // Thêm các field từ API thông thường
-    this.jobTitle,
-    this.jobTitleCode,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
+  factory AppleUser.fromJson(Map<String, dynamic> json) {
+    return AppleUser(
       id: json['id'] ?? '',
       hrId: json['hrId'] is String ? int.tryParse(json['hrId']) : json['hrId'],
       username: json['username'] ?? '',
@@ -126,9 +121,6 @@ class User {
       departmentId: json['departmentId'],
       workStartDate: json['workStartDate'],
       avatarUrl: json['avatarUrl'],
-      // Thêm các field từ API thông thường
-      jobTitle: json['jobTitle'],
-      jobTitleCode: json['jobTitleCode'],
     );
   }
 
@@ -164,9 +156,6 @@ class User {
       'departmentId': departmentId,
       'workStartDate': workStartDate,
       'avatarUrl': avatarUrl,
-      // Thêm các field từ API thông thường
-      'jobTitle': jobTitle,
-      'jobTitleCode': jobTitleCode,
     };
   }
 }

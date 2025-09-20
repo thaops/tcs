@@ -122,6 +122,24 @@ class LeaveManagementRepository extends ChangeNotifier
   }
 
   @override
+  Future<bool> cancelLeave(String dayyOffId, BuildContext context) async {
+    try {
+      final response = await dio.put(
+        ApiEndpoints.cancelLeaveIDV2(dayyOffId),
+        data: {},
+      );
+
+      if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
   Future<AddDayOffResponseModel> addLeave(
     Map<String, dynamic> addData,
     BuildContext context,

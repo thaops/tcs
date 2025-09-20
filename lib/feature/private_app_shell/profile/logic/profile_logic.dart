@@ -13,6 +13,7 @@ import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/src/services/lib/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/data/models/profile_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/data/models/apple_profile_model.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:tcs_flutter/common/share/auth/sign_out_clear.dart';
@@ -22,7 +23,7 @@ class ProfileLogic extends GetxController {
   DioApi dioApi = DioApi();
   final AuthService _authService = AuthService();
 
-  Profile? profile;
+  final profile = Rx<Profile?>(null);
   int _clickCount = 0;
   final isloading = false.obs;
   final userProfileData = <Map<String, dynamic>>[].obs;
@@ -58,7 +59,17 @@ class ProfileLogic extends GetxController {
 
   Future<void> loadUserData() async {
     try {
-      final u = profile?.user;
+      final u = profile.value?.user;
+      print("loadUserData - u: $u");
+      print("loadUserData - u?.id: ${u?.id}");
+      print("loadUserData - u?.email: ${u?.email}");
+      print("loadUserData - u?.phoneNumber: ${u?.phoneNumber}");
+      print("loadUserData - u?.jobTitle: ${u?.jobTitle}");
+      print("loadUserData - u?.jobTitleCode: ${u?.jobTitleCode}");
+      print("loadUserData - u?.username: ${u?.username}");
+      print("loadUserData - u?.hrId: ${u?.hrId}");
+      print("loadUserData - u?.doB: ${u?.doB}");
+      print("loadUserData - u?.address: ${u?.address}");
       if (u != null && u.id!.isNotEmpty) {
         final email = (u.email).toString();
 
@@ -81,15 +92,44 @@ class ProfileLogic extends GetxController {
                 sendEmail(email);
               },
             },
-        ];
-
-        summaryData.value = [
-          if ((u.createdDate).toString().isNotEmpty)
+          if ((u.tel ?? '').isNotEmpty && u.tel != u.phoneNumber)
             {
-              'title': "Ngày bắt đầu",
-              'subtitle': DateUtilsCustom.formatStringDate(u.createdDate),
+              'title': "Điện thoại khác",
+              'subtitle': u.tel!,
+              'icon': Icons.phone_android,
+              'color': AppColors.colorCall,
+              'onTap': () => _phoneCall(u.tel!),
             },
         ];
+        print("userProfileData set: ${userProfileData.length} items");
+
+        summaryData.value = [
+          if ((u.jobTitle ?? '').isNotEmpty)
+            {'title': "Chức vụ", 'subtitle': u.jobTitle!},
+          if ((u.department ?? '').isNotEmpty)
+            {'title': "Phòng ban", 'subtitle': u.department!},
+          if ((u.jobTitleCode ?? '').isNotEmpty)
+            {'title': "Mã chức vụ", 'subtitle': u.jobTitleCode!},
+          if ((u.username ?? '').isNotEmpty)
+            {'title': "Tên đăng nhập", 'subtitle': u.username!},
+          if ((u.hrId ?? 0) != 0)
+            {'title': "Mã nhân viên", 'subtitle': u.hrId.toString()},
+          if ((u.doB ?? '').isNotEmpty)
+            {
+              'title': "Ngày sinh",
+              'subtitle': DateUtilsCustom.formatStringDate(u.doB),
+            },
+          if ((u.workStartDate ?? u.createdDate ?? '').toString().isNotEmpty)
+            {
+              'title': "Ngày bắt đầu",
+              'subtitle': DateUtilsCustom.formatStringDate(
+                u.workStartDate ?? u.createdDate,
+              ),
+            },
+          if ((u.address ?? '').isNotEmpty)
+            {'title': "Địa chỉ", 'subtitle': u.address!},
+        ];
+        print("summaryData set: ${summaryData.length} items");
       }
     } catch (e) {
       print(e);
@@ -116,22 +156,111 @@ class ProfileLogic extends GetxController {
   Future<void> getProfile() async {
     final checkAwaitingServices = CheckAwaitingServices(GetStorage());
     final ischeckApple = await checkAwaitingServices.getawaiting();
+    print("ischeckApple from awaiting: $ischeckApple");
     MyId myId = await MyId.create();
 
     try {
       isloading.value = true;
-      final respon = await dioApi.get(
-        ischeckApple ? ApiEndpoints.usersProfileApple : ApiEndpoints.profile,
-      );
+      final endpoint =
+          ischeckApple ? ApiEndpoints.usersProfileApple : ApiEndpoints.profile;
+      print("Calling API: $endpoint");
+      print("ischeckApple: $ischeckApple");
+      final respon = await dioApi.get(endpoint);
       print("respon.profile: ${respon.data}");
       final data = (respon.data ?? {})['data'] ?? {};
-      profile =
-          ischeckApple
-              ? Profile(user: User.fromJson(data))
-              : Profile.fromJson(data as Map<String, dynamic>);
-      myId.saveMyId(profile?.user?.id ?? '');
+      print("Parsed data: $data");
+
+      // Kiểm tra nếu data null thì không parse
+      if (data == null || data.isEmpty) {
+        print("Data is null or empty, skipping parsing");
+        // Nếu API Apple trả về 404, thử API thông thường
+        if (ischeckApple) {
+          print("Apple API failed, trying regular API");
+          final regularRespon = await dioApi.get(ApiEndpoints.profile);
+          print("Regular API response: ${regularRespon.data}");
+          final regularData = (regularRespon.data ?? {})['data'] ?? {};
+          if (regularData != null && regularData.isNotEmpty) {
+            profile.value = Profile(
+              user: User.fromJson(regularData as Map<String, dynamic>),
+            );
+            print(
+              "Profile parsed from regular API: ${profile.value?.user?.fullName}",
+            );
+            myId.saveMyId(profile.value?.user?.id ?? '');
+            await loadUserData();
+          }
+        }
+        return;
+      }
+      // Parse dữ liệu user theo cấu trúc API
+      if (ischeckApple) {
+        // Apple API: data chứa user data trực tiếp
+        print("Parsing Apple API data");
+        final appleProfile = AppleProfile(
+          user: AppleUser.fromJson(data as Map<String, dynamic>),
+        );
+        // Convert AppleProfile sang Profile để tương thích với UI
+        profile.value = Profile(
+          user: User(
+            id: appleProfile.user?.id,
+            hrId: appleProfile.user?.hrId,
+            username: appleProfile.user?.username,
+            email: appleProfile.user?.email,
+            phoneNumber: appleProfile.user?.phoneNumber,
+            password: appleProfile.user?.password,
+            firstName: appleProfile.user?.firstName,
+            lastName: appleProfile.user?.lastName,
+            fullNameNoAccent: appleProfile.user?.fullNameNoAccent,
+            firstNameUnsign: appleProfile.user?.firstNameUnsign,
+            lastNameUnsign: appleProfile.user?.lastNameUnsign,
+            gender: appleProfile.user?.gender,
+            refreshToken: appleProfile.user?.refreshToken,
+            avatar: appleProfile.user?.avatar,
+            doB: appleProfile.user?.doB,
+            fullName: appleProfile.user?.fullName,
+            isDeleted: appleProfile.user?.isDeleted,
+            createdDate: appleProfile.user?.createdDate,
+            updatedDate: appleProfile.user?.updatedDate,
+            creator: appleProfile.user?.creator,
+            modifier: appleProfile.user?.modifier,
+            createdById: appleProfile.user?.createdById,
+            updatedById: appleProfile.user?.updatedById,
+            address: appleProfile.user?.address,
+            tel: appleProfile.user?.tel,
+            department: appleProfile.user?.department,
+            departmentId: appleProfile.user?.departmentId,
+            workStartDate: appleProfile.user?.workStartDate,
+            avatarUrl: appleProfile.user?.avatarUrl,
+          ),
+          permissions: appleProfile.permissions,
+        );
+      } else {
+        // API thông thường: data.user chứa user data
+        print("Parsing normal API data");
+        final userData = data['user'] as Map<String, dynamic>?;
+        if (userData != null) {
+          profile.value = Profile(
+            user: User.fromJson(userData),
+            permissions:
+                (data['permissions'] as List<dynamic>?)
+                    ?.map((e) => e.toString())
+                    .toList() ??
+                [],
+          );
+        } else {
+          print("No user data found in normal API response");
+        }
+      }
+      print(
+        "Profile parsed: ${profile.value?.user?.fullName}, ${profile.value?.user?.email}, ${profile.value?.user?.department}",
+      );
+      print("Profile object: ${profile.value}");
+      print("User object: ${profile.value?.user}");
+      myId.saveMyId(profile.value?.user?.id ?? '');
 
       await loadUserData();
+      print("After loadUserData - userProfileData: ${userProfileData.length}");
+      print("After loadUserData - summaryData: ${summaryData.length}");
     } catch (e) {
       print('Error fetching profile: $e');
     } finally {
@@ -337,7 +466,7 @@ class ProfileLogic extends GetxController {
 
   /// Reset profile data về trạng thái ban đầu
   void resetProfile() {
-    profile = null;
+    profile.value = null;
     isloading.value = false;
     userProfileData.clear();
     summaryData.clear();

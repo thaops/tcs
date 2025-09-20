@@ -146,7 +146,7 @@ class ListoffDetail extends StatelessWidget {
                       color: Color(0xFFEF4444),
                       size: 22.sp,
                     ),
-                    onPressed: () => controller.deleteLeave(),
+                    onPressed: () => controller.cancelLeave(),
                   ),
                   SizedBox(width: 8.w),
                 ],

@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final isVision = apiService.isVision;
     final String userId =
-        Get.arguments ?? controllerProfile.profile?.user?.id ?? '';
+        Get.arguments ?? controllerProfile.profile.value?.user?.id ?? '';
 
     return Obx(
       () => LoadingOverlay(
@@ -90,14 +90,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     MediaQuery.of(context).size.width / 2 - 60,
                                 child: Align(
                                   alignment: Alignment.topCenter,
-                                  child: CircleAvatar(
-                                    key: ValueKey(
-                                      controllerProfile.profile?.user?.avatar,
-                                    ),
-                                    radius: 50,
-                                    backgroundImage:
-                                        Image.asset(Img.avatarDefault).image,
-                                  ),
+                                  child: Obx(() {
+                                    final avatarUrl =
+                                        controllerProfile
+                                            .profile
+                                            .value
+                                            ?.user
+                                            ?.avatarUrl ??
+                                        controllerProfile
+                                            .profile
+                                            .value
+                                            ?.user
+                                            ?.avatar;
+                                    print("UI - avatarUrl: $avatarUrl");
+                                    return CircleAvatar(
+                                      key: ValueKey(avatarUrl),
+                                      radius: 50,
+                                      backgroundImage:
+                                          avatarUrl != null &&
+                                                  avatarUrl.isNotEmpty
+                                              ? NetworkImage(avatarUrl)
+                                              : Image.asset(
+                                                Img.avatarDefault,
+                                              ).image,
+                                    );
+                                  }),
                                 ),
                               ),
                             ],
@@ -166,11 +183,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               //   ),
               // ),
               ...(() {
+                print(
+                  "UI - summaryData length: ${controllerProfile.summaryData.length}",
+                );
                 if (controllerProfile.summaryData.isNotEmpty) {
                   return controllerProfile.summaryData;
                 }
                 // Fallback từ Profile khi không có summaryData từ UserController
-                final p = controllerProfile.profile?.user;
+                final p = controllerProfile.profile.value?.user;
                 final List<Map<String, dynamic>> fallback = [];
                 if (p != null) {
                   if ((p.phoneNumber ?? '').isNotEmpty) {
@@ -252,15 +272,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 40.verticalSpace,
                 Center(
-                  child: TextWidget(
-                    color: AppColors.black,
-                    fontSize: 18,
-                    text:
-                        controllerProfile.profile?.user?.fullName ??
-                        controllerProfile.profile?.user?.username ??
-                        '',
-                    fontWeight: FontWeight.w600,
-                  ),
+                  child: Obx(() {
+                    final fullName =
+                        controllerProfile.profile.value?.user?.fullName ??
+                        controllerProfile.profile.value?.user?.username ??
+                        '';
+                    print("UI - fullName: $fullName");
+                    print(
+                      "UI - profile.value: ${controllerProfile.profile.value}",
+                    );
+                    print(
+                      "UI - user: ${controllerProfile.profile.value?.user}",
+                    );
+                    return TextWidget(
+                      color: AppColors.black,
+                      fontSize: 18,
+                      text: fullName,
+                      fontWeight: FontWeight.w600,
+                    );
+                  }),
                 ),
                 4.verticalSpace,
                 Center(
@@ -293,13 +323,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         8.verticalSpace,
         ...(() {
+          print(
+            "UI - userProfileData length: ${controllerProfile.userProfileData.length}",
+          );
           if (controllerProfile.userProfileData.isNotEmpty) {
             return controllerProfile.userProfileData;
           }
           // Fallback từ Profile nếu chưa có dữ liệu từ UserController
           final List<Map<String, dynamic>> fallback = [];
-          final tel = controllerProfile.profile?.user?.phoneNumber;
-          final email = controllerProfile.profile?.user?.email;
+          final tel = controllerProfile.profile.value?.user?.phoneNumber;
+          final email = controllerProfile.profile.value?.user?.email;
           if (tel != null && tel.isNotEmpty) {
             fallback.add({
               'title': 'Số Điện Thoại',

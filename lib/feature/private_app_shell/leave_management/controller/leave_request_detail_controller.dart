@@ -281,10 +281,11 @@ class LeaveRequestDetailController extends GetxController {
     });
   }
 
-  /// Delete leave request
-  void deleteLeave() {
+  /// Cancel leave request
+  Future<void> cancelLeave() async {
     if (leaveId != null) {
-      leaveLogic.deleteLeave(leaveId!, Get.context!);
+      await leaveLogic.deleteLeave(leaveId!, Get.context!);
+      // Logic pop đã được xử lý trong LeaveLogic.deleteLeave()
     }
   }
 

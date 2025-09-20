@@ -66,6 +66,8 @@ class ApiEndpoints {
       "${Config.baseUrl}/dayoffv2/update-day-off-v2/$leaveId";
   static String deleteLeaveIDV2(String leaveId) =>
       "${Config.baseUrl}/dayoffv2/delete-day-off-v2/$leaveId";
+  static String cancelLeaveIDV2(String leaveId) =>
+      "${Config.baseUrl}/dayoffv2/cancel-day-off-v2/$leaveId";
   static String createLeaveIDV2() =>
       "${Config.baseUrl}/dayoffv2/add-day-off-v2";
   static String getLeaveV2 = "${Config.baseUrl}/dayoffv2/get-list-category-v2";

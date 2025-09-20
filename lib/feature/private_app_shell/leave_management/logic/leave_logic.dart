@@ -9,19 +9,19 @@ import 'package:tcs_flutter/src/config/customdialog/customdialog.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/get_leave_types_usecase.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/get_leave_by_id_usecase.dart';
-import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/delete_leave_usecase.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/cancel_leave_usecase.dart';
 import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 
 class LeaveLogic extends GetxController {
   final LeaveRepositoryInterface leaveManagementRepository;
   late final GetLeaveTypesUseCase _getLeaveTypes;
   late final GetLeaveByIdUseCase _getLeaveById;
-  late final DeleteLeaveUseCase _deleteLeave;
+  late final CancelLeaveUseCase _cancelLeave;
   LeaveLogic({LeaveRepositoryInterface? repo})
-      : leaveManagementRepository = repo ?? LeaveManagementRepository() {
+    : leaveManagementRepository = repo ?? LeaveManagementRepository() {
     _getLeaveTypes = GetLeaveTypesUseCase(leaveManagementRepository);
     _getLeaveById = GetLeaveByIdUseCase(leaveManagementRepository);
-    _deleteLeave = DeleteLeaveUseCase(leaveManagementRepository);
+    _cancelLeave = CancelLeaveUseCase(leaveManagementRepository);
   }
   final CustomDialog customDialog = CustomDialog();
   bool isLoading = false;
@@ -31,17 +31,19 @@ class LeaveLogic extends GetxController {
   int ERROR_CODE = HttpStatusCodes.STATUS_CODE_BAD_REQUEST;
 
   Future<void> deleteLeave(String dayyOffId, BuildContext context) async {
-    final bool? confirmDelete = await _showConfirmationDialog(
-        context, 'Xác nhận xóa', 'Bạn muốn xóa đơn xin nghỉ này?');
-    if (confirmDelete == true) {
-      final bool success = await _deleteLeave(dayyOffId, context);
+    final bool? confirmCancel = await _showConfirmationDialog(
+      context,
+      'Xác nhận hủy',
+      'Bạn muốn hủy đơn xin nghỉ này?',
+    );
+    if (confirmCancel == true) {
+      final bool success = await _cancelLeave(dayyOffId, context);
       _showSnackBar(
-          context,
-          success
-              ? 'Xóa đơn xin nghỉ thành công'
-              : 'Xóa đơn xin nghỉ thất bại');
+        context,
+        success ? 'Hủy đơn xin nghỉ thành công' : 'Hủy đơn xin nghỉ thất bại',
+      );
       if (success) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true); // Truyền true để báo hiệu cần refresh
       }
     }
   }
@@ -81,14 +83,17 @@ class LeaveLogic extends GetxController {
     }
   }
 
-
   void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<bool?> _showConfirmationDialog(
-      BuildContext context, String title, String content) {
+    BuildContext context,
+    String title,
+    String content,
+  ) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -97,15 +102,16 @@ class LeaveLogic extends GetxController {
           content: Text(content),
           actions: [
             TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('Hủy')),
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Không'),
+            ),
             TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Xóa')),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Hủy đơn'),
+            ),
           ],
         );
       },
     );
   }
-
 }
