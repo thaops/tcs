@@ -31,33 +31,11 @@ class LeaveListController extends GetxController {
   void generateMonths() {
     months.clear();
     final DateTime now = DateTime.now();
-    final DateTime startMonth =
-        (now.month == 12)
-            ? DateTime(now.year + 1, 1, 1)
-            : DateTime(now.year, now.month + 1, 1);
 
-    for (int i = 0; i < 12; i++) {
-      // Month anchor for iteration
-      final DateTime targetFirst = DateTime(
-        startMonth.year,
-        startMonth.month - i,
-        1,
-      );
-      final DateTime firstDay = DateTime(
-        targetFirst.year,
-        targetFirst.month,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-      );
-      final DateTime lastDateOfMonth = DateTime(
-        targetFirst.year,
-        targetFirst.month + 1,
-        0,
-      );
+    // Tạo 12 tháng từ tháng 1 đến tháng 12 của năm hiện tại
+    for (int month = 1; month <= 12; month++) {
+      final DateTime firstDay = DateTime(now.year, month, 1, 0, 0, 0, 0, 0);
+      final DateTime lastDateOfMonth = DateTime(now.year, month + 1, 0);
       final DateTime lastDay = DateTime(
         lastDateOfMonth.year,
         lastDateOfMonth.month,

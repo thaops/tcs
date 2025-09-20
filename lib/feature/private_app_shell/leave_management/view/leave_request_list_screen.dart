@@ -15,27 +15,37 @@ import 'package:tcs_flutter/src/api/models/employee_model.dart';
 
 class LeaveScreen extends StatefulWidget {
   final Function(bool) onUpdateCallback;
-  const LeaveScreen({
-    Key? key,
-    required this.onUpdateCallback,
-  }) : super(key: key);
+  const LeaveScreen({Key? key, required this.onUpdateCallback})
+    : super(key: key);
 
   @override
   State<LeaveScreen> createState() => _LeaveScreenState();
 }
 
-class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClientMixin {
+class _LeaveScreenState extends State<LeaveScreen>
+    with AutomaticKeepAliveClientMixin {
   final LeaveListController listController = Get.put(LeaveListController());
-  final LeaveFilterController _leaveFilterController = Get.put(LeaveFilterController());
-  final FilterUserController filterUserController = Get.put(FilterUserController());
+  final LeaveFilterController _leaveFilterController = Get.put(
+    LeaveFilterController(),
+  );
+  final FilterUserController filterUserController = Get.put(
+    FilterUserController(),
+  );
   DateTime? selectedMonth;
   // Track last fetched date range to avoid redundant API calls when filtering
   DateTime? _lastFetchedStart;
   DateTime? _lastFetchedEnd;
-  
 
-  Future<void> _fetchListOff(DateTime firstDay, DateTime lastDay, {bool forceFetch = false}) async {
-    await listController.fetchListOff(firstDay, lastDay, forceFetch: forceFetch);
+  Future<void> _fetchListOff(
+    DateTime firstDay,
+    DateTime lastDay, {
+    bool forceFetch = false,
+  }) async {
+    await listController.fetchListOff(
+      firstDay,
+      lastDay,
+      forceFetch: forceFetch,
+    );
     _leaveFilterController.setDepartmentsFromNames(
       listController.listOff.map((e) => e.department ?? '').toList(),
     );
@@ -44,33 +54,13 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
     _lastFetchedEnd = lastDay;
   }
 
-
   DateTimeRange _getDefaultRange() {
-    if (listController.months.length > 1 &&
-        listController.months[1]['firstDay'] != null &&
-        listController.months[1]['lastDay'] != null) {
-      return DateTimeRange(
-        start: listController.months[1]['firstDay']!,
-        end: listController.months[1]['lastDay']!,
-      );
-    }
     final now = DateTime.now();
+    // Từ tháng hiện tại đến hết năm
     final firstDay = DateTime(now.year, now.month, 1, 0, 0, 0, 0, 0);
-    final lastDateOfMonth = DateTime(now.year, now.month + 1, 0);
-    final lastDay = DateTime(
-      lastDateOfMonth.year,
-      lastDateOfMonth.month,
-      lastDateOfMonth.day,
-      23,
-      59,
-      59,
-      999,
-      0,
-    );
+    final lastDay = DateTime(now.year, 12, 31, 23, 59, 59, 999, 0);
     return DateTimeRange(start: firstDay, end: lastDay);
   }
-
-  
 
   @override
   void initState() {
@@ -79,6 +69,10 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
     if (filterUserController.employeeIdToDepartment.isEmpty) {
       filterUserController.fetchUserList();
     }
+    // Luôn set tháng hiện tại làm mặc định
+    final now = DateTime.now();
+    selectedMonth = DateTime(now.year, now.month, 1);
+
     if (!listController.isDataLoaded) {
       final range = _getDefaultRange();
       _fetchListOff(range.start, range.end);
@@ -93,8 +87,10 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
       if (value == true) {
         widget.onUpdateCallback(true);
         // Re-fetch using last range (or selected month) to keep current context
-        DateTime start = _lastFetchedStart ?? listController.months.first['firstDay']!;
-        DateTime end = _lastFetchedEnd ?? listController.months.first['lastDay']!;
+        DateTime start =
+            _lastFetchedStart ?? listController.months.first['firstDay']!;
+        DateTime end =
+            _lastFetchedEnd ?? listController.months.first['lastDay']!;
         if (selectedMonth != null) {
           Map<String, DateTime>? item;
           for (final m in listController.months) {
@@ -133,21 +129,25 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
       }
     }
     final fallback = _getDefaultRange();
-    await _fetchListOff(start ?? fallback.start, end ?? fallback.end, forceFetch: true);
+    await _fetchListOff(
+      start ?? fallback.start,
+      end ?? fallback.end,
+      forceFetch: true,
+    );
     if (!mounted) return;
     setState(() {}); // keep selectedMonth & filters as-is
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); 
+    super.build(context);
     return RefreshIndicator(
       onRefresh: refresh,
       child: Obx(
         () => LoadingOverlay(
           isLoading: listController.isLoading.value,
           child: Scaffold(
-          backgroundColor: AppColors.white,
+            backgroundColor: AppColors.white,
             appBar: AppBarWidget(
               title: "Danh sách nghỉ phép",
               isBack: false,
@@ -165,6 +165,28 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
                 _leaveFilterController.setStatusesFromEmployees(
                   listController.listOff.toList(),
                 );
+                // Chỉ reset filter về mặc định nếu chưa có tháng nào được chọn
+                if (selectedMonth == null) {
+                  _leaveFilterController.setStartAndEndDates();
+                } else {
+                  // Giữ nguyên tháng đã chọn
+                  _leaveFilterController.startDate.value = selectedMonth!;
+                  final lastDayOfMonth = DateTime(
+                    selectedMonth!.year,
+                    selectedMonth!.month + 1,
+                    0,
+                  );
+                  _leaveFilterController.endDate.value = DateTime(
+                    lastDayOfMonth.year,
+                    lastDayOfMonth.month,
+                    lastDayOfMonth.day,
+                    23,
+                    59,
+                    59,
+                    999,
+                    0,
+                  );
+                }
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -179,13 +201,21 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
                         child: LeaveFilterWidget(
                           onFilter: () async {
                             // Lưu lại lựa chọn hiện tại để giữ filter sau khi refetch
-                            final prevDep = _leaveFilterController.departmentId.value;
-                            final prevStatus = _leaveFilterController.statusId.value;
-                            final newStart = _leaveFilterController.startDate.value;
+                            final prevDep =
+                                _leaveFilterController.departmentId.value;
+                            final prevStatus =
+                                _leaveFilterController.statusId.value;
+                            final newStart =
+                                _leaveFilterController.startDate.value;
                             final newEnd = _leaveFilterController.endDate.value;
-                            final hasPrev = _lastFetchedStart != null && _lastFetchedEnd != null;
-                            final bool dateChanged = !hasPrev ||
-                                !newStart.isAtSameMomentAs(_lastFetchedStart!) ||
+                            final hasPrev =
+                                _lastFetchedStart != null &&
+                                _lastFetchedEnd != null;
+                            final bool dateChanged =
+                                !hasPrev ||
+                                !newStart.isAtSameMomentAs(
+                                  _lastFetchedStart!,
+                                ) ||
                                 !newEnd.isAtSameMomentAs(_lastFetchedEnd!);
 
                             if (dateChanged) {
@@ -196,27 +226,33 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
                                 forceFetch: true,
                               );
                               // Sau khi có dữ liệu mới, build lại filter local
-                              _leaveFilterController.setDepartmentsFromController(
-                                filterUserController,
-                                listController.listOff.toList(),
-                              );
+                              _leaveFilterController
+                                  .setDepartmentsFromController(
+                                    filterUserController,
+                                    listController.listOff.toList(),
+                                  );
                               _leaveFilterController.setStatusesFromEmployees(
                                 listController.listOff.toList(),
                               );
                               // Khôi phục lựa chọn để áp dụng filter ngay trên danh sách
-                              _leaveFilterController.departmentId.value = prevDep;
-                              _leaveFilterController.statusId.value = prevStatus;
+                              _leaveFilterController.departmentId.value =
+                                  prevDep;
+                              _leaveFilterController.statusId.value =
+                                  prevStatus;
                             } else {
                               // Không đổi ngày: không gọi API, chỉ rebuild filter local và đóng
-                              _leaveFilterController.setDepartmentsFromController(
-                                filterUserController,
-                                listController.listOff.toList(),
-                              );
+                              _leaveFilterController
+                                  .setDepartmentsFromController(
+                                    filterUserController,
+                                    listController.listOff.toList(),
+                                  );
                               _leaveFilterController.setStatusesFromEmployees(
                                 listController.listOff.toList(),
                               );
-                              _leaveFilterController.departmentId.value = prevDep;
-                              _leaveFilterController.statusId.value = prevStatus;
+                              _leaveFilterController.departmentId.value =
+                                  prevDep;
+                              _leaveFilterController.statusId.value =
+                                  prevStatus;
                             }
                             Get.back();
                           },
@@ -232,50 +268,79 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
               height: MediaQuery.of(context).size.height,
               child: Column(
                 children: [
-                  MonthSelector(
-                    months: listController.months,
-                    selectedMonth: selectedMonth,
-                    onMonthSelected: (firstDay, lastDay) {
-                      setState(() {
-                        selectedMonth = firstDay;
-                      });
-                      _fetchListOff(firstDay, lastDay, forceFetch: true);
-                    },
-                  ),
                   Obx(
-                    () {
-                      if (listController.isLoading.value) {
-                        return const Expanded(child: Center(child: SizedBox()));
-                      } else if (listController.listOff.isEmpty && listController.isDataLoaded) {
-                        return Expanded(child: EmptyLottieState());
-                      } else {
-                        final depId = _leaveFilterController.departmentId.value;
-                        final baseList = listController.listOff.toList();
-                        final afterDept = depId.isEmpty
-                            ? baseList
-                            : (depId == '__unknown__'
-                                ? baseList.where((e) {
-                                    final mapped = filterUserController.departmentNameForEmployee(e.employeeId);
-                                    final dep = (mapped ?? e.department ?? '').trim();
+                    () => MonthSelector(
+                      months: listController.months,
+                      selectedMonth: selectedMonth,
+                      filterStartDate: _leaveFilterController.startDate.value,
+                      filterEndDate: _leaveFilterController.endDate.value,
+                      onMonthSelected: (firstDay, lastDay) {
+                        setState(() {
+                          selectedMonth = firstDay;
+                        });
+                        // Đồng bộ filter bottom sheet với tháng được chọn
+                        _leaveFilterController.startDate.value = firstDay;
+                        _leaveFilterController.endDate.value = lastDay;
+                        _fetchListOff(firstDay, lastDay, forceFetch: true);
+                      },
+                    ),
+                  ),
+                  Obx(() {
+                    if (listController.isLoading.value) {
+                      return const Expanded(child: Center(child: SizedBox()));
+                    } else if (listController.listOff.isEmpty &&
+                        listController.isDataLoaded) {
+                      return Expanded(child: EmptyLottieState());
+                    } else {
+                      final depId = _leaveFilterController.departmentId.value;
+                      final baseList = listController.listOff.toList();
+                      final afterDept =
+                          depId.isEmpty
+                              ? baseList
+                              : (depId == '__unknown__'
+                                  ? baseList.where((e) {
+                                    final mapped = filterUserController
+                                        .departmentNameForEmployee(
+                                          e.employeeId,
+                                        );
+                                    final dep =
+                                        (mapped ?? e.department ?? '').trim();
                                     return dep.isEmpty;
                                   }).toList()
-                                : baseList.where((e) {
-                                    final mapped = filterUserController.departmentNameForEmployee(e.employeeId);
-                                    final dep = (mapped ?? e.department ?? '').trim();
+                                  : baseList.where((e) {
+                                    final mapped = filterUserController
+                                        .departmentNameForEmployee(
+                                          e.employeeId,
+                                        );
+                                    final dep =
+                                        (mapped ?? e.department ?? '').trim();
                                     return dep == depId;
                                   }).toList());
 
-                        final statusId = _leaveFilterController.statusId.value;
-                        final afterStatus = statusId.isEmpty
-                            ? afterDept
-                            : (statusId == '__unknown_status__'
-                                ? afterDept.where((e) => (e.statusLabel ?? '').trim().isEmpty).toList()
-                                : afterDept.where((e) => (e.statusLabel ?? '').trim() == statusId).toList());
+                      final statusId = _leaveFilterController.statusId.value;
+                      final afterStatus =
+                          statusId.isEmpty
+                              ? afterDept
+                              : (statusId == '__unknown_status__'
+                                  ? afterDept
+                                      .where(
+                                        (e) =>
+                                            (e.statusLabel ?? '')
+                                                .trim()
+                                                .isEmpty,
+                                      )
+                                      .toList()
+                                  : afterDept
+                                      .where(
+                                        (e) =>
+                                            (e.statusLabel ?? '').trim() ==
+                                            statusId,
+                                      )
+                                      .toList());
 
-                        return _leave_list(afterStatus);
-                      }
-                    },
-                  ),
+                      return _leave_list(afterStatus);
+                    }
+                  }),
                 ],
               ),
             ),
@@ -294,8 +359,10 @@ class _LeaveScreenState extends State<LeaveScreen> with AutomaticKeepAliveClient
           onUpdateCallback: (isUpdate) {
             if (isUpdate) {
               // Re-fetch using current context
-              DateTime start = _lastFetchedStart ?? listController.months.first['firstDay']!;
-              DateTime end = _lastFetchedEnd ?? listController.months.first['lastDay']!;
+              DateTime start =
+                  _lastFetchedStart ?? listController.months.first['firstDay']!;
+              DateTime end =
+                  _lastFetchedEnd ?? listController.months.first['lastDay']!;
               if (selectedMonth != null) {
                 Map<String, DateTime>? item;
                 for (final m in listController.months) {

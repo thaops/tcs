@@ -40,20 +40,10 @@ class LeaveFilterController extends GetxController {
   @override
   onInit() {
     super.onInit();
-    // Đặt mốc đầu/cuối tháng tại thời điểm khởi tạo (bao gồm giờ phút giây)
+    // Set mặc định từ tháng hiện tại đến hết năm
     final now = DateTime.now();
-    final months = listController.months;
-    if (months.length > 1 &&
-        months[1]['firstDay'] != null &&
-        months[1]['lastDay'] != null) {
-      startDate.value = months[1]['firstDay']!;
-      endDate.value = months[1]['lastDay']!;
-    } else {
-      // Fallback an toàn nếu months chưa được khởi tạo
-      startDate.value = _firstDayOfMonth(now);
-      endDate.value = _lastDayOfMonth(now);
-    }
-    // Không gọi các hàm khác để tránh ghi đè khoảng ngày mặc định
+    startDate.value = _firstDayOfMonth(now);
+    endDate.value = DateTime(now.year, 12, 31, 23, 59, 59, 999, 0);
   }
 
   bool isValidDateRange() {
@@ -71,6 +61,7 @@ class LeaveFilterController extends GetxController {
   void setStartAndEndDates() {
     DateTime currentDate = DateTime.now();
 
+    // Từ tháng hiện tại đến hết năm
     startDate.value = DateTime(
       currentDate.year,
       currentDate.month,
@@ -82,21 +73,7 @@ class LeaveFilterController extends GetxController {
       0,
     );
 
-    final lastDateOfMonth = DateTime(
-      currentDate.year,
-      currentDate.month + 1,
-      0,
-    );
-    endDate.value = DateTime(
-      lastDateOfMonth.year,
-      lastDateOfMonth.month,
-      lastDateOfMonth.day,
-      23,
-      59,
-      59,
-      999,
-      0,
-    );
+    endDate.value = DateTime(currentDate.year, 12, 31, 23, 59, 59, 999, 0);
   }
 
   // Helpers for department filter

@@ -249,12 +249,6 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
                         ],
                       ],
                     ),
-                    SizedBox(height: 2.h),
-                    TextWidget(
-                      text: _formatDateTime(comment.createdDate),
-                      fontSize: 11.sp,
-                      color: Color(0xFF6B7280),
-                    ),
                   ],
                 ),
               ),
@@ -275,11 +269,15 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
                 width: 1,
               ),
             ),
-            child: TextWidget(
-              text: comment.content,
-              fontSize: 13.sp,
-              color: isOptimistic ? Color(0xFF9CA3AF) : Color(0xFF374151),
+            child: Text(
+              comment.content,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: isOptimistic ? Color(0xFF9CA3AF) : Color(0xFF374151),
+                height: 1.4,
+              ),
               maxLines: null,
+              softWrap: true,
             ),
           ),
         ],
@@ -370,7 +368,8 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
   /// Format datetime string
   String _formatDateTime(String dateTimeString) {
     try {
-      final dateTime = DateTime.parse(dateTimeString);
+      // Parse datetime và chuyển về timezone local
+      final dateTime = DateTime.parse(dateTimeString).toLocal();
       final now = DateTime.now();
       final difference = now.difference(dateTime);
 

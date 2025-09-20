@@ -266,7 +266,6 @@ class LeaveManagementRepository extends ChangeNotifier
       final response = await dio.put(
         ApiEndpoints.updateLeaveIDV2(leaveId), // Sử dụng endpoint v2
         data: formData,
-        // Không cần thiết lập headers, Dio sẽ tự động xử lý
       );
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {

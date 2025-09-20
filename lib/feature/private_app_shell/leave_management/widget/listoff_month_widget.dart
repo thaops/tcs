@@ -7,12 +7,16 @@ import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 class MonthSelector extends StatelessWidget {
   final List<Map<String, DateTime>> months;
   final DateTime? selectedMonth;
+  final DateTime? filterStartDate;
+  final DateTime? filterEndDate;
   final void Function(DateTime firstDay, DateTime lastDay) onMonthSelected;
 
   const MonthSelector({
     Key? key,
     required this.months,
     required this.selectedMonth,
+    this.filterStartDate,
+    this.filterEndDate,
     required this.onMonthSelected,
   }) : super(key: key);
 
@@ -30,11 +34,29 @@ class MonthSelector extends StatelessWidget {
             DateTime lastDay = months[index]['lastDay']!;
             String monthName = DateFormat('MMMM', 'vi_VN').format(firstDay);
             String yearName = DateFormat('yyyy', 'vi_VN').format(firstDay);
-            final defaultIndex = months.length > 1 ? 1 : 0;
-            bool isSelected =
-                selectedMonth == null
-                    ? index == defaultIndex
-                    : selectedMonth == firstDay;
+            // Highlight tháng dựa vào khoảng filter hoặc tháng được chọn
+            bool isSelected = false;
+
+            if (filterStartDate != null && filterEndDate != null) {
+              // Ưu tiên: highlight các tháng trong khoảng filter
+              final monthStart = DateTime(firstDay.year, firstDay.month, 1);
+              final monthEnd = DateTime(firstDay.year, firstDay.month + 1, 0);
+
+              // Kiểm tra tháng có nằm trong khoảng filter không
+              isSelected =
+                  (monthStart.isBefore(filterEndDate!) ||
+                      monthStart.isAtSameMomentAs(filterEndDate!)) &&
+                  (monthEnd.isAfter(filterStartDate!) ||
+                      monthEnd.isAtSameMomentAs(filterStartDate!));
+            } else if (selectedMonth != null) {
+              // Fallback: highlight tháng được chọn trực tiếp
+              isSelected = selectedMonth == firstDay;
+            } else {
+              // Fallback cuối: highlight tháng hiện tại
+              final now = DateTime.now();
+              final currentMonthIndex = now.month - 1;
+              isSelected = index == currentMonthIndex;
+            }
 
             return GestureDetector(
               onTap: () {

@@ -17,7 +17,7 @@ class WorkflowList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controllerUser = Get.put(FilterUserController());
-    final DateFormat dateFormat = DateFormat("dd/MM/yyyy");
+    final DateFormat dateFormat = DateFormat("dd/MM/yyyy HH:mm");
     if (workflows.isEmpty) {
       return Center(child: Text('Không có quy trình nào.'));
     }
@@ -78,12 +78,6 @@ class WorkflowList extends StatelessWidget {
                                   ? dateFormat.format(workflow.approvalDate!)
                                   : '--',
                         ),
-                        SizedBox(height: 6),
-                        LeaveTextRow(
-                          mission: "Ghi chú:",
-                          name: " ${workflow.note ?? '--'}",
-                        ),
-                        SizedBox(height: 6),
                       ],
                     ),
                   ),
