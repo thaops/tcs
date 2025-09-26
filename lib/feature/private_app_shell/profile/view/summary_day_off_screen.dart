@@ -59,7 +59,6 @@ class _SummaryDayOffScreenState extends State<SummaryDayOffScreen> {
                       SummaryUserProfile(
                         title: 'Tiêu chuẩn phép',
                         subtitle: data.quota.toString(),
-                        color: AppColors.primary,
                       ),
                       16.verticalSpace,
                       // SummaryUserProfile(
@@ -71,7 +70,6 @@ class _SummaryDayOffScreenState extends State<SummaryDayOffScreen> {
                       SummaryUserProfile(
                         title: 'Ngày phép còn tồn',
                         subtitle: data.leaveDaysLeft.toString(),
-                        color: Colors.green,
                       ),
                     ],
                   );
