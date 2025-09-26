@@ -178,7 +178,7 @@ class LeaveRequestHeaderSection extends StatelessWidget {
       children: [
         Expanded(
           child: _buildQuickStat(
-            'Số ngày nghỉ',
+            'Ngày nghỉ',
             leave?.totalDay?.toString() ?? '0',
             Icons.calendar_today,
             Color(0xFF3B82F6),

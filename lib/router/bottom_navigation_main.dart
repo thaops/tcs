@@ -2,8 +2,6 @@ import 'package:get/get.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logic.dart';
 import 'package:flutter/material.dart';
-import 'package:tcs_flutter/router/one_signal_service.dart';
-import 'package:tcs_flutter/src/Api/api_service.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_list_screen.dart';
@@ -21,16 +19,13 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     Get.put(ProfileLogic());
-    
   }
 
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
 
   final List<Widget> _screens = [
-    LeaveScreen(
-      onUpdateCallback: (bool) {},
-    ),
+    LeaveScreen(onUpdateCallback: (bool) {}),
     ProfileScreen(),
   ];
 
@@ -43,8 +38,10 @@ class _MainScreenState extends State<MainScreen> {
     // ),
     SalomonBottomBarItem(
       icon: Icon(Icons.list, size: 24),
-      title: Text("Xin phép",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      title: Text(
+        "Xin phép",
+        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+      ),
       selectedColor: AppColors.primary,
     ),
     // SalomonBottomBarItem(
@@ -61,8 +58,10 @@ class _MainScreenState extends State<MainScreen> {
     // ),
     SalomonBottomBarItem(
       icon: Icon(Icons.person, size: 24),
-      title: Text("Cá nhân",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      title: Text(
+        "Cá nhân",
+        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+      ),
       selectedColor: AppColors.primary,
     ),
   ];
@@ -96,13 +95,11 @@ class _MainScreenState extends State<MainScreen> {
         physics: NeverScrollableScrollPhysics(),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(
-          bottom: 16.0,
-        ),
+        padding: const EdgeInsets.only(bottom: 16.0),
         child: Container(
           margin: EdgeInsets.only(left: 16, right: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFFAFAFA), // Sửa lỗi cú pháp màu sắc
             shape: BoxShape.rectangle,
             borderRadius: BorderRadius.circular(30),
             // boxShadow: [

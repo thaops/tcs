@@ -43,7 +43,10 @@ class FilterUserView extends StatelessWidget {
             body: Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 16.h,
+                  ),
                   child: _buildSearch(),
                 ),
                 Expanded(
@@ -60,14 +63,15 @@ class FilterUserView extends StatelessWidget {
                     return ListView.builder(
                       itemCount: controller.userDepartmentListSearch.length,
                       itemBuilder: (context, index) {
-                        final department = controller.userDepartmentListSearch[index];
+                        final department =
+                            controller.userDepartmentListSearch[index];
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 16.w),
                               child: TextWidget(
-                                text: department.name ?? "Không xác định",
+                                text: department.name ?? "",
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
@@ -80,23 +84,30 @@ class FilterUserView extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(24.r),
-                                  border: Border.all(color: Colors.grey.shade400, width: 1.w),
+                                  border: Border.all(
+                                    color: Colors.grey.shade400,
+                                    width: 1.w,
+                                  ),
                                 ),
                                 child: ListView.builder(
                                   itemCount: department.employees?.length ?? 0,
                                   physics: const NeverScrollableScrollPhysics(),
                                   shrinkWrap: true,
                                   itemBuilder: (context, empIndex) {
-                                    final employee = department.employees![empIndex];
+                                    final employee =
+                                        department.employees![empIndex];
                                     return GestureDetector(
                                       behavior: HitTestBehavior.opaque,
                                       onTap: () {
-                                        if (employee.id != null && employee.fullName != null) {
-                                          Get.back(result: {
-                                            'id': employee.id,
-                                            'name': employee.fullName,
-                                            'department': department.name,
-                                          });
+                                        if (employee.id != null &&
+                                            employee.fullName != null) {
+                                          Get.back(
+                                            result: {
+                                              'id': employee.id,
+                                              'name': employee.fullName,
+                                              'department': department.name,
+                                            },
+                                          );
                                         }
                                       },
                                       child: CustomUserFilter(

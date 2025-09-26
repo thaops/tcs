@@ -6,8 +6,8 @@ import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logic.dart';
 import 'package:flutter/material.dart';
-import 'package:tcs_flutter/feature/private_app_shell/profile/widget/summary_user_profile.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/widget/user_profile.dart';
+import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/src/api/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -102,7 +102,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             .value
                                             ?.user
                                             ?.avatar;
-                                    print("UI - avatarUrl: $avatarUrl");
                                     return CircleAvatar(
                                       key: ValueKey(avatarUrl),
                                       radius: 50,
@@ -157,98 +156,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 26.r),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              30.verticalSpace,
-              TextWidget(
-                text: "THÔNG TIN",
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.grey,
-              ),
-              16.verticalSpace,
-              // SizedBox(
-              //   width: Get.width,
-              //   child: GestureDetector(
-              //     onTap: () {
-
-              //     },
-              //     child: SummaryUserProfile(
-              //       title: controllerProfile.extractLetters(
-              //           controllerProfile.profile?.bankInfo ?? ''),
-              //       subtitle: controllerProfile.extractAccountNumber(
-              //               controllerProfile.profile?.bankInfo ?? '') ??
-              //           'Không có số tài khoản',
-              //     ),
-              //   ),
-              // ),
-              ...(() {
-                print(
-                  "UI - summaryData length: ${controllerProfile.summaryData.length}",
-                );
-                if (controllerProfile.summaryData.isNotEmpty) {
-                  return controllerProfile.summaryData;
-                }
-                // Fallback từ Profile khi không có summaryData từ UserController
-                final p = controllerProfile.profile.value?.user;
-                final List<Map<String, dynamic>> fallback = [];
-                if (p != null) {
-                  if ((p.phoneNumber ?? '').isNotEmpty) {
-                    fallback.add({
-                      'title': 'Số điện thoại',
-                      'subtitle': p.phoneNumber!,
-                    });
-                  }
-                  if ((p.email)!.isNotEmpty) {
-                    fallback.add({'title': 'Email', 'subtitle': p.email});
-                  }
-                }
-                return fallback;
-              }()).map((data) {
-                return SummaryUserProfile(
-                  title: data['title'].toString(),
-                  subtitle: data['subtitle'].toString(),
-                );
-              }).toList(),
-              SizedBox(height: 10),
-              widget.flag == true
-                  ? Container()
-                  : Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    child: GestureDetector(
-                      onTap: () => controllerProfile.onVision(context),
-                      child: FutureBuilder<void>(
-                        future: controllerProfile.initPackageInfo(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          }
-                          return GestureDetector(
-                            onTap: () {
-                              controllerProfile.tapCount.value =
-                                  controllerProfile.tapCountSafe + 1;
-                              controllerProfile.showConfigDialog();
-                            },
-                            child: Center(
-                              child: TextWidget(
-                                text:
-                                    isVision
-                                        ? "@TCS - Phiên bản - ${controllerProfile.versionSafe}"
-                                        : "@TCS - Phiên bản - dev",
-                                fontSize: 12,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.grey,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+              Padding(
+                padding: EdgeInsets.only(top: 16.r),
+                child: Column(
+                  spacing: 36.r,
+                  children: [
+                    _buildRouterProfile(
+                      () => Get.toNamed(AppRouter.profileDetail),
+                      'Thông tin cá nhân',
                     ),
-                  ),
+                    _buildRouterProfile(() {
+                      Get.toNamed(AppRouter.summaryDayOff);
+                    }, 'Theo dõi ngày phép'),
+                    _buildRouterProfile(() {
+                      Get.toNamed(AppRouter.profileAnnualGoals);
+                    }, 'Nguyện vọng phép năm'),
+                  ],
+                ),
+              ),
+              SizedBox(height: 120.r),
+              if (widget.flag != true)
+                Padding(
+                  padding: EdgeInsets.only(bottom: 24.r),
+                  child: _buildVision(controllerProfile, context, isVision),
+                ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRouterProfile(VoidCallback onTap, String title) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextWidget(text: title, fontSize: 16.sp, fontWeight: FontWeight.w400),
+          Icon(Icons.arrow_forward_ios, size: 16.sp),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVision(
+    ProfileLogic controllerProfile,
+    BuildContext context,
+    bool isVision,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 10),
+      child: GestureDetector(
+        onTap: () => controllerProfile.onVision(context),
+        child: FutureBuilder<void>(
+          future: controllerProfile.initPackageInfo(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            return GestureDetector(
+              onTap: () {
+                controllerProfile.tapCount.value =
+                    controllerProfile.tapCountSafe + 1;
+                controllerProfile.showConfigDialog();
+              },
+              child: Center(
+                child: TextWidget(
+                  text:
+                      isVision
+                          ? "@TCS - Phiên bản - ${controllerProfile.versionSafe}"
+                          : "@TCS - Phiên bản - dev",
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.grey,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -277,13 +264,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         controllerProfile.profile.value?.user?.fullName ??
                         controllerProfile.profile.value?.user?.username ??
                         '';
-                    print("UI - fullName: $fullName");
-                    print(
-                      "UI - profile.value: ${controllerProfile.profile.value}",
-                    );
-                    print(
-                      "UI - user: ${controllerProfile.profile.value?.user}",
-                    );
                     return TextWidget(
                       color: AppColors.black,
                       fontSize: 18,

@@ -67,7 +67,7 @@ class ApiEndpoints {
   static String deleteLeaveIDV2(String leaveId) =>
       "${Config.baseUrl}/dayoffv2/delete-day-off-v2/$leaveId";
   static String cancelLeaveIDV2(String leaveId) =>
-      "${Config.baseUrl}/dayoffv2/cancel-day-off-v2/$leaveId";
+      "${Config.baseUrl}/dayoffv2/cancel-day-off-v2";
   static String createLeaveIDV2() =>
       "${Config.baseUrl}/dayoffv2/add-day-off-v2";
   static String getLeaveV2 = "${Config.baseUrl}/dayoffv2/get-list-category-v2";
@@ -141,6 +141,16 @@ class ApiEndpoints {
 
   static String typeSupport =
       "${Config.baseUrl}/supportcenter/get-type-support";
+
+  // Annual leave endpoints
+  static String getMyAnnualLeave(int year) =>
+      "${Config.baseUrl}/dayoff/get-my-register-annual-day-off/$year";
+  static String saveAnnualLeave =
+      "${Config.baseUrl}/dayoff/save-register-annual-day-off";
+  static String updateAnnualLeave =
+      "${Config.baseUrl}/dayoff/update-year-register-annual-day-off";
+  static String getMySummaryDayOff(int year) =>
+      "${Config.baseUrl}/dayoff/get-my-summary-day-off/$year";
 
   // static String handlerSupport = "${Config.baseUrl}/supportcenter/get-list-handler?pageIndex=1&pageSize=99999";
 

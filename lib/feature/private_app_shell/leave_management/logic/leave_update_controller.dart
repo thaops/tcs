@@ -119,9 +119,8 @@ class LeaveUpdateController extends GetxController {
       final result = await _updateLeave(updateData, leaveId, context);
       if (result.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         Get.back(result: true);
-        Get.snackbar('Thành công', 'Cập nhật đơn xin phép thành công');
       } else {
-        Get.snackbar('Thất bại', 'Đơn xin phép thất bại: ${result.message}');
+        return;
       }
     } catch (e) {
       debugPrint("error: $e");

@@ -8,8 +8,12 @@ import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leav
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_detail_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_update_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/binding/profile_binding.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/binding/my_annual_leave_binding.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/binding/summary_day_off_binding.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_screen.dart';
-import 'package:tcs_flutter/main.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_detail_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_annual_goals_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/profile/view/summary_day_off_screen.dart';
 import 'package:tcs_flutter/router/bottom_navigation_main.dart';
 
 class AppRouter {
@@ -29,58 +33,23 @@ class AppRouter {
   static const login = '/auth/login';
   static const loginWithMicrosoft = '/auth/loginWithMicrosoft';
 
-  // Route con cho report
-  static const report_view = '/report/report_view';
-  static const report_detail = '/report/report_detail';
-  static const report_coment = '/report/report_coment';
-  static const report_create = '/report/report_create';
-  static const report_update = '/report/report_update';
-
-  // Route con cho board
-  static const board_view = '/board/board_view';
-  static const board_create = '/board/board_create';
-  static const board_detail = '/board/board_detail';
-  static const board_update = '/board/board_update';
-  static const history_view = '/board/history_view';
-
-  // Route con cho task
-  static const task_management = '/task/task_management';
-  static const task_every = '/task/task_every';
-  static const task_detail = '/task/task_detail';
-  static const task_option = '/task/task_option';
-  static const task_create = '/task/task_create';
-  static const task_update = '/task/task_update';
-  static const task_kanban_view = '/task/task_kanban_view';
-  static const timeline_view = '/task/timeline_view';
-
   // Route con cho leave
   static const leaveCreate = '/leave/leaveCreate';
   static const leaveUpdate = '/leave/leaveUpdate';
   static const leaveDetail = '/leave/leaveDetail';
 
-  // Route con cho support
-  static const support_detail = '/support/support_detail';
-  static const support_create_step = '/support/support_create_step';
+  static const profileAnnualGoals = '/profile/annualGoals';
+  static const profileDetail = '/profile/detail';
+  static const summaryDayOff = '/profile/summaryDayOff';
 
   static final List<GetPage> routes = [
     // Auth
-    GetPage(
-      name: login,
-      page: () => LoginScreen(),
-      binding: LoginBinding(),
-    ),
-    GetPage(
-      name: loginWithMicrosoft,
-      page: () => LoginWithMicrosoft(),
-    ),
+    GetPage(name: login, page: () => LoginScreen(), binding: LoginBinding()),
+    GetPage(name: loginWithMicrosoft, page: () => LoginWithMicrosoft()),
 
     // Main
-    GetPage(
-      name: main,
-      page: () => MainScreen(),
-    ),
+    GetPage(name: main, page: () => MainScreen()),
 
-  
     // Leave
     GetPage(
       name: leaveCreate,
@@ -104,9 +73,21 @@ class AppRouter {
       page: () => ProfileScreen(),
       binding: ProfileBinding(),
     ),
+    GetPage(name: filter_user, page: () => FilterUserView()),
     GetPage(
-      name: filter_user,
-      page: () => FilterUserView(),
+      name: profileDetail,
+      page: () => ProfileDetailScreen(),
+      binding: ProfileBinding(),
+    ),
+    GetPage(
+      name: profileAnnualGoals,
+      page: () => ProfileAnnualGoalsScreen(),
+      binding: MyAnnualLeaveBinding(),
+    ),
+    GetPage(
+      name: summaryDayOff,
+      page: () => SummaryDayOffScreen(),
+      binding: SummaryDayOffBinding(),
     ),
   ];
 }

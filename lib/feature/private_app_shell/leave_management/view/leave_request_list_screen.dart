@@ -8,7 +8,6 @@ import 'package:tcs_flutter/feature/private_app_shell/filter_user/controller/fil
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_filter_controller.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_list_controller.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/leave_filter_widget.dart';
-import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/listoff_month_widget.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/listoff_widgets.dart';
 import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/src/api/models/employee_model.dart';
@@ -32,9 +31,106 @@ class _LeaveScreenState extends State<LeaveScreen>
     FilterUserController(),
   );
   DateTime? selectedMonth;
-  // Track last fetched date range to avoid redundant API calls when filtering
-  DateTime? _lastFetchedStart;
-  DateTime? _lastFetchedEnd;
+  final Rx<DateTime?> _userSelectedStart = Rx<DateTime?>(null);
+  final Rx<DateTime?> _userSelectedEnd = Rx<DateTime?>(null);
+  final RxString _filterInfoText = ''.obs;
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  void _updateFilterInfo() {
+    final range = _getCurrentTimeRange();
+    final start = range['start']!;
+    final end = range['end']!;
+    _filterInfoText.value =
+        'Đang lọc từ ${_formatDate(start)} đến ${_formatDate(end)}';
+  }
+
+  void _resetFilter() {
+    // Reset về filter mặc định
+    _userSelectedStart.value = null;
+    _userSelectedEnd.value = null;
+
+    // Clear department và status filter
+    _leaveFilterController.clearDepartment();
+    _leaveFilterController.clearStatus();
+
+    // Update filter info text
+    _updateFilterInfo();
+
+    // Gọi API với filter mặc định
+    final range = _getCurrentTimeRange();
+    _fetchListOff(range['start']!, range['end']!, forceFetch: true);
+  }
+
+  Widget _buildFilterInfo() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.1),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.primary.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.filter_alt, color: AppColors.primary, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Obx(
+              () => Text(
+                _filterInfoText.value,
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+          Obx(
+            () =>
+                _userSelectedStart.value != null &&
+                        _userSelectedEnd.value != null
+                    ? GestureDetector(
+                      onTap: _resetFilter,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.clear, color: Colors.white, size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Bỏ filter',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _fetchListOff(
     DateTime firstDay,
@@ -49,17 +145,27 @@ class _LeaveScreenState extends State<LeaveScreen>
     _leaveFilterController.setDepartmentsFromNames(
       listController.listOff.map((e) => e.department ?? '').toList(),
     );
-    // Update last fetched range
-    _lastFetchedStart = firstDay;
-    _lastFetchedEnd = lastDay;
   }
 
   DateTimeRange _getDefaultRange() {
     final now = DateTime.now();
-    // Từ tháng hiện tại đến hết năm
     final firstDay = DateTime(now.year, now.month, 1, 0, 0, 0, 0, 0);
     final lastDay = DateTime(now.year, 12, 31, 23, 59, 59, 999, 0);
     return DateTimeRange(start: firstDay, end: lastDay);
+  }
+
+  Map<String, DateTime> _getCurrentTimeRange() {
+    if (_userSelectedStart.value != null && _userSelectedEnd.value != null) {
+      return {
+        'start': _userSelectedStart.value!,
+        'end': _userSelectedEnd.value!,
+      };
+    }
+
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month, 1, 0, 0, 0, 0, 0);
+    final end = DateTime(now.year, 12, 31, 23, 59, 59, 999, 0);
+    return {'start': start, 'end': end};
   }
 
   @override
@@ -69,7 +175,6 @@ class _LeaveScreenState extends State<LeaveScreen>
     if (filterUserController.employeeIdToDepartment.isEmpty) {
       filterUserController.fetchUserList();
     }
-    // Luôn set tháng hiện tại làm mặc định
     final now = DateTime.now();
     selectedMonth = DateTime(now.year, now.month, 1);
 
@@ -77,6 +182,8 @@ class _LeaveScreenState extends State<LeaveScreen>
       final range = _getDefaultRange();
       _fetchListOff(range.start, range.end);
     }
+
+    _updateFilterInfo();
   }
 
   @override
@@ -86,56 +193,17 @@ class _LeaveScreenState extends State<LeaveScreen>
     Get.toNamed(AppRouter.leaveCreate, arguments: _fetchListOff)?.then((value) {
       if (value == true) {
         widget.onUpdateCallback(true);
-        // Re-fetch using last range (or selected month) to keep current context
-        DateTime start =
-            _lastFetchedStart ?? listController.months.first['firstDay']!;
-        DateTime end =
-            _lastFetchedEnd ?? listController.months.first['lastDay']!;
-        if (selectedMonth != null) {
-          Map<String, DateTime>? item;
-          for (final m in listController.months) {
-            if (m['firstDay'] == selectedMonth) {
-              item = m;
-              break;
-            }
-          }
-          if (item != null) {
-            start = item['firstDay']!;
-            end = item['lastDay']!;
-          }
-        }
-        _fetchListOff(start, end, forceFetch: true);
+        final range = _getCurrentTimeRange();
+        _fetchListOff(range['start']!, range['end']!, forceFetch: true);
       }
     });
   }
 
   Future<void> refresh() async {
-    // Prefer last fetched range, then selectedMonth, then default
-    DateTime? start = _lastFetchedStart;
-    DateTime? end = _lastFetchedEnd;
-    if (start == null || end == null) {
-      if (selectedMonth != null) {
-        Map<String, DateTime>? item;
-        for (final m in listController.months) {
-          if (m['firstDay'] == selectedMonth) {
-            item = m;
-            break;
-          }
-        }
-        if (item != null) {
-          start = item['firstDay'];
-          end = item['lastDay'];
-        }
-      }
-    }
-    final fallback = _getDefaultRange();
-    await _fetchListOff(
-      start ?? fallback.start,
-      end ?? fallback.end,
-      forceFetch: true,
-    );
+    final range = _getCurrentTimeRange();
+    await _fetchListOff(range['start']!, range['end']!, forceFetch: true);
     if (!mounted) return;
-    setState(() {}); // keep selectedMonth & filters as-is
+    setState(() {});
   }
 
   @override
@@ -153,7 +221,7 @@ class _LeaveScreenState extends State<LeaveScreen>
               isBack: false,
               isTitleCenter: false,
               iconRightfirst: Icons.add_circle_rounded,
-              colorfirst: AppColors.yellow,
+              colorfirst: AppColors.primary,
               functionfirst: _addScreen,
               iconRightSecond: Icons.filter_alt_rounded,
               colorSecond: AppColors.primary,
@@ -165,28 +233,9 @@ class _LeaveScreenState extends State<LeaveScreen>
                 _leaveFilterController.setStatusesFromEmployees(
                   listController.listOff.toList(),
                 );
-                // Chỉ reset filter về mặc định nếu chưa có tháng nào được chọn
-                if (selectedMonth == null) {
-                  _leaveFilterController.setStartAndEndDates();
-                } else {
-                  // Giữ nguyên tháng đã chọn
-                  _leaveFilterController.startDate.value = selectedMonth!;
-                  final lastDayOfMonth = DateTime(
-                    selectedMonth!.year,
-                    selectedMonth!.month + 1,
-                    0,
-                  );
-                  _leaveFilterController.endDate.value = DateTime(
-                    lastDayOfMonth.year,
-                    lastDayOfMonth.month,
-                    lastDayOfMonth.day,
-                    23,
-                    59,
-                    59,
-                    999,
-                    0,
-                  );
-                }
+                final range = _getCurrentTimeRange();
+                _leaveFilterController.startDate.value = range['start']!;
+                _leaveFilterController.endDate.value = range['end']!;
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -200,60 +249,36 @@ class _LeaveScreenState extends State<LeaveScreen>
                         height: MediaQuery.of(context).size.height * 0.55,
                         child: LeaveFilterWidget(
                           onFilter: () async {
-                            // Lưu lại lựa chọn hiện tại để giữ filter sau khi refetch
                             final prevDep =
                                 _leaveFilterController.departmentId.value;
                             final prevStatus =
                                 _leaveFilterController.statusId.value;
-                            final newStart =
-                                _leaveFilterController.startDate.value;
-                            final newEnd = _leaveFilterController.endDate.value;
-                            final hasPrev =
-                                _lastFetchedStart != null &&
-                                _lastFetchedEnd != null;
-                            final bool dateChanged =
-                                !hasPrev ||
-                                !newStart.isAtSameMomentAs(
-                                  _lastFetchedStart!,
-                                ) ||
-                                !newEnd.isAtSameMomentAs(_lastFetchedEnd!);
 
-                            if (dateChanged) {
-                              // Gọi API khi khoảng ngày thay đổi
-                              await _fetchListOff(
-                                newStart,
-                                newEnd,
-                                forceFetch: true,
-                              );
-                              // Sau khi có dữ liệu mới, build lại filter local
-                              _leaveFilterController
-                                  .setDepartmentsFromController(
-                                    filterUserController,
-                                    listController.listOff.toList(),
-                                  );
-                              _leaveFilterController.setStatusesFromEmployees(
-                                listController.listOff.toList(),
-                              );
-                              // Khôi phục lựa chọn để áp dụng filter ngay trên danh sách
-                              _leaveFilterController.departmentId.value =
-                                  prevDep;
-                              _leaveFilterController.statusId.value =
-                                  prevStatus;
-                            } else {
-                              // Không đổi ngày: không gọi API, chỉ rebuild filter local và đóng
-                              _leaveFilterController
-                                  .setDepartmentsFromController(
-                                    filterUserController,
-                                    listController.listOff.toList(),
-                                  );
-                              _leaveFilterController.setStatusesFromEmployees(
-                                listController.listOff.toList(),
-                              );
-                              _leaveFilterController.departmentId.value =
-                                  prevDep;
-                              _leaveFilterController.statusId.value =
-                                  prevStatus;
-                            }
+                            final userStart =
+                                _leaveFilterController.startDate.value;
+                            final userEnd =
+                                _leaveFilterController.endDate.value;
+                            _userSelectedStart.value = userStart;
+                            _userSelectedEnd.value = userEnd;
+                            _updateFilterInfo();
+
+                            await _fetchListOff(
+                              userStart,
+                              userEnd,
+                              forceFetch: true,
+                            );
+
+                            _leaveFilterController.setDepartmentsFromController(
+                              filterUserController,
+                              listController.listOff.toList(),
+                            );
+                            _leaveFilterController.setStatusesFromEmployees(
+                              listController.listOff.toList(),
+                            );
+
+                            _leaveFilterController.departmentId.value = prevDep;
+                            _leaveFilterController.statusId.value = prevStatus;
+
                             Get.back();
                           },
                         ),
@@ -268,23 +293,7 @@ class _LeaveScreenState extends State<LeaveScreen>
               height: MediaQuery.of(context).size.height,
               child: Column(
                 children: [
-                  Obx(
-                    () => MonthSelector(
-                      months: listController.months,
-                      selectedMonth: selectedMonth,
-                      filterStartDate: _leaveFilterController.startDate.value,
-                      filterEndDate: _leaveFilterController.endDate.value,
-                      onMonthSelected: (firstDay, lastDay) {
-                        setState(() {
-                          selectedMonth = firstDay;
-                        });
-                        // Đồng bộ filter bottom sheet với tháng được chọn
-                        _leaveFilterController.startDate.value = firstDay;
-                        _leaveFilterController.endDate.value = lastDay;
-                        _fetchListOff(firstDay, lastDay, forceFetch: true);
-                      },
-                    ),
-                  ),
+                  _buildFilterInfo(),
                   Obx(() {
                     if (listController.isLoading.value) {
                       return const Expanded(child: Center(child: SizedBox()));
@@ -358,25 +367,8 @@ class _LeaveScreenState extends State<LeaveScreen>
           listOff: employee,
           onUpdateCallback: (isUpdate) {
             if (isUpdate) {
-              // Re-fetch using current context
-              DateTime start =
-                  _lastFetchedStart ?? listController.months.first['firstDay']!;
-              DateTime end =
-                  _lastFetchedEnd ?? listController.months.first['lastDay']!;
-              if (selectedMonth != null) {
-                Map<String, DateTime>? item;
-                for (final m in listController.months) {
-                  if (m['firstDay'] == selectedMonth) {
-                    item = m;
-                    break;
-                  }
-                }
-                if (item != null) {
-                  start = item['firstDay']!;
-                  end = item['lastDay']!;
-                }
-              }
-              _fetchListOff(start, end, forceFetch: true);
+              final range = _getCurrentTimeRange();
+              _fetchListOff(range['start']!, range['end']!, forceFetch: true);
             }
           },
         ),

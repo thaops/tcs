@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/controller/leave_request_detail_controller.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_comment.dart';
@@ -61,13 +60,15 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
             }
 
             if (leave != null) {
-              final bool isApprovedOrRejected =
+              final bool isApprovedOrRejectedOrCancelled =
                   (leave.status == 2) ||
                   (leave.status == 3) ||
+                  (leave.status == 4) || // Thêm status 4 cho Hủy
                   (leave.statusLabel == 'Đã duyệt') ||
-                  (leave.statusLabel == 'Từ chối');
+                  (leave.statusLabel == 'Từ chối') ||
+                  (leave.statusLabel == 'Hủy');
 
-              if (isApprovedOrRejected) {
+              if (isApprovedOrRejectedOrCancelled) {
                 return const SizedBox.shrink();
               }
             }
@@ -116,13 +117,15 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
             }
 
             if (leave != null) {
-              final bool isApprovedOrRejected =
+              final bool isApprovedOrRejectedOrCancelled =
                   (leave.status == 2) ||
                   (leave.status == 3) ||
+                  (leave.status == 4) || // Thêm status 4 cho Hủy
                   (leave.statusLabel == 'Đã duyệt') ||
-                  (leave.statusLabel == 'Từ chối');
+                  (leave.statusLabel == 'Từ chối') ||
+                  (leave.statusLabel == 'Hủy');
 
-              if (isApprovedOrRejected) {
+              if (isApprovedOrRejectedOrCancelled) {
                 return TextWidget(
                   text: "Đã đóng bình luận",
                   fontSize: 12.sp,
@@ -363,27 +366,5 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
         ],
       ),
     );
-  }
-
-  /// Format datetime string
-  String _formatDateTime(String dateTimeString) {
-    try {
-      // Parse datetime và chuyển về timezone local
-      final dateTime = DateTime.parse(dateTimeString).toLocal();
-      final now = DateTime.now();
-      final difference = now.difference(dateTime);
-
-      if (difference.inDays > 0) {
-        return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
-      } else if (difference.inHours > 0) {
-        return '${difference.inHours} giờ trước';
-      } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes} phút trước';
-      } else {
-        return 'Vừa xong';
-      }
-    } catch (e) {
-      return dateTimeString;
-    }
   }
 }

@@ -98,11 +98,10 @@ class LeaveCareateController extends GetxController {
       final result = await _addLeave(addData, context);
 
       if (result.data == false) {
-        Get.snackbar("Thất bại", result.message);
+        _showSnackBar(context, "Thất bại ${result.message}");
         return;
       }
       Get.back(result: true);
-      Get.snackbar("Thành công", "Tạo đơn nghỉ phép thành công");
     } catch (e) {
       print(e);
     } finally {

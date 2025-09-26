@@ -18,7 +18,11 @@ abstract class LeaveRepositoryInterface {
 
   Future<bool> deleteLeave(String dayyOffId, BuildContext context);
 
-  Future<bool> cancelLeave(String dayyOffId, BuildContext context);
+  Future<bool> cancelLeave(
+    String dayyOffId,
+    BuildContext context, [
+    String reason = '',
+  ]);
 
   Future<AddDayOffResponseModel> approveLeave(
     Map<String, dynamic> approveData,

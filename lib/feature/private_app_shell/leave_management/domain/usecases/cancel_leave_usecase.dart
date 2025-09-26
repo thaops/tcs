@@ -5,7 +5,11 @@ class CancelLeaveUseCase {
   final LeaveRepositoryInterface repository;
   CancelLeaveUseCase(this.repository);
 
-  Future<bool> call(String dayyOffId, BuildContext context) {
-    return repository.cancelLeave(dayyOffId, context);
+  Future<bool> call(
+    String dayyOffId,
+    BuildContext context, [
+    String reason = '',
+  ]) {
+    return repository.cancelLeave(dayyOffId, context, reason);
   }
 }

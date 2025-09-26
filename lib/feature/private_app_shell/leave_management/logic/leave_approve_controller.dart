@@ -41,7 +41,6 @@ class LeaveApproveController extends GetxController {
         status,
         context,
       );
-      print("response: ${response.data}");
       await CustomDialog.show(
         context,
         message: message,
@@ -54,16 +53,32 @@ class LeaveApproveController extends GetxController {
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         await Future.delayed(Duration(seconds: 3));
-        Navigator.pop(context, true);
-        Navigator.pop(context, true);
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context, true);
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context, true);
+          }
+        }
       } else {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(response.message)));
-        Navigator.pop(context, false);
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context, false);
+        }
       }
     } catch (e) {
-      print(e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Có lỗi xảy ra khi xử lý đơn: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context, false);
+        }
+      }
     } finally {
       isLoading.value = false;
     }
@@ -73,7 +88,6 @@ class LeaveApproveController extends GetxController {
     return leaveManagementRepository.getListApprover(step, keyword);
   }
 
-  // Method mới để gọi API get-list-approval-by
   Future<List<ApprovalData>> getListApprovalByUser(String leaveOffId) {
     return (leaveManagementRepository as LeaveManagementRepository)
         .getListApprovalByUser(leaveOffId);

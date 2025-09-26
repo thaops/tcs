@@ -141,13 +141,15 @@ class LeaveRequestDetailController extends GetxController {
       return;
     }
 
-    final bool isApproved =
+    final bool isApprovedOrRejectedOrCancelled =
         (leave!.status == 2) ||
         (leave!.status == 3) ||
+        (leave!.status == 4) || // Thêm status 4 cho Huỷ đơn
         (leave!.statusLabel == 'Đã duyệt') ||
-        (leave!.statusLabel == 'Từ chối');
+        (leave!.statusLabel == 'Từ chối') ||
+        (leave!.statusLabel == 'Huỷ đơn');
 
-    if (isApproved) {
+    if (isApprovedOrRejectedOrCancelled) {
       shouldShowApproveButtons.value = false;
       return;
     }
@@ -221,16 +223,20 @@ class LeaveRequestDetailController extends GetxController {
     debugPrint('  - statusLabel: $statusLabel');
     debugPrint('  - isOwner: ${myId == employeeId}');
 
-    final bool isApprovedOrRejected =
+    final bool isApprovedOrRejectedOrCancelled =
         (status == 2) ||
         (status == 3) ||
+        (status == 4) || // Thêm status 4 cho Huỷ đơn
         (statusLabel == 'Đã duyệt') ||
-        (statusLabel == 'Từ chối');
+        (statusLabel == 'Từ chối') ||
+        (statusLabel == 'Huỷ đơn');
 
-    debugPrint('  - isApprovedOrRejected: $isApprovedOrRejected');
+    debugPrint(
+      '  - isApprovedOrRejectedOrCancelled: $isApprovedOrRejectedOrCancelled',
+    );
 
-    if (isApprovedOrRejected) {
-      debugPrint('  - Result: false (đơn đã duyệt/từ chối)');
+    if (isApprovedOrRejectedOrCancelled) {
+      debugPrint('  - Result: false (đơn đã duyệt/từ chối/huỷ đơn)');
       debugPrint(
         '  - Setting canShowModifyButtons.value from ${canShowModifyButtons.value} to false',
       );
@@ -257,14 +263,16 @@ class LeaveRequestDetailController extends GetxController {
     if (leave == null) return false;
 
     final int? status = leave!.status;
-    final bool isApprovedOrRejected =
+    final bool isApprovedOrRejectedOrCancelled =
         (status == 2) ||
         (status == 3) ||
+        (status == 4) || // Thêm status 4 cho Huỷ đơn
         (leave!.statusLabel == 'Đã duyệt') ||
-        (leave!.statusLabel == 'Từ chối');
+        (leave!.statusLabel == 'Từ chối') ||
+        (leave!.statusLabel == 'Huỷ đơn');
 
-    // Ẩn input comment khi đơn đã duyệt hoặc từ chối
-    return !isApprovedOrRejected;
+    // Ẩn input comment khi đơn đã duyệt, từ chối hoặc huỷ đơn
+    return !isApprovedOrRejectedOrCancelled;
   }
 
   /// Navigate to update screen
@@ -305,17 +313,39 @@ class LeaveRequestDetailController extends GetxController {
       ),
     );
 
-    if (result == true && leave != null) {
-      await controllerApprove.approveOrRejectLeave(
-        leave!.id.toString(),
-        leave!.categoryId ?? '',
-        2,
-        "Đã duyệt thành công",
-        Get.context!,
-      );
+    if (result == true && leave != null && Get.context != null) {
+      // Kiểm tra dữ liệu cần thiết trước khi duyệt
+      final leaveId = leave!.id?.toString();
+      final categoryId = leave!.categoryId;
 
-      // Reload data sau khi duyệt để cập nhật UI
-      await loadLeaveData();
+      if (leaveId == null || categoryId == null) {
+        Get.snackbar(
+          'Lỗi',
+          'Thiếu thông tin cần thiết để duyệt đơn',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      try {
+        await controllerApprove.approveOrRejectLeave(
+          leaveId,
+          categoryId,
+          2,
+          "Đã duyệt thành công",
+          Get.context!,
+        );
+
+        // Reload data sau khi duyệt để cập nhật UI
+        await loadLeaveData();
+      } catch (e) {
+        debugPrint('Error in showApproveDialog: $e');
+        Get.snackbar(
+          'Lỗi',
+          'Không thể duyệt đơn: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     }
   }
 
@@ -335,17 +365,39 @@ class LeaveRequestDetailController extends GetxController {
       ),
     );
 
-    if (result == true && leave != null) {
-      await controllerApprove.approveOrRejectLeave(
-        leave!.id.toString(),
-        leave!.categoryId ?? '',
-        3,
-        "Từ chối thành công",
-        Get.context!,
-      );
+    if (result == true && leave != null && Get.context != null) {
+      // Kiểm tra dữ liệu cần thiết trước khi từ chối
+      final leaveId = leave!.id?.toString();
+      final categoryId = leave!.categoryId;
 
-      // Reload data sau khi từ chối để cập nhật UI
-      await loadLeaveData();
+      if (leaveId == null || categoryId == null) {
+        Get.snackbar(
+          'Lỗi',
+          'Thiếu thông tin cần thiết để từ chối đơn',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      try {
+        await controllerApprove.approveOrRejectLeave(
+          leaveId,
+          categoryId,
+          3,
+          "Từ chối thành công",
+          Get.context!,
+        );
+
+        // Reload data sau khi từ chối để cập nhật UI
+        await loadLeaveData();
+      } catch (e) {
+        debugPrint('Error in showRejectDialog: $e');
+        Get.snackbar(
+          'Lỗi',
+          'Không thể từ chối đơn: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     }
   }
 

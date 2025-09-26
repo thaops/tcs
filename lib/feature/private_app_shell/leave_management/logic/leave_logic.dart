@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 import 'package:tcs_flutter/src/api/api_service.dart';
 import 'package:tcs_flutter/src/api/models/users_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
@@ -31,19 +32,37 @@ class LeaveLogic extends GetxController {
   int ERROR_CODE = HttpStatusCodes.STATUS_CODE_BAD_REQUEST;
 
   Future<void> deleteLeave(String dayyOffId, BuildContext context) async {
+    // Hiển thị popup xác nhận trước khi hủy
     final bool? confirmCancel = await _showConfirmationDialog(
       context,
       'Xác nhận hủy',
-      'Bạn muốn hủy đơn xin nghỉ này?',
+      'Bạn có chắc chắn muốn hủy đơn xin nghỉ này?',
     );
+
     if (confirmCancel == true) {
-      final bool success = await _cancelLeave(dayyOffId, context);
-      _showSnackBar(
-        context,
-        success ? 'Hủy đơn xin nghỉ thành công' : 'Hủy đơn xin nghỉ thất bại',
-      );
-      if (success) {
-        Navigator.of(context).pop(true); // Truyền true để báo hiệu cần refresh
+      try {
+        final bool success = await _cancelLeave.call(
+          dayyOffId,
+          context,
+          '', // Mặc định để trống
+        );
+        _showSnackBar(
+          context,
+          success ? 'Hủy đơn xin nghỉ thành công' : 'Hủy đơn xin nghỉ thất bại',
+        );
+        if (success) {
+          Navigator.of(
+            context,
+          ).pop(true); // Truyền true để báo hiệu cần refresh
+        }
+      } catch (e) {
+        // Hiển thị message từ server
+        final String errorMessage = e.toString().replaceFirst(
+          'Exception: ',
+          '',
+        );
+        _showSnackBar(context, errorMessage);
+        debugPrint('Cancel leave error: $e');
       }
     }
   }
@@ -89,6 +108,7 @@ class LeaveLogic extends GetxController {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Hiển thị popup xác nhận hủy đơn
   Future<bool?> _showConfirmationDialog(
     BuildContext context,
     String title,
@@ -103,15 +123,27 @@ class LeaveLogic extends GetxController {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Không'),
+              child: Text('Hủy'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Hủy đơn'),
+              child: Text('Xác nhận'),
             ),
           ],
         );
       },
     );
+  }
+
+  /// Test method để kiểm tra cancel leave với message từ server
+  Future<void> testCancelLeave(String dayyOffId, BuildContext context) async {
+    try {
+      final bool success = await _cancelLeave(dayyOffId, context);
+      debugPrint('Cancel leave result: $success');
+    } catch (e) {
+      final String errorMessage = e.toString().replaceFirst('Exception: ', '');
+      debugPrint('Cancel leave error message: $errorMessage');
+      _showSnackBar(context, errorMessage);
+    }
   }
 }

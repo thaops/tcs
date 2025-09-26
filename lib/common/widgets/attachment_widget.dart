@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
+import 'package:tcs_flutter/common/widgets/attachment_selection_dialog.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 
 class AttachmentWidget extends StatefulWidget {
@@ -72,31 +72,23 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     if (!widget.isEnabled) return;
 
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: widget.allowedExtensions,
-        allowMultiple: true,
-      );
+      // Hiển thị popup chọn loại attachment
+      final List<AttachmentFile>? selectedFiles =
+          await AttachmentSelectionDialog.show(
+            context,
+            allowedExtensions: widget.allowedExtensions,
+            maxFiles: widget.maxFiles,
+          );
 
-      if (result != null) {
-        List<AttachmentFile> newFiles =
-            result.files.map((file) {
-              return AttachmentFile(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                name: file.name,
-                size: file.size,
-                path: file.path,
-              );
-            }).toList();
-
+      if (selectedFiles != null && selectedFiles.isNotEmpty) {
         // Kiểm tra giới hạn số file
-        if (_attachments.length + newFiles.length > widget.maxFiles) {
+        if (_attachments.length + selectedFiles.length > widget.maxFiles) {
           _showSnackBar('Chỉ được đính kèm tối đa ${widget.maxFiles} file');
           return;
         }
 
         setState(() {
-          _attachments.addAll(newFiles);
+          _attachments.addAll(selectedFiles);
         });
 
         // Cập nhật danh sách ID
@@ -463,20 +455,4 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       ],
     );
   }
-}
-
-class AttachmentFile {
-  final String id;
-  final String name;
-  final int size;
-  final String? path;
-  final String? url;
-
-  AttachmentFile({
-    required this.id,
-    required this.name,
-    required this.size,
-    this.path,
-    this.url,
-  });
 }

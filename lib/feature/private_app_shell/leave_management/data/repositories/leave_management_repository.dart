@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
@@ -29,6 +30,18 @@ class LeaveManagementRepository extends ChangeNotifier
   ) async {
     try {
       isLoading = true;
+
+      // Log để debug API call
+      print(
+        '[LeaveManagementRepository] getListOff - FromDate: ${firstDayOfMonth.toIso8601String()}',
+      );
+      print(
+        '[LeaveManagementRepository] getListOff - ToDate: ${lastDayOfMonth.toIso8601String()}',
+      );
+      print(
+        '[LeaveManagementRepository] getListOff - API Endpoint: ${ApiEndpoints.listoffListView}',
+      );
+
       final response = await dio.post(
         ApiEndpoints.listoffListView,
         data: {
@@ -42,6 +55,14 @@ class LeaveManagementRepository extends ChangeNotifier
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> leaveRequestJson = jsonResponse['data'];
 
+        // Log response từ API
+        print(
+          '[LeaveManagementRepository] getListOff - API Response statusCode: ${response.data['statusCode']}',
+        );
+        print(
+          '[LeaveManagementRepository] getListOff - Số lượng records từ API: ${leaveRequestJson.length}',
+        );
+
         // Parse new API response format
         List<LeaveRequest> leaveRequests =
             leaveRequestJson
@@ -54,6 +75,9 @@ class LeaveManagementRepository extends ChangeNotifier
                 .map((leaveRequest) => leaveRequest.toEmployee())
                 .toList();
 
+        print(
+          '[LeaveManagementRepository] getListOff - Số lượng employees sau convert: ${employees.length}',
+        );
         return employees;
       } else {
         return null;
@@ -122,20 +146,33 @@ class LeaveManagementRepository extends ChangeNotifier
   }
 
   @override
-  Future<bool> cancelLeave(String dayyOffId, BuildContext context) async {
+  Future<bool> cancelLeave(
+    String dayyOffId,
+    BuildContext context, [
+    String reason = '',
+  ]) async {
     try {
-      final response = await dio.put(
+      debugPrint(
+        'Cancel leave URL: ${ApiEndpoints.cancelLeaveIDV2(dayyOffId)}',
+      );
+      debugPrint('Cancel leave data: {Id: $dayyOffId, Reason: $reason}');
+
+      final response = await dio.post(
         ApiEndpoints.cancelLeaveIDV2(dayyOffId),
-        data: {},
+        data: {'Id': dayyOffId, 'Reason': reason},
       );
 
       if (response.data['statusCode'] == HttpStatusCodes.STATUS_CODE_OK) {
         return true;
       } else {
-        return false;
+        // Lưu message từ server để sử dụng sau
+        final message = response.data['Message'] ?? 'Hủy đơn xin nghỉ thất bại';
+        debugPrint('Server response: ${response.data}');
+        throw Exception(message);
       }
     } catch (e) {
-      return false;
+      // Re-throw để message được truyền lên
+      rethrow;
     }
   }
 

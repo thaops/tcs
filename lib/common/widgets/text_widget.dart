@@ -14,35 +14,39 @@ class TextWidget extends StatelessWidget {
   final String? fontFamily;
   final int? maxLines;
   final int? minLines;
-   TextWidget(
-      {super.key,
-      required this.text,
-      this.fontSize = 16,
-      this.fontWeight = FontWeight.w600,
-      this.color = AppColors.black,
-      this.textAlign = TextAlign.left,
-      this.paddingHorizontal,
-      this.paddingVertical,
-      this.minLines = 1,
-      this.fontStyle,
-      this.maxLines = 1,
-      this.fontFamily});
+  TextWidget({
+    super.key,
+    required this.text,
+    this.fontSize = 16,
+    this.fontWeight = FontWeight.w400,
+    this.color = AppColors.black,
+    this.textAlign = TextAlign.left,
+    this.paddingHorizontal,
+    this.paddingVertical,
+    this.minLines = 1,
+    this.fontStyle,
+    this.maxLines = 1,
+    this.fontFamily = 'Roboto',
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: paddingHorizontal ?? 0 , vertical: paddingVertical ?? 0),
+      padding: EdgeInsets.symmetric(
+        horizontal: paddingHorizontal ?? 0,
+        vertical: paddingVertical ?? 0,
+      ),
       child: Text(
         text.toString(),
         textAlign: textAlign,
         maxLines: maxLines,
         style: TextStyle(
-        fontSize: fontSize.sp,
-        fontWeight: fontWeight,
-        color: color,
-        overflow: TextOverflow.ellipsis,
-        fontStyle: fontStyle, 
-        fontFamily: fontFamily
+          fontSize: fontSize.sp,
+          fontWeight: fontWeight,
+          color: color,
+          overflow: TextOverflow.ellipsis,
+          fontStyle: fontStyle,
+          fontFamily: fontFamily,
         ),
       ),
     );
