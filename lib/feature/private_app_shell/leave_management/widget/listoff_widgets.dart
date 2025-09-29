@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -6,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/feature/private_app_shell/filter_user/controller/filter_user_controller.dart';
 import 'package:tcs_flutter/router/app_router.dart';
-import 'package:tcs_flutter/src/api/models/employee_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
 import 'package:tcs_flutter/src/config/constants/color/colors.dart';
 
 class ListWidgets extends StatefulWidget {
@@ -60,41 +61,70 @@ class _ListWidgetsState extends State<ListWidgets> {
         cacheExtent: 2000.0,
         itemCount: widget.listOff!.length,
         itemBuilder: (context, index) {
-          final employee = widget.listOff![index];
-          return RepaintBoundary(child: _buildEmployeeItem(employee));
+          final leave = widget.listOff![index];
+          return RepaintBoundary(child: _buildEmployeeItem(leave));
         },
       ),
     );
   }
 
   Color _getStatusColor(String? statusLabel) {
-    switch (statusLabel) {
-      case 'Đang xử lý':
+    if (statusLabel == null || statusLabel.isEmpty) {
+      return Colors.grey;
+    }
+
+    switch (statusLabel.toLowerCase().trim()) {
+      case 'đang xử lý':
+      case 'đơn cần duyệt':
         return Color.fromARGB(255, 158, 158, 4); // Vàng
-      case 'Đã duyệt':
+      case 'đã duyệt':
         return Colors.green;
-      case 'Chờ xử lý':
+      case 'chờ xử lý':
         return Colors.grey;
-      case 'Từ chối':
+      case 'từ chối':
         return pending;
-      case '1': // Trạng thái số
-        return Color.fromARGB(255, 158, 158, 4); // Vàng cho "Đang xử lý"
-      case '2': // Trạng thái số
-        return Colors.green; // Xanh cho "Đã duyệt"
-      case '3': // Trạng thái số
-        return pending; // Đỏ cho "Từ chối"
+      case 'hủy đơn':
+        return Colors.red;
+      case '1': // Trạng thái số - Đơn cần duyệt
+        return Color.fromARGB(255, 158, 158, 4); // Vàng
+      case '2': // Trạng thái số - Đã duyệt
+        return Colors.green;
+      case '3': // Trạng thái số - Từ chối
+        return pending;
+      case '4': // Trạng thái số - Hủy đơn
+        return Colors.red;
       default:
         return Colors.black;
     }
   }
 
-  Widget _buildEmployeeItem(Employee employee) {
-    // Hiển thị trực tiếp từ Employee (đã convert từ LeaveRequest)
+  String _getStatusDisplayText(String? statusLabel) {
+    if (statusLabel == null || statusLabel.isEmpty) {
+      return 'Không xác định';
+    }
+
+    // Handle numeric status
+    switch (statusLabel) {
+      case '1':
+        return 'Đơn cần duyệt';
+      case '2':
+        return 'Đã duyệt';
+      case '3':
+        return 'Từ chối';
+      case '4':
+        return 'Hủy đơn';
+      default:
+        return statusLabel;
+    }
+  }
+
+  Widget _buildEmployeeItem(LeaveRequest leave) {
+    // Hiển thị trực tiếp từ LeaveRequest
     return GestureDetector(
       onTap: () {
         Get.toNamed(
           AppRouter.leaveDetail,
-          arguments: {'leaveId': employee.id},
+          arguments: {'leaveId': leave.id},
         )?.then((value) {
           if (value == true) {
             widget.onUpdateCallback(true);
@@ -125,7 +155,7 @@ class _ListWidgetsState extends State<ListWidgets> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextWidget(
-                            text: employee.fullName ?? '',
+                            text: leave.fullName ?? '',
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                             color: Colors.black,
@@ -134,10 +164,7 @@ class _ListWidgetsState extends State<ListWidgets> {
                           10.verticalSpace,
 
                           TextWidget(
-                            text:
-                                employee.departmentName ??
-                                employee.department ??
-                                '',
+                            text: leave.departmentName ?? '',
                             fontSize: 12.0.sp,
                             fontWeight: FontWeight.w400,
                             color: Colors.grey[600],
@@ -146,8 +173,8 @@ class _ListWidgetsState extends State<ListWidgets> {
                           5.verticalSpace,
                           TextWidget(
                             text: _formatDateRange(
-                              employee.fromDate,
-                              employee.toDate,
+                              leave.fromDate,
+                              leave.toDate,
                             ),
                             fontSize: 12.0.sp,
                             fontWeight: FontWeight.w400,
@@ -155,21 +182,21 @@ class _ListWidgetsState extends State<ListWidgets> {
                           ),
                           5.verticalSpace,
                           TextWidget(
-                            text: 'Loại: ${employee.category ?? ''}',
+                            text: 'Loại: ${leave.category ?? ''}',
                             fontSize: 12.0,
                             fontWeight: FontWeight.w400,
                             maxLines: 1,
                           ),
                           5.verticalSpace,
                           TextWidget(
-                            text: 'Lý do: ${employee.reason ?? ''}',
+                            text: 'Lý do: ${leave.reason ?? ''}',
                             fontSize: 12.0.sp,
                             fontWeight: FontWeight.w400,
                             maxLines: 1,
                           ),
                           5.verticalSpace,
                           TextWidget(
-                            text: 'Số ngày: ${employee.totalDay ?? 0} ngày',
+                            text: 'Số ngày: ${leave.totalDay ?? 0} ngày',
                             fontSize: 12.0.sp,
                             fontWeight: FontWeight.w400,
                           ),
@@ -189,22 +216,19 @@ class _ListWidgetsState extends State<ListWidgets> {
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: _getStatusColor(
-                          employee.statusLabel,
+                          leave.statusName,
                         ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _getStatusColor(employee.statusLabel),
+                          color: _getStatusColor(leave.statusName),
                           width: 1,
                         ),
                       ),
                       child: TextWidget(
-                        text:
-                            employee.statusLabel == "Không xác định"
-                                ? "Chờ huỷ đơn"
-                                : employee.statusLabel ?? '',
+                        text: _getStatusDisplayText(leave.statusName),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: _getStatusColor(employee.statusLabel),
+                        color: _getStatusColor(leave.statusName),
                       ),
                     ),
                   ],

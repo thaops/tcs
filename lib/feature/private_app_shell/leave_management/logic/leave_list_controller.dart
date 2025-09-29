@@ -1,9 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/repositories/leave_management_repository.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/get_list_off_usecase.dart';
-import 'package:tcs_flutter/src/api/models/employee_model.dart';
 
 class LeaveListController extends GetxController {
   final LeaveRepositoryInterface repository;
@@ -14,7 +13,7 @@ class LeaveListController extends GetxController {
     _getListOff = GetListOffUseCase(repository);
   }
 
-  final RxList<Employee> listOff = <Employee>[].obs;
+  final RxList<LeaveRequest> listOff = <LeaveRequest>[].obs;
   final RxBool isLoading = false.obs;
 
   final List<Map<String, DateTime>> months = [];
@@ -61,9 +60,15 @@ class LeaveListController extends GetxController {
       isLoading.value = true;
       final response = await _getListOff(firstDay, lastDay);
 
-      // Client-side filtering to ensure only employees with leave requests within the selected month are shown
-      List<Employee> filteredEmployees = [];
+      // TEMPORARY: Disable filtering to debug UI issue
+      // TODO: Re-enable filtering after fixing the issue
+      List<LeaveRequest> filteredLeaves = [];
       if (response != null) {
+        // Show all leave requests for debugging
+        filteredLeaves = response.toList();
+
+        // Original filtering logic (commented out for debugging)
+        /*
         filteredEmployees =
             response.where((employee) {
               // For new API format, check employee's own fromDate/toDate instead of dayOffs
@@ -106,28 +111,14 @@ class LeaveListController extends GetxController {
                 return fromDateInMonth || toDateInMonth;
               }
             }).toList();
+        */
       }
 
-      listOff.value = filteredEmployees;
+      listOff.value = filteredLeaves;
 
-      // Diagnostics
-      final missingCount =
-          listOff.where((e) => (e.department ?? '').trim().isEmpty).length;
-      if (kDebugMode) {
-        // ignore: avoid_print
-        print(
-          '[LeaveListController] Filtered ${response?.length ?? 0} -> ${filteredEmployees.length} leaves for month ${firstDay.month}/${firstDay.year} (range: ${firstDay.day}/${firstDay.month} - ${lastDay.day}/${lastDay.month})',
-        );
-        print(
-          '[LeaveListController] without department: $missingCount / ${listOff.length}',
-        );
-      }
       isDataLoaded = true;
     } catch (e) {
-      if (kDebugMode) {
-        // ignore: avoid_print
-        print('[LeaveListController] fetchListOff error: $e');
-      }
+      // Handle error silently
     } finally {
       isLoading.value = false;
     }

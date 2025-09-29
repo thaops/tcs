@@ -1,5 +1,4 @@
 import 'dart:async';
- 
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -67,8 +66,9 @@ class FilterUserController extends GetxController {
   }
 
   void toggleDepartmentSelection(String departmentName, bool isSelected) {
-    final department = userDepartmentListSearch
-        .firstWhereOrNull((dept) => dept.name == departmentName);
+    final department = userDepartmentListSearch.firstWhereOrNull(
+      (dept) => dept.name == departmentName,
+    );
     if (department != null && department.employees != null) {
       for (var employee in department.employees!) {
         if (employee.id != null && employee.fullName != null) {
@@ -86,26 +86,30 @@ class FilterUserController extends GetxController {
   }
 
   bool isDepartmentSelected(String departmentName) {
-    final department = userDepartmentListSearch
-        .firstWhereOrNull((dept) => dept.name == departmentName);
-    if (department == null || department.employees == null || department.employees!.isEmpty) {
+    final department = userDepartmentListSearch.firstWhereOrNull(
+      (dept) => dept.name == departmentName,
+    );
+    if (department == null ||
+        department.employees == null ||
+        department.employees!.isEmpty) {
       return false;
     }
-    return department.employees!.every((employee) =>
-        employee.id != null && selectEmployeeIds.any((item) => item.id == employee.id));
+    return department.employees!.every(
+      (employee) =>
+          employee.id != null &&
+          selectEmployeeIds.any((item) => item.id == employee.id),
+    );
   }
 
   Future<void> fetchUserList() async {
     try {
       isLoading.value = true;
-      final response = await dioApi.get(
-        ApiEndpoints.employees,
-      );
-      print("response.data: ${response.data}");
+      final response = await dioApi.get(ApiEndpoints.employees);
       if (response.statusCode != HttpStatusCodes.STATUS_CODE_OK) {
         return;
       }
-      final List<dynamic> dataList = (response.data['data'] as List? ?? <dynamic>[]);
+      final List<dynamic> dataList =
+          (response.data['data'] as List? ?? <dynamic>[]);
 
       // Group flat list of employees by departmentName
       final Map<String, List<Employee>> groups = {};
@@ -118,12 +122,14 @@ class FilterUserController extends GetxController {
         final empName = (item['employeeName'] ?? '').toString();
         final empEmail = (item['employeeEmail'] ?? '').toString();
         groups.putIfAbsent(deptName, () => <Employee>[]);
-        groups[deptName]!.add(Employee(
-          id: empId,
-          fullName: empName,
-          email: empEmail,
-          avatarUrl: '',
-        ));
+        groups[deptName]!.add(
+          Employee(
+            id: empId,
+            fullName: empName,
+            email: empEmail,
+            avatarUrl: '',
+          ),
+        );
         employeeIdToDepartment[empId] = deptName;
       }
 
@@ -136,9 +142,10 @@ class FilterUserController extends GetxController {
         });
       }
 
-      final mappedDepartments = groups.entries
-          .map((e) => UserDepartmentModel(name: e.key, employees: e.value))
-          .toList();
+      final mappedDepartments =
+          groups.entries
+              .map((e) => UserDepartmentModel(name: e.key, employees: e.value))
+              .toList();
 
       userDepartmentList.value = mappedDepartments;
       userDepartmentListSearch.assignAll(userDepartmentList);
@@ -168,27 +175,35 @@ class FilterUserController extends GetxController {
     }
 
     String normalizedQuery = removeDiacritics(query.toLowerCase());
-    var filteredDepartmentList = userDepartmentList.where((department) {
-      if (department.employees == null) return false;
-      final filteredEmployees = department.employees!.where((employee) {
-        final fullName = (employee.fullName ?? '').toLowerCase();
-        final email = (employee.email ?? '').toLowerCase();
-        final normalizedFullName = removeDiacritics(fullName);
-        return normalizedFullName.contains(normalizedQuery) || email.contains(normalizedQuery);
-      }).toList();
-      return filteredEmployees.isNotEmpty;
-    }).map((department) {
-      final filteredEmployees = department.employees!.where((employee) {
-        final fullName = (employee.fullName ?? '').toLowerCase();
-        final email = (employee.email ?? '').toLowerCase();
-        final normalizedFullName = removeDiacritics(fullName);
-        return normalizedFullName.contains(normalizedQuery) || email.contains(normalizedQuery);
-      }).toList();
-      return UserDepartmentModel(
-        name: department.name,
-        employees: filteredEmployees,
-      );
-    }).toList();
+    var filteredDepartmentList =
+        userDepartmentList
+            .where((department) {
+              if (department.employees == null) return false;
+              final filteredEmployees =
+                  department.employees!.where((employee) {
+                    final fullName = (employee.fullName ?? '').toLowerCase();
+                    final email = (employee.email ?? '').toLowerCase();
+                    final normalizedFullName = removeDiacritics(fullName);
+                    return normalizedFullName.contains(normalizedQuery) ||
+                        email.contains(normalizedQuery);
+                  }).toList();
+              return filteredEmployees.isNotEmpty;
+            })
+            .map((department) {
+              final filteredEmployees =
+                  department.employees!.where((employee) {
+                    final fullName = (employee.fullName ?? '').toLowerCase();
+                    final email = (employee.email ?? '').toLowerCase();
+                    final normalizedFullName = removeDiacritics(fullName);
+                    return normalizedFullName.contains(normalizedQuery) ||
+                        email.contains(normalizedQuery);
+                  }).toList();
+              return UserDepartmentModel(
+                name: department.name,
+                employees: filteredEmployees,
+              );
+            })
+            .toList();
 
     userDepartmentListSearch.assignAll(filteredDepartmentList);
   }

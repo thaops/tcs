@@ -25,6 +25,7 @@ class User {
   final int? hrId;
   final String? username;
   final String? email;
+  final String? employeeCode;
   final String? phoneNumber;
   final String? password;
   final String? firstName;
@@ -59,6 +60,7 @@ class User {
     this.id,
     this.hrId,
     this.username,
+    this.employeeCode,
     this.email,
     this.phoneNumber,
     this.password,
@@ -96,6 +98,7 @@ class User {
       id: json['id'] ?? '',
       hrId: json['hrId'] is String ? int.tryParse(json['hrId']) : json['hrId'],
       username: json['username'] ?? '',
+      employeeCode: json['employeeCode'] ?? '',
       email: json['email'] ?? '',
       phoneNumber: json['phoneNumber'] ?? json['tel'] ?? '', // Map tel từ API
       password: json['password'] ?? '',

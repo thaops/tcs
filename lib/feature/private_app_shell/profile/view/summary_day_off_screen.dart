@@ -66,7 +66,6 @@ class _SummaryDayOffScreenState extends State<SummaryDayOffScreen> {
                       //   subtitle: controller.usedDays.toString(),
                       //   color: AppColors.colorRed,
                       // ),
-                      16.verticalSpace,
                       SummaryUserProfile(
                         title: 'Ngày phép còn tồn',
                         subtitle: data.leaveDaysLeft.toString(),

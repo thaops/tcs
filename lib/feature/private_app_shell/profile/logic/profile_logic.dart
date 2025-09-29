@@ -60,16 +60,7 @@ class ProfileLogic extends GetxController {
   Future<void> loadUserData() async {
     try {
       final u = profile.value?.user;
-      print("loadUserData - u: $u");
-      print("loadUserData - u?.id: ${u?.id}");
-      print("loadUserData - u?.email: ${u?.email}");
-      print("loadUserData - u?.phoneNumber: ${u?.phoneNumber}");
-      print("loadUserData - u?.jobTitle: ${u?.jobTitle}");
-      print("loadUserData - u?.jobTitleCode: ${u?.jobTitleCode}");
-      print("loadUserData - u?.username: ${u?.username}");
-      print("loadUserData - u?.hrId: ${u?.hrId}");
-      print("loadUserData - u?.doB: ${u?.doB}");
-      print("loadUserData - u?.address: ${u?.address}");
+
       if (u != null && u.id!.isNotEmpty) {
         final email = (u.email).toString();
 
@@ -101,19 +92,16 @@ class ProfileLogic extends GetxController {
               'onTap': () => _phoneCall(u.tel!),
             },
         ];
-        print("userProfileData set: ${userProfileData.length} items");
 
         summaryData.value = [
+          if ((u.fullName ?? '').isNotEmpty)
+            {'title': "Họ Tên", 'subtitle': u.fullName!},
+          if ((u.email ?? '').isNotEmpty)
+            {'title': "Email", 'subtitle': u.email!},
           if ((u.jobTitle ?? '').isNotEmpty)
-            {'title': "Chức vụ", 'subtitle': u.jobTitle!},
-          if ((u.department ?? '').isNotEmpty)
-            {'title': "Phòng ban", 'subtitle': u.department!},
-          if ((u.jobTitleCode ?? '').isNotEmpty)
-            {'title': "Mã chức vụ", 'subtitle': u.jobTitleCode!},
-          if ((u.username ?? '').isNotEmpty)
-            {'title': "Tên đăng nhập", 'subtitle': u.username!},
-          if ((u.hrId ?? 0) != 0)
-            {'title': "Mã nhân viên", 'subtitle': u.hrId.toString()},
+            {'title': "Phòng ban", 'subtitle': u.jobTitle!},
+          if ((u.employeeCode ?? '') != '')
+            {'title': "Mã nhân viên", 'subtitle': u.employeeCode!},
           if ((u.doB ?? '').isNotEmpty)
             {
               'title': "Ngày sinh",
@@ -129,7 +117,6 @@ class ProfileLogic extends GetxController {
           if ((u.address ?? '').isNotEmpty)
             {'title': "Địa chỉ", 'subtitle': u.address!},
         ];
-        print("summaryData set: ${summaryData.length} items");
       }
     } catch (e) {
       print(e);
@@ -156,36 +143,26 @@ class ProfileLogic extends GetxController {
   Future<void> getProfile() async {
     final checkAwaitingServices = CheckAwaitingServices(GetStorage());
     final ischeckApple = await checkAwaitingServices.getawaiting();
-    print("ischeckApple from awaiting: $ischeckApple");
     MyId myId = await MyId.create();
 
     try {
       isloading.value = true;
       final endpoint =
           ischeckApple ? ApiEndpoints.usersProfileApple : ApiEndpoints.profile;
-      print("Calling API: $endpoint");
-      print("ischeckApple: $ischeckApple");
+
       final respon = await dioApi.get(endpoint);
-      print("respon.profile: ${respon.data}");
       final data = (respon.data ?? {})['data'] ?? {};
-      print("Parsed data: $data");
 
       // Kiểm tra nếu data null thì không parse
       if (data == null || data.isEmpty) {
-        print("Data is null or empty, skipping parsing");
-        // Nếu API Apple trả về 404, thử API thông thường
         if (ischeckApple) {
-          print("Apple API failed, trying regular API");
           final regularRespon = await dioApi.get(ApiEndpoints.profile);
-          print("Regular API response: ${regularRespon.data}");
           final regularData = (regularRespon.data ?? {})['data'] ?? {};
           if (regularData != null && regularData.isNotEmpty) {
             profile.value = Profile(
               user: User.fromJson(regularData as Map<String, dynamic>),
             );
-            print(
-              "Profile parsed from regular API: ${profile.value?.user?.fullName}",
-            );
+
             myId.saveMyId(profile.value?.user?.id ?? '');
             await loadUserData();
           }
@@ -194,12 +171,9 @@ class ProfileLogic extends GetxController {
       }
       // Parse dữ liệu user theo cấu trúc API
       if (ischeckApple) {
-        // Apple API: data chứa user data trực tiếp
-        print("Parsing Apple API data");
         final appleProfile = AppleProfile(
           user: AppleUser.fromJson(data as Map<String, dynamic>),
         );
-        // Convert AppleProfile sang Profile để tương thích với UI
         profile.value = Profile(
           user: User(
             id: appleProfile.user?.id,
@@ -235,8 +209,6 @@ class ProfileLogic extends GetxController {
           permissions: appleProfile.permissions,
         );
       } else {
-        // API thông thường: data.user chứa user data
-        print("Parsing normal API data");
         final userData = data['user'] as Map<String, dynamic>?;
         if (userData != null) {
           profile.value = Profile(
@@ -251,16 +223,8 @@ class ProfileLogic extends GetxController {
           print("No user data found in normal API response");
         }
       }
-      print(
-        "Profile parsed: ${profile.value?.user?.fullName}, ${profile.value?.user?.email}, ${profile.value?.user?.department}",
-      );
-      print("Profile object: ${profile.value}");
-      print("User object: ${profile.value?.user}");
-      myId.saveMyId(profile.value?.user?.id ?? '');
 
       await loadUserData();
-      print("After loadUserData - userProfileData: ${userProfileData.length}");
-      print("After loadUserData - summaryData: ${summaryData.length}");
     } catch (e) {
       print('Error fetching profile: $e');
     } finally {
@@ -294,8 +258,6 @@ class ProfileLogic extends GetxController {
         final currentDev = await _authService.getDevNpp() ?? true;
 
         await _authService.saveDevNpp(!currentDev);
-
-        // final newDevMode = await _authService.getDevNpp() ?? true;
 
         await _authService.clearAccessTokenNpp();
 

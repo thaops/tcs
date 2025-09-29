@@ -29,16 +29,20 @@ class MonthlyInputWidget extends StatelessWidget {
             opacity: isEditMode ? 1.0 : 0.7,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              child: TextField(
-                controller: logic.monthlyControllers[month],
-                enabled: isEditMode,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
-                  color: isEditMode ? Colors.black87 : Colors.grey.shade600,
-                ),
+              child: GestureDetector(
+                onTap: () {
+                  // Ngăn tap event lan truyền lên parent
+                },
+                child: TextField(
+                  controller: logic.monthlyControllers[month],
+                  enabled: isEditMode,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: isEditMode ? Colors.black87 : Colors.grey.shade600,
+                  ),
                 decoration: InputDecoration(
                   hintText: '0',
                   hintStyle: TextStyle(
@@ -89,6 +93,7 @@ class MonthlyInputWidget extends StatelessWidget {
                     isEditMode
                         ? (value) => logic.updateMonthlyValue(month, value)
                         : null,
+                ),
               ),
             ),
           ),

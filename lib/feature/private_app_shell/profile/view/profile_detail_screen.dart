@@ -120,30 +120,22 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
     return Column(
       children: [
+        SummaryUserProfile(title: "Họ Tên", subtitle: user.fullName ?? ''),
+        if ((user.email ?? '').isNotEmpty)
+          SummaryUserProfile(title: "Email", subtitle: user.email!),
         if ((user.jobTitle ?? '').isNotEmpty)
-          SummaryUserProfile(title: "Chức vụ", subtitle: user.jobTitle!),
-        if ((user.department ?? '').isNotEmpty)
-          SummaryUserProfile(title: "Phòng ban", subtitle: user.department!),
-        if ((user.jobTitleCode ?? '').isNotEmpty)
-          SummaryUserProfile(title: "Mã chức vụ", subtitle: user.jobTitleCode!),
-        if ((user.username ?? '').isNotEmpty)
-          SummaryUserProfile(title: "Tên đăng nhập", subtitle: user.username!),
+          SummaryUserProfile(title: "Phòng ban", subtitle: user.jobTitle!),
+
         if ((user.hrId ?? 0) != 0)
           SummaryUserProfile(
             title: "Mã nhân viên",
             subtitle: user.hrId.toString(),
           ),
-        if ((user.doB ?? '').isNotEmpty)
-          SummaryUserProfile(title: "Ngày sinh", subtitle: user.doB!),
-        if ((user.workStartDate ?? user.createdDate ?? '')
-            .toString()
-            .isNotEmpty)
+        if ((user.jobTitleCode ?? '').isNotEmpty)
           SummaryUserProfile(
             title: "Ngày bắt đầu",
             subtitle: (user.workStartDate ?? user.createdDate).toString(),
           ),
-        if ((user.address ?? '').isNotEmpty)
-          SummaryUserProfile(title: "Địa chỉ", subtitle: user.address!),
       ],
     );
   }

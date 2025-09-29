@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
@@ -38,16 +39,22 @@ class ProfileAnnualGoalsScreen extends StatelessWidget {
 
   /// Body chính
   Widget _buildBody(MyAnnualLeaveLogic logic) {
-    return RefreshIndicator(
-      onRefresh: () => logic.refreshData(),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          children: [
-            _buildSummarySection(logic),
-            _buildMonthlyInputsSection(logic),
-          ],
+    return GestureDetector(
+      onTap: () {
+        // Ẩn bàn phím khi tap vào bên ngoài
+        FocusScope.of(Get.context!).unfocus();
+      },
+      child: RefreshIndicator(
+        onRefresh: () => logic.refreshData(),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            children: [
+              _buildSummarySection(logic),
+              _buildMonthlyInputsSection(logic),
+            ],
+          ),
         ),
       ),
     );

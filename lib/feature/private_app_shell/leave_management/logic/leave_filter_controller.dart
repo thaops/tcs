@@ -3,7 +3,7 @@ import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/common/widgets/custom_select.dart';
 import 'package:tcs_flutter/feature/private_app_shell/filter_user/controller/filter_user_controller.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_list_controller.dart';
-import 'package:tcs_flutter/src/api/models/employee_model.dart' as leave_model;
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/repositories/leave_repository_interface.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/repositories/leave_management_repository.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/domain/usecases/get_departments_usecase.dart';
@@ -122,15 +122,15 @@ class LeaveFilterController extends GetxController {
   // Xây danh sách phòng ban từ FilterUserController (API phòng ban mới)
   void setDepartmentsFromController(
     FilterUserController controller,
-    List<leave_model.Employee> employees,
+    List<LeaveRequest> leaves,
   ) {
     // Chỉ lấy các phòng thực sự xuất hiện trong danh sách xin nghỉ (theo tháng/khoảng thời gian hiện tại)
     final presentDeps =
-        employees
+        leaves
             .map(
               (e) =>
                   (controller.departmentNameForEmployee(e.employeeId) ??
-                          (e.department ?? ''))
+                          (e.departmentName ?? ''))
                       .trim(),
             )
             .where((name) => name.isNotEmpty)
@@ -139,10 +139,10 @@ class LeaveFilterController extends GetxController {
           ..sort();
 
     // detect unknown: có nhân viên mà không map được tên phòng
-    final hasUnknown = employees.any((e) {
+    final hasUnknown = leaves.any((e) {
       final dep =
           controller.departmentNameForEmployee(e.employeeId) ??
-          (e.department ?? '');
+          (e.departmentName ?? '');
       return dep.trim().isEmpty;
     });
 
@@ -160,18 +160,16 @@ class LeaveFilterController extends GetxController {
   }
 
   // Xây danh sách trạng thái từ danh sách xin nghỉ hiện tại
-  void setStatusesFromEmployees(List<leave_model.Employee> employees) {
+  void setStatusesFromEmployees(List<LeaveRequest> leaves) {
     final names =
-        employees
-            .map((e) => (e.statusLabel ?? '').trim())
+        leaves
+            .map((e) => (e.statusName ?? '').trim())
             .where((e) => e.isNotEmpty)
             .toSet()
             .toList()
           ..sort();
 
-    final hasUnknown = employees.any(
-      (e) => (e.statusLabel ?? '').trim().isEmpty,
-    );
+    final hasUnknown = leaves.any((e) => (e.statusName ?? '').trim().isEmpty);
 
     final items = names.map((n) => Item(id: n, name: n)).toList();
     final List<Item> result = [Item(id: '', name: 'Tất cả'), ...items];

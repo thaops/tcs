@@ -6,7 +6,6 @@ import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approver_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approval_list_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
-import 'package:tcs_flutter/src/api/models/employee_model.dart';
 import 'package:tcs_flutter/src/config/constants/url/url.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/add.leave.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
@@ -24,23 +23,12 @@ class LeaveManagementRepository extends ChangeNotifier
     return await BaseUrlProvider.getBaseUrl(context);
   }
 
-  Future<List<Employee>?> getListOff(
+  Future<List<LeaveRequest>?> getListOff(
     DateTime firstDayOfMonth,
     DateTime lastDayOfMonth,
   ) async {
     try {
       isLoading = true;
-
-      // Log để debug API call
-      print(
-        '[LeaveManagementRepository] getListOff - FromDate: ${firstDayOfMonth.toIso8601String()}',
-      );
-      print(
-        '[LeaveManagementRepository] getListOff - ToDate: ${lastDayOfMonth.toIso8601String()}',
-      );
-      print(
-        '[LeaveManagementRepository] getListOff - API Endpoint: ${ApiEndpoints.listoffListView}',
-      );
 
       final response = await dio.post(
         ApiEndpoints.listoffListView,
@@ -55,30 +43,17 @@ class LeaveManagementRepository extends ChangeNotifier
         final Map<String, dynamic> jsonResponse = response.data;
         final List<dynamic> leaveRequestJson = jsonResponse['data'];
 
-        // Log response từ API
-        print(
-          '[LeaveManagementRepository] getListOff - API Response statusCode: ${response.data['statusCode']}',
-        );
-        print(
-          '[LeaveManagementRepository] getListOff - Số lượng records từ API: ${leaveRequestJson.length}',
-        );
+        List<LeaveRequest> leaveRequests = [];
+        try {
+          leaveRequests =
+              leaveRequestJson.map((json) {
+                return LeaveRequest.fromJson(json);
+              }).toList();
+        } catch (e) {
+          rethrow;
+        }
 
-        // Parse new API response format
-        List<LeaveRequest> leaveRequests =
-            leaveRequestJson
-                .map((json) => LeaveRequest.fromJson(json))
-                .toList();
-
-        // Convert to Employee for backward compatibility
-        List<Employee> employees =
-            leaveRequests
-                .map((leaveRequest) => leaveRequest.toEmployee())
-                .toList();
-
-        print(
-          '[LeaveManagementRepository] getListOff - Số lượng employees sau convert: ${employees.length}',
-        );
-        return employees;
+        return leaveRequests;
       } else {
         return null;
       }
@@ -296,9 +271,6 @@ class LeaveManagementRepository extends ChangeNotifier
         // Gán danh sách files vào FormData (giống như addLeave)
         if (attachmentFilesList.isNotEmpty) {
           formDataMap['attachmentIds'] = attachmentFilesList;
-          print(
-            'Update: Sending ${attachmentFilesList.length} files as attachmentIds',
-          );
         }
       }
 
@@ -309,9 +281,6 @@ class LeaveManagementRepository extends ChangeNotifier
             (updateData['deletedAttachmentIds'] as List).cast<String>();
         if (deletedIds.isNotEmpty) {
           formDataMap['deleteAttachmentIds'] = deletedIds;
-          print(
-            'Update: Deleting ${deletedIds.length} attachments: $deletedIds',
-          );
         }
       }
 

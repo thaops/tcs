@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/common/widgets/app_bar_widget.dart';
@@ -10,7 +11,7 @@ import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/lea
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/leave_filter_widget.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/listoff_widgets.dart';
 import 'package:tcs_flutter/router/app_router.dart';
-import 'package:tcs_flutter/src/api/models/employee_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
 
 class LeaveScreen extends StatefulWidget {
   final Function(bool) onUpdateCallback;
@@ -143,7 +144,7 @@ class _LeaveScreenState extends State<LeaveScreen>
       forceFetch: forceFetch,
     );
     _leaveFilterController.setDepartmentsFromNames(
-      listController.listOff.map((e) => e.department ?? '').toList(),
+      listController.listOff.map((e) => e.departmentName ?? '').toList(),
     );
   }
 
@@ -313,7 +314,8 @@ class _LeaveScreenState extends State<LeaveScreen>
                                           e.employeeId,
                                         );
                                     final dep =
-                                        (mapped ?? e.department ?? '').trim();
+                                        (mapped ?? e.departmentName ?? '')
+                                            .trim();
                                     return dep.isEmpty;
                                   }).toList()
                                   : baseList.where((e) {
@@ -322,7 +324,8 @@ class _LeaveScreenState extends State<LeaveScreen>
                                           e.employeeId,
                                         );
                                     final dep =
-                                        (mapped ?? e.department ?? '').trim();
+                                        (mapped ?? e.departmentName ?? '')
+                                            .trim();
                                     return dep == depId;
                                   }).toList());
 
@@ -334,15 +337,13 @@ class _LeaveScreenState extends State<LeaveScreen>
                                   ? afterDept
                                       .where(
                                         (e) =>
-                                            (e.statusLabel ?? '')
-                                                .trim()
-                                                .isEmpty,
+                                            (e.statusName ?? '').trim().isEmpty,
                                       )
                                       .toList()
                                   : afterDept
                                       .where(
                                         (e) =>
-                                            (e.statusLabel ?? '').trim() ==
+                                            (e.statusName ?? '').trim() ==
                                             statusId,
                                       )
                                       .toList());
@@ -359,12 +360,12 @@ class _LeaveScreenState extends State<LeaveScreen>
     );
   }
 
-  Expanded _leave_list(List<Employee> employee) {
+  Expanded _leave_list(List<LeaveRequest> leaves) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: ListWidgets(
-          listOff: employee,
+          listOff: leaves,
           onUpdateCallback: (isUpdate) {
             if (isUpdate) {
               final range = _getCurrentTimeRange();
