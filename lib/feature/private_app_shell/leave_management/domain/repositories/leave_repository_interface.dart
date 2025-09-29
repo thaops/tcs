@@ -9,8 +9,9 @@ import 'package:tcs_flutter/feature/private_app_shell/leave_management/models/le
 abstract class LeaveRepositoryInterface {
   Future<List<LeaveRequest>?> getListOff(
     DateTime firstDayOfMonth,
-    DateTime lastDayOfMonth,
-  );
+    DateTime lastDayOfMonth, [
+    int pageIndex = 1,
+  ]);
 
   Future<LeaveID?> getLeaveID(String leaveId, BuildContext context);
 

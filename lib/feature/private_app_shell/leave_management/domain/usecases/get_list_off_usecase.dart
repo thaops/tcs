@@ -7,8 +7,9 @@ class GetListOffUseCase {
 
   Future<List<LeaveRequest>?> call(
     DateTime firstDayOfMonth,
-    DateTime lastDayOfMonth,
-  ) {
-    return repository.getListOff(firstDayOfMonth, lastDayOfMonth);
+    DateTime lastDayOfMonth, [
+    int pageIndex = 1,
+  ]) {
+    return repository.getListOff(firstDayOfMonth, lastDayOfMonth, pageIndex);
   }
 }

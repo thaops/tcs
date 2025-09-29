@@ -56,6 +56,9 @@ class User {
   final String? jobTitle;
   final String? jobTitleCode;
 
+  final String? departmentName;
+  final String? unitName;
+
   User({
     this.id,
     this.hrId,
@@ -91,6 +94,8 @@ class User {
     // Thêm các field từ API thông thường
     this.jobTitle,
     this.jobTitleCode,
+    this.departmentName,
+    this.unitName,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -132,6 +137,8 @@ class User {
       // Thêm các field từ API thông thường
       jobTitle: json['jobTitle'],
       jobTitleCode: json['jobTitleCode'],
+      departmentName: json['departmentName'] ?? '',
+      unitName: json['unitName'] ?? '',
     );
   }
 

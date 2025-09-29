@@ -8,13 +8,21 @@ import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/feature/private_app_shell/filter_user/controller/filter_user_controller.dart';
 import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_list_controller.dart';
 import 'package:tcs_flutter/src/config/constants/color/colors.dart';
 
 class ListWidgets extends StatefulWidget {
   final listOff;
   final Function(bool) onUpdateCallback;
-  const ListWidgets({Key? key, this.listOff, required this.onUpdateCallback})
-    : super(key: key);
+  final DateTime? firstDay;
+  final DateTime? lastDay;
+  const ListWidgets({
+    Key? key,
+    this.listOff,
+    required this.onUpdateCallback,
+    this.firstDay,
+    this.lastDay,
+  }) : super(key: key);
 
   @override
   State<ListWidgets> createState() => _ListWidgetsState();
@@ -22,8 +30,41 @@ class ListWidgets extends StatefulWidget {
 
 class _ListWidgetsState extends State<ListWidgets> {
   final controllerUser = Get.put(FilterUserController());
+  final listController = Get.find<LeaveListController>();
   final DateFormat dateFormat = DateFormat("dd/MM");
   final DateFormat timeFormat = DateFormat("HH:mm");
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    // Kiểm tra điều kiện load more
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      // Chỉ load more khi:
+      // 1. Có firstDay và lastDay
+      // 2. Không đang loading more
+      // 3. Vẫn còn data để load
+      if (widget.firstDay != null &&
+          widget.lastDay != null &&
+          !listController.isLoadingMore.value &&
+          listController.hasMore.value) {
+        listController.loadMore(widget.firstDay!, widget.lastDay!);
+      }
+    }
+  }
 
   String _formatDateRange(DateTime? fromDate, DateTime? toDate) {
     if (fromDate == null || toDate == null) {
@@ -58,9 +99,20 @@ class _ListWidgetsState extends State<ListWidgets> {
   Widget build(BuildContext context) {
     return Container(
       child: ListView.builder(
+        controller: _scrollController,
         cacheExtent: 2000.0,
-        itemCount: widget.listOff!.length,
+        itemCount:
+            widget.listOff!.length +
+            (listController.isLoadingMore.value ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index >= widget.listOff!.length) {
+            return Container(
+              padding: EdgeInsets.all(16),
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(),
+            );
+          }
+
           final leave = widget.listOff![index];
           return RepaintBoundary(child: _buildEmployeeItem(leave));
         },

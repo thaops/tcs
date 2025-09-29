@@ -25,8 +25,9 @@ class LeaveManagementRepository extends ChangeNotifier
 
   Future<List<LeaveRequest>?> getListOff(
     DateTime firstDayOfMonth,
-    DateTime lastDayOfMonth,
-  ) async {
+    DateTime lastDayOfMonth, [
+    int pageIndex = 1,
+  ]) async {
     try {
       isLoading = true;
 
@@ -35,7 +36,7 @@ class LeaveManagementRepository extends ChangeNotifier
         data: {
           "FromDate": firstDayOfMonth.toIso8601String(),
           "ToDate": lastDayOfMonth.toIso8601String(),
-          "PageIndex": 1,
+          "PageIndex": pageIndex,
           "PageSize": 50,
         },
       );

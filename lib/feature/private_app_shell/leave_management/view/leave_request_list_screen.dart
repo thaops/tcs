@@ -57,6 +57,9 @@ class _LeaveScreenState extends State<LeaveScreen>
     _leaveFilterController.clearDepartment();
     _leaveFilterController.clearStatus();
 
+    // Reset pagination khi clear filter
+    listController.resetPagination();
+
     // Update filter info text
     _updateFilterInfo();
 
@@ -263,6 +266,9 @@ class _LeaveScreenState extends State<LeaveScreen>
                             _userSelectedEnd.value = userEnd;
                             _updateFilterInfo();
 
+                            // Reset pagination khi filter mới
+                            listController.resetPagination();
+
                             await _fetchListOff(
                               userStart,
                               userEnd,
@@ -361,11 +367,14 @@ class _LeaveScreenState extends State<LeaveScreen>
   }
 
   Expanded _leave_list(List<LeaveRequest> leaves) {
+    final range = _getCurrentTimeRange();
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: ListWidgets(
           listOff: leaves,
+          firstDay: range['start']!,
+          lastDay: range['end']!,
           onUpdateCallback: (isUpdate) {
             if (isUpdate) {
               final range = _getCurrentTimeRange();

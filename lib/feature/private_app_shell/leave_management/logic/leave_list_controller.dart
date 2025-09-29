@@ -15,6 +15,10 @@ class LeaveListController extends GetxController {
 
   final RxList<LeaveRequest> listOff = <LeaveRequest>[].obs;
   final RxBool isLoading = false.obs;
+  final RxBool isLoadingMore = false.obs;
+  final RxBool hasMore = true.obs;
+  final RxInt currentPage = 1.obs;
+  final RxInt totalRecords = 0.obs;
 
   final List<Map<String, DateTime>> months = [];
   bool isDataLoaded = false;
@@ -58,7 +62,11 @@ class LeaveListController extends GetxController {
 
     try {
       isLoading.value = true;
-      final response = await _getListOff(firstDay, lastDay);
+      // Reset pagination khi fetch mới
+      currentPage.value = 1;
+      hasMore.value = true;
+
+      final response = await _getListOff(firstDay, lastDay, currentPage.value);
 
       // TEMPORARY: Disable filtering to debug UI issue
       // TODO: Re-enable filtering after fixing the issue
@@ -116,11 +124,57 @@ class LeaveListController extends GetxController {
 
       listOff.value = filteredLeaves;
 
+      // Kiểm tra có còn data để load more không
+      if (filteredLeaves.length < 50) {
+        // PageSize = 50
+        hasMore.value = false;
+      }
+
       isDataLoaded = true;
     } catch (e) {
       // Handle error silently
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Method để load more data
+  Future<void> loadMore(DateTime firstDay, DateTime lastDay) async {
+    // Kiểm tra điều kiện trước khi load more
+    if (!hasMore.value || isLoadingMore.value) return;
+
+    try {
+      isLoadingMore.value = true;
+      currentPage.value++;
+
+      final response = await _getListOff(firstDay, lastDay, currentPage.value);
+
+      if (response != null && response.isNotEmpty) {
+        // Append new data vào list hiện tại
+        listOff.addAll(response);
+
+        // Kiểm tra có còn data để load more không
+        if (response.length < 50) {
+          // PageSize = 50 - không còn data để load
+          hasMore.value = false;
+        }
+      } else {
+        // Không có data mới - không còn data để load
+        hasMore.value = false;
+      }
+    } catch (e) {
+      // Handle error silently
+      currentPage.value--; // Rollback page nếu có lỗi
+      hasMore.value = false; // Dừng load more khi có lỗi
+    } finally {
+      isLoadingMore.value = false;
+    }
+  }
+
+  // Method để reset pagination khi clear filter
+  void resetPagination() {
+    currentPage.value = 1;
+    hasMore.value = true;
+    isDataLoaded = false;
   }
 }

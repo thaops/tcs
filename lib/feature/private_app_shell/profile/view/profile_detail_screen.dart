@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
-import 'package:tcs_flutter/common/img/img.dart';
 import 'package:tcs_flutter/common/widgets/loading_overlay.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/logic/profile_logic.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/widget/summary_user_profile.dart';
-import 'package:tcs_flutter/feature/private_app_shell/profile/widget/user_profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
@@ -95,6 +92,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       return SummaryUserProfile(
                         title: data['title']?.toString() ?? '',
                         subtitle: data['subtitle']?.toString() ?? '',
+                        textAlign: TextAlign.right,
                       );
                     }).toList(),
               );

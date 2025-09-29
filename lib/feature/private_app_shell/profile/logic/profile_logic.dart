@@ -99,14 +99,14 @@ class ProfileLogic extends GetxController {
           if ((u.email ?? '').isNotEmpty)
             {'title': "Email", 'subtitle': u.email!},
           if ((u.jobTitle ?? '').isNotEmpty)
-            {'title': "Phòng ban", 'subtitle': u.jobTitle!},
+            {'title': "Chức vụ", 'subtitle': u.jobTitle!},
+          if ((u.departmentName ?? '').isNotEmpty)
+            {'title': "Phòng ban", 'subtitle': u.departmentName!},
+          if ((u.unitName ?? '').isNotEmpty)
+            {'title': "Tổ đội", 'subtitle': u.unitName!},
+
           if ((u.employeeCode ?? '') != '')
             {'title': "Mã nhân viên", 'subtitle': u.employeeCode!},
-          if ((u.doB ?? '').isNotEmpty)
-            {
-              'title': "Ngày sinh",
-              'subtitle': DateUtilsCustom.formatStringDate(u.doB),
-            },
           if ((u.workStartDate ?? u.createdDate ?? '').toString().isNotEmpty)
             {
               'title': "Ngày bắt đầu",
