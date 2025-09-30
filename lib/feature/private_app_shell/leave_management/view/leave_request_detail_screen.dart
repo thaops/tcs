@@ -136,31 +136,41 @@ class ListoffDetail extends StatelessWidget {
       centerTitle: true,
       actions: [
         Obx(() {
-          final canShow = controller.canShowModifyButtons.value;
-          return canShow
-              ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.edit_note_sharp,
-                      color: Color(0xFF3B82F6),
-                      size: 22.sp,
-                    ),
-                    onPressed: () => controller.navigateToUpdate(),
+          final canShowEdit = controller.canShowEditButton.value;
+          final canShowBlock = controller.canShowBlockButton.value;
+          
+          if (!canShowEdit && !canShowBlock) {
+            return SizedBox(width: 8.w);
+          }
+          
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Nút Edit - chỉ hiển thị khi đơn chưa duyệt
+              if (canShowEdit)
+                IconButton(
+                  icon: Icon(
+                    Icons.edit_note_sharp,
+                    color: Color(0xFF3B82F6),
+                    size: 22.sp,
                   ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: Color(0xFFEF4444),
-                      size: 22.sp,
-                    ),
-                    onPressed: () => controller.cancelLeave(),
+                  onPressed: () => controller.navigateToUpdate(),
+                ),
+              
+              // Nút Block - chỉ hiển thị khi đơn đã duyệt
+              if (canShowBlock)
+                IconButton(
+                  icon: Icon(
+                    Icons.block_outlined,
+                    color: Color(0xFFEF4444),
+                    size: 22.sp,
                   ),
-                  SizedBox(width: 8.w),
-                ],
-              )
-              : SizedBox(width: 8.w);
+                  onPressed: () => controller.cancelLeave(),
+                ),
+              
+              SizedBox(width: 8.w),
+            ],
+          );
         }),
       ],
       bottom: PreferredSize(

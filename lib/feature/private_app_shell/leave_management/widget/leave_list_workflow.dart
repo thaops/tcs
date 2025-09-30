@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tcs_flutter/common/img/img.dart';
@@ -49,13 +50,16 @@ class WorkflowList extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Flexible(
                               flex: 4,
                               child: LeaveTextRow(
-                                name: workflow.approver ?? workflow.receiver,
+                                name: workflow.approver ?? workflow.receiver ?? '',
                               ),
                             ),
                             Flexible(
@@ -71,6 +75,7 @@ class WorkflowList extends StatelessWidget {
                             ),
                           ],
                         ),
+                    
                         SizedBox(height: 6),
                         LeaveTextRow(
                           name:

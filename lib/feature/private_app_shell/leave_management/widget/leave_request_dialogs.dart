@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:tcs_flutter/common/widgets/text_widget.dart';
 
 /// Dialog components cho leave request
 class LeaveRequestDialogs {
@@ -268,6 +270,178 @@ class LeaveRequestDialogs {
               ),
             ),
           ),
+    );
+  }
+
+  /// Hiển thị dialog nhập lý do hủy đơn với style iOS
+  static Future<Map<String, dynamic>?> showCancelLeaveDialog(
+    BuildContext context, {
+    bool isApproved = false,
+  }) {
+    final TextEditingController reasonController = TextEditingController();
+    final RxBool isLoading = false.obs;
+    
+    return showDialog<Map<String, dynamic>?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => Obx(
+        () => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.block_outlined,
+                color: Color(0xFFEF4444),
+                size: 24.sp,
+              ),
+              SizedBox(width: 12.w),
+              Text(
+                'Xác nhận huỷ đơn',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+            ],
+          ),
+          content: Container(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isApproved) ...[
+              
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(12.r),
+                    
+                    ),
+                    child: TextField(
+                      controller: reasonController,
+                      maxLines: 4,
+                      maxLength: 200,
+                      decoration: InputDecoration(
+                        hintText: 'Nhập lý do hủy đơn...',
+                        hintStyle: TextStyle(
+                          fontSize: 14.sp,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.all(16.r),
+                        counterStyle: TextStyle(
+                          fontSize: 12.sp,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Color(0xFF374151),
+                      ),
+                      onChanged: (value) {
+                        (context as Element).markNeedsBuild();
+                      },
+                    ),
+                  ),
+                ] else ...[
+                  Text(
+                    'Bạn có chắc chắn muốn hủy nguyện vọng phép?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      color: Color(0xFF374151),
+                      fontWeight: FontWeight.w500,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+           
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading.value ? null : () => Navigator.of(context).pop(),
+              child: Text(
+                'Đóng',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w500
+                ),
+              ),
+            ),
+
+            SizedBox(width: 36.w),
+
+            ElevatedButton(
+              onPressed: isLoading.value 
+                  ? null 
+                  : () {
+                      // Chỉ yêu cầu nhập lý do khi đơn đã duyệt
+                      if (isApproved && reasonController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Vui lòng nhập lý do hủy đơn'),
+                            backgroundColor: Color(0xFFEF4444),
+                          ),
+                        );
+                        return;
+                      }
+                      
+                      Navigator.of(context).pop({
+                        'reason': isApproved ? reasonController.text.trim() : '',
+                        'confirmed': true,
+                      });
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFEF4444),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.r,
+                  vertical: 10.r,
+                ),
+              ),
+              child: isLoading.value
+                  ? SizedBox(
+                      width: 16.w,
+                      height: 16.h,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Huỷ đơn',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget buildContent(BuildContext context, String text, String label) {
+    return Row(
+      spacing: 4.w,
+      children: [
+        TextWidget(text: text, fontSize: 12.sp, fontWeight: FontWeight.w400, color: Colors.red, fontStyle: FontStyle.italic),
+        TextWidget(text: label, fontSize: 12.sp, fontWeight: FontWeight.w400, fontStyle: FontStyle.italic),
+      
+      ],
     );
   }
 }

@@ -64,9 +64,11 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
                   (leave.status == 2) ||
                   (leave.status == 3) ||
                   (leave.status == 4) || // Thêm status 4 cho Hủy
+                  (leave.status == 99) || // Thêm status 99 cho Chờ hủy đơn
                   (leave.statusLabel == 'Đã duyệt') ||
                   (leave.statusLabel == 'Từ chối') ||
-                  (leave.statusLabel == 'Hủy');
+                  (leave.statusLabel == 'Hủy') ||
+                  (leave.statusLabel == 'Chờ hủy đơn');
 
               if (isApprovedOrRejectedOrCancelled) {
                 return const SizedBox.shrink();

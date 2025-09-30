@@ -9,7 +9,6 @@ import 'package:tcs_flutter/feature/private_app_shell/filter_user/controller/fil
 import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_list_controller.dart';
-import 'package:tcs_flutter/src/config/constants/color/colors.dart';
 
 class ListWidgets extends StatefulWidget {
   final listOff;
@@ -50,13 +49,9 @@ class _ListWidgetsState extends State<ListWidgets> {
   }
 
   void _onScroll() {
-    // Kiểm tra điều kiện load more
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      // Chỉ load more khi:
-      // 1. Có firstDay và lastDay
-      // 2. Không đang loading more
-      // 3. Vẫn còn data để load
+  
       if (widget.firstDay != null &&
           widget.lastDay != null &&
           !listController.isLoadingMore.value &&
@@ -128,25 +123,30 @@ class _ListWidgetsState extends State<ListWidgets> {
     switch (statusLabel.toLowerCase().trim()) {
       case 'đang xử lý':
       case 'đơn cần duyệt':
-        return Color.fromARGB(255, 158, 158, 4); // Vàng
+        return Color(0xFFD97706); // Vàng đậm
       case 'đã duyệt':
-        return Colors.green;
+        return Color(0xFF059669); // Xanh lá đậm
       case 'chờ xử lý':
-        return Colors.grey;
+      case 'chờ duyệt':
+        return Color(0xFFEA580C); // Cam đậm
+      case 'chờ huỷ đơn':
+        return Color.fromARGB(255, 237, 192, 58); // Tím đậm
       case 'từ chối':
-        return pending;
+        return Color(0xFFDC2626); // Đỏ đậm
       case 'hủy đơn':
-        return Colors.red;
+        return Color(0xFFB91C1C); // Đỏ đậm hơn
       case '1': // Trạng thái số - Đơn cần duyệt
-        return Color.fromARGB(255, 158, 158, 4); // Vàng
+        return Color(0xFFD97706); // Vàng đậm
       case '2': // Trạng thái số - Đã duyệt
-        return Colors.green;
+        return Color(0xFF059669); // Xanh lá đậm
       case '3': // Trạng thái số - Từ chối
-        return pending;
+        return Color(0xFFDC2626); // Đỏ đậm
       case '4': // Trạng thái số - Hủy đơn
-        return Colors.red;
+        return Color(0xFFB91C1C); // Đỏ đậm hơn
+      case '99': // Trạng thái số - Chờ hủy đơn
+        return Color(0xFF7C3AED); // Tím đậm
       default:
-        return Colors.black;
+        return Color(0xFF374151); // Xám đậm
     }
   }
 
@@ -165,6 +165,8 @@ class _ListWidgetsState extends State<ListWidgets> {
         return 'Từ chối';
       case '4':
         return 'Hủy đơn';
+      case '99':
+        return 'Chờ hủy đơn';
       default:
         return statusLabel;
     }
@@ -178,7 +180,9 @@ class _ListWidgetsState extends State<ListWidgets> {
           AppRouter.leaveDetail,
           arguments: {'leaveId': leave.id},
         )?.then((value) {
+          debugPrint('Detail screen returned with value: $value');
           if (value == true) {
+            debugPrint('Calling onUpdateCallback(true) to reload list');
             widget.onUpdateCallback(true);
           }
         });
@@ -267,20 +271,14 @@ class _ListWidgetsState extends State<ListWidgets> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(
-                          leave.statusName,
-                        ).withOpacity(0.1),
+                        color: _getStatusColor(leave.statusName),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _getStatusColor(leave.statusName),
-                          width: 1,
-                        ),
                       ),
                       child: TextWidget(
                         text: _getStatusDisplayText(leave.statusName),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: _getStatusColor(leave.statusName),
+                        color: Colors.white,
                       ),
                     ),
                   ],

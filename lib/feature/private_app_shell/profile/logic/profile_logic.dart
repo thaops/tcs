@@ -152,8 +152,9 @@ class ProfileLogic extends GetxController {
 
       final respon = await dioApi.get(endpoint);
       final data = (respon.data ?? {})['data'] ?? {};
+      print("datasss: $data");
+      myId.saveMyId(data['user']['id']);
 
-      // Kiểm tra nếu data null thì không parse
       if (data == null || data.isEmpty) {
         if (ischeckApple) {
           final regularRespon = await dioApi.get(ApiEndpoints.profile);
@@ -163,7 +164,6 @@ class ProfileLogic extends GetxController {
               user: User.fromJson(regularData as Map<String, dynamic>),
             );
 
-            myId.saveMyId(profile.value?.user?.id ?? '');
             await loadUserData();
           }
         }

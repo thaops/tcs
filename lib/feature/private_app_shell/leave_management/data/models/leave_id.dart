@@ -195,6 +195,7 @@ class WorkFlow {
   final int? step;
   final int? status;
   final String? statusLabel;
+  final String? jobTitle;
   final String? note;
   final DateTime? createdDate;
   final bool? isDeleted;
@@ -212,6 +213,7 @@ class WorkFlow {
     this.createdDate,
     this.isDeleted,
     this.receiver,
+    this.jobTitle,
   });
 
   factory WorkFlow.fromJson(Map<String, dynamic>? json) {
@@ -229,7 +231,7 @@ class WorkFlow {
               : null,
       step: json['step'] as int?,
       status: json['status'] as int?,
-      statusLabel: json['statusLabel'] ?? '',
+      statusLabel: json['statusLabel'] == "Không xác định" ? "" : json['statusLabel'] ?? '',
       note: json['note'] ?? '',
       createdDate:
           json['createdDate'] != null
@@ -237,6 +239,7 @@ class WorkFlow {
               : null,
       isDeleted: json['isDeleted'] as bool?,
       receiver: json['receiver'] ?? '',
+      jobTitle: json['jobTitle'] ?? '',
     );
   }
 
