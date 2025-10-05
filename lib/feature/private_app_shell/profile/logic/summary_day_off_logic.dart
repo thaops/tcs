@@ -31,13 +31,17 @@ class SummaryDayOffLogic extends GetxController {
       if (response.statusCode == 200 && response.data != null) {
         summaryData.value = response.data;
       } else {
+        summaryData.value = null;
         Get.snackbar(
           'Lỗi',
-          'Không thể tải dữ liệu tổng hợp ngày phép',
+          response.message.isNotEmpty
+              ? response.message
+              : 'Không thể tải dữ liệu tổng hợp ngày phép',
           snackPosition: SnackPosition.BOTTOM,
         );
       }
     } catch (e) {
+      summaryData.value = null;
       Get.snackbar(
         'Lỗi',
         'Có lỗi xảy ra khi tải dữ liệu: $e',
@@ -54,9 +58,10 @@ class SummaryDayOffLogic extends GetxController {
   }
 
   /// Lấy số ngày đã sử dụng
-  int get usedDays {
+  num get usedDays {
     final data = summaryData.value;
-    if (data == null) return 0;
-    return data.quota - data.leaveDaysLeft;
+    if (data == null || data.quota == null || data.leaveDaysLeft == null)
+      return 0;
+    return data.quota! - data.leaveDaysLeft!;
   }
 }

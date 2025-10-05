@@ -138,11 +138,11 @@ class ListoffDetail extends StatelessWidget {
         Obx(() {
           final canShowEdit = controller.canShowEditButton.value;
           final canShowBlock = controller.canShowBlockButton.value;
-          
+
           if (!canShowEdit && !canShowBlock) {
             return SizedBox(width: 8.w);
           }
-          
+
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -156,7 +156,7 @@ class ListoffDetail extends StatelessWidget {
                   ),
                   onPressed: () => controller.navigateToUpdate(),
                 ),
-              
+
               // Nút Block - chỉ hiển thị khi đơn đã duyệt
               if (canShowBlock)
                 IconButton(
@@ -167,7 +167,7 @@ class ListoffDetail extends StatelessWidget {
                   ),
                   onPressed: () => controller.cancelLeave(),
                 ),
-              
+
               SizedBox(width: 8.w),
             ],
           );

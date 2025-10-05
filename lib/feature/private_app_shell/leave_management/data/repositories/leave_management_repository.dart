@@ -70,10 +70,12 @@ class LeaveManagementRepository extends ChangeNotifier
     try {
       isLoading = true;
       final response = await dio.get(ApiEndpoints.getLeaveIDV2(leaveId));
+      print('getLeaveID response: $response');
 
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> jsonResponse = response.data;
         final Map<String, dynamic> leaveJson = jsonResponse['data'];
+        print('getLeaveID leaveJson: $leaveJson');
         return LeaveID.fromJson(leaveJson);
       } else {
         return null;
@@ -293,23 +295,81 @@ class LeaveManagementRepository extends ChangeNotifier
         data: formData,
       );
 
+      // Debug logging để kiểm tra response từ server
+      debugPrint("Server response status: ${response.statusCode}");
+      debugPrint("Server response data: ${response.data}");
+
       if (response.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         final Map<String, dynamic> data = response.data as Map<String, dynamic>;
         return AddDayOffResponseModel.fromJson(data);
       } else {
+        // Xử lý lỗi từ server với thông báo chi tiết
+        String errorMessage = 'Cập nhật thất bại. ';
+
+        // Kiểm tra xem server có trả về message không
+        final responseData = response.data;
+        if (responseData is Map<String, dynamic>) {
+          final serverMessage =
+              responseData['message'] ?? responseData['Message'] ?? '';
+          if (serverMessage.isNotEmpty) {
+            errorMessage = serverMessage.toString();
+          } else {
+            // Fallback message dựa trên status code
+            if (response.statusCode == 400) {
+              errorMessage +=
+                  'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.';
+            } else if (response.statusCode == 401) {
+              errorMessage +=
+                  'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+            } else if (response.statusCode == 403) {
+              errorMessage += 'Bạn không có quyền cập nhật đơn nghỉ phép này.';
+            } else if (response.statusCode == 404) {
+              errorMessage += 'Không tìm thấy đơn nghỉ phép.';
+            } else if (response.statusCode == 409) {
+              errorMessage +=
+                  'Đơn nghỉ phép đã được cập nhật bởi người khác. Vui lòng tải lại trang.';
+            } else if (response.statusCode == 500) {
+              errorMessage += 'Lỗi máy chủ. Vui lòng thử lại sau.';
+            } else {
+              errorMessage += 'Mã lỗi: ${response.statusCode}';
+            }
+          }
+        } else {
+          // Fallback message nếu response không phải Map
+          errorMessage += 'Mã lỗi: ${response.statusCode}';
+        }
+
+        debugPrint("Server error message: $errorMessage");
+
         return AddDayOffResponseModel(
           statusCode:
               response.statusCode ??
               HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
-          message: 'Request failed with status: ${response.statusCode}',
+          message: errorMessage,
           totalRecord: 0,
           data: false,
         );
       }
     } catch (e) {
+      // Xử lý lỗi network và các lỗi khác
+      String errorMessage = 'Không thể cập nhật đơn nghỉ phép. ';
+
+      if (e.toString().contains('SocketException')) {
+        errorMessage +=
+            'Không có kết nối mạng. Vui lòng kiểm tra kết nối và thử lại.';
+      } else if (e.toString().contains('TimeoutException')) {
+        errorMessage += 'Kết nối quá chậm. Vui lòng thử lại.';
+      } else if (e.toString().contains('FormatException')) {
+        errorMessage += 'Dữ liệu không đúng định dạng.';
+      } else if (e.toString().contains('HandshakeException')) {
+        errorMessage += 'Lỗi bảo mật kết nối. Vui lòng thử lại.';
+      } else {
+        errorMessage += 'Đã xảy ra lỗi không mong muốn: ${e.toString()}';
+      }
+
       return AddDayOffResponseModel(
         statusCode: HttpStatusCodes.STATUS_CODE_INTERNAL_SERVER_ERROR,
-        message: 'An error occurred: $e',
+        message: errorMessage,
         totalRecord: 0,
         data: false,
       );

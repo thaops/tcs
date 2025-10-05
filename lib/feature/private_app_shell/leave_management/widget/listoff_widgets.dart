@@ -51,7 +51,6 @@ class _ListWidgetsState extends State<ListWidgets> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-  
       if (widget.firstDay != null &&
           widget.lastDay != null &&
           !listController.isLoadingMore.value &&
@@ -117,36 +116,40 @@ class _ListWidgetsState extends State<ListWidgets> {
 
   Color _getStatusColor(String? statusLabel) {
     if (statusLabel == null || statusLabel.isEmpty) {
-      return Colors.grey;
+      return Color(0xFF455A64); // Tạo mới - Xám đậm
     }
 
     switch (statusLabel.toLowerCase().trim()) {
       case 'đang xử lý':
       case 'đơn cần duyệt':
-        return Color(0xFFD97706); // Vàng đậm
+        return Color(0xFFF9A825); // Chờ duyệt - Vàng cam
       case 'đã duyệt':
-        return Color(0xFF059669); // Xanh lá đậm
+        return Color(0xFF43A047); // Đã duyệt - Xanh lá
       case 'chờ xử lý':
       case 'chờ duyệt':
-        return Color(0xFFEA580C); // Cam đậm
+        return Color(0xFFF9A825); // Chờ duyệt - Vàng cam
       case 'chờ huỷ đơn':
-        return Color.fromARGB(255, 237, 192, 58); // Tím đậm
+        return Color(0xFFF9A825); // Tạo mới - Xám đậm
       case 'từ chối':
-        return Color(0xFFDC2626); // Đỏ đậm
+        return Color(0xFFED3241); // Từ chối - Đỏ
       case 'hủy đơn':
-        return Color(0xFFB91C1C); // Đỏ đậm hơn
+        return Color(0xFFED3241); // Hủy đơn - Đỏ
+      case 'hủy':
+        return Color(0xFFED3241); // Hủy - Đỏ
+      case 'tạo mới':
+        return Color(0xFF455A64); // Tạo mới - Xám đậm
       case '1': // Trạng thái số - Đơn cần duyệt
-        return Color(0xFFD97706); // Vàng đậm
+        return Color(0xFFF9A825); // Chờ duyệt - Vàng cam
       case '2': // Trạng thái số - Đã duyệt
-        return Color(0xFF059669); // Xanh lá đậm
+        return Color(0xFF43A047); // Đã duyệt - Xanh lá
       case '3': // Trạng thái số - Từ chối
-        return Color(0xFFDC2626); // Đỏ đậm
+        return Color(0xFFED3241); // Từ chối - Đỏ
       case '4': // Trạng thái số - Hủy đơn
-        return Color(0xFFB91C1C); // Đỏ đậm hơn
+        return Color(0xFFED3241); // Hủy đơn - Đỏ
       case '99': // Trạng thái số - Chờ hủy đơn
-        return Color(0xFF7C3AED); // Tím đậm
+        return Color(0xFF455A64); // Tạo mới - Xám đậm
       default:
-        return Color(0xFF374151); // Xám đậm
+        return Color(0xFF455A64); // Tạo mới - Xám đậm
     }
   }
 

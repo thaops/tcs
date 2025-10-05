@@ -10,6 +10,9 @@ class MyAnnualLeaveLogic extends GetxController {
   // Dữ liệu annual leave
   final annualLeaveData = Rx<MyAnnualLeaveModel?>(null);
 
+  // Lưu trữ dữ liệu gốc để rollback khi lỗi
+  MyAnnualLeaveModel? _originalData;
+
   // Controllers cho các input field
   final monthlyControllers = <String, TextEditingController>{};
 
@@ -63,6 +66,7 @@ class MyAnnualLeaveLogic extends GetxController {
 
       if (response.statusCode == 200 && response.data != null) {
         annualLeaveData.value = response.data;
+        _originalData = response.data; // Lưu dữ liệu gốc
         _updateControllersFromData();
         hasChanges.value = false;
       } else {
@@ -79,7 +83,7 @@ class MyAnnualLeaveLogic extends GetxController {
 
   /// Tạo dữ liệu mặc định
   void _createDefaultData() {
-    annualLeaveData.value = MyAnnualLeaveModel(
+    final defaultData = MyAnnualLeaveModel(
       id: '',
       fullName: '',
       employeeCode: '',
@@ -101,6 +105,8 @@ class MyAnnualLeaveLogic extends GetxController {
       nov: 0,
       dec: 0,
     );
+    annualLeaveData.value = defaultData;
+    _originalData = defaultData; // Lưu dữ liệu gốc
     _updateControllersFromData();
   }
 
@@ -125,17 +131,10 @@ class MyAnnualLeaveLogic extends GetxController {
     }
   }
 
-  /// Cập nhật giá trị tháng
+  /// Cập nhật giá trị tháng - chỉ lưu vào controller, không cập nhật data chính
   void updateMonthlyValue(String month, String value) {
-    final intValue = int.tryParse(value) ?? 0;
-    final data = annualLeaveData.value;
-
-    if (data != null) {
-      final monthInt = int.parse(month);
-      final updatedData = data.copyWithMonthValue(monthInt, intValue);
-      annualLeaveData.value = updatedData;
-      hasChanges.value = true;
-    }
+    // Chỉ đánh dấu có thay đổi, không cập nhật annualLeaveData
+    hasChanges.value = true;
   }
 
   /// Kiểm tra có thể save không
@@ -153,28 +152,36 @@ class MyAnnualLeaveLogic extends GetxController {
       final data = annualLeaveData.value;
       if (data == null) return;
 
-      // Tạo monthly data từ controllers
-      final monthlyData = <String, int>{};
+      // Lưu dữ liệu gốc để rollback nếu cần
+      _originalData = data;
+
+      // Cập nhật dữ liệu từ controllers vào model trước khi lưu
+      MyAnnualLeaveModel updatedData = data;
       for (int i = 1; i <= 12; i++) {
         final controller = monthlyControllers[i.toString()];
         final value = int.tryParse(controller?.text ?? '0') ?? 0;
-        monthlyData[i.toString()] = value;
+        updatedData = updatedData.copyWithMonthValue(i, value);
       }
 
       // Gọi API để cập nhật
       final success = await _apiService.updateMyAnnualLeaveData(
-        data: data,
+        data: updatedData,
         year: currentYear,
       );
 
       if (success) {
+        // Chỉ reload data khi API thành công
         await loadData();
         isEditMode.value = false;
         hasChanges.value = false;
       } else {
-        print('Error saving data');
+        // Rollback về dữ liệu gốc khi API trả về false
+        _rollbackToOriginalData();
       }
     } catch (e) {
+      // Rollback về dữ liệu gốc khi có exception
+      _rollbackToOriginalData();
+
       // Hiển thị message lỗi từ server cho user
       final String errorMessage = e.toString().replaceFirst('Exception: ', '');
       Get.snackbar(
@@ -183,11 +190,19 @@ class MyAnnualLeaveLogic extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        duration: Duration(seconds: 5), // Hiển thị lâu hơn để user đọc được
+        duration: Duration(seconds: 5),
       );
       print('Error saving data: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Rollback về dữ liệu gốc khi có lỗi
+  void _rollbackToOriginalData() {
+    if (_originalData != null) {
+      annualLeaveData.value = _originalData;
+      _updateControllersFromData();
     }
   }
 
@@ -203,23 +218,15 @@ class MyAnnualLeaveLogic extends GetxController {
     await loadData();
   }
 
-  /// Lấy tổng số ngày đã đăng ký
+  /// Lấy tổng số ngày đã đăng ký từ controllers hiện tại
   int get totalRegistered {
-    final data = annualLeaveData.value;
-    if (data == null) return 0;
-
-    return data.jan +
-        data.feb +
-        data.mar +
-        data.apr +
-        data.may +
-        data.jun +
-        data.jul +
-        data.aug +
-        data.sep +
-        data.oct +
-        data.nov +
-        data.dec;
+    int total = 0;
+    for (int i = 1; i <= 12; i++) {
+      final controller = monthlyControllers[i.toString()];
+      final value = int.tryParse(controller?.text ?? '0') ?? 0;
+      total += value;
+    }
+    return total;
   }
 
   /// Lấy số ngày chưa sử dụng

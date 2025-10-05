@@ -259,8 +259,14 @@ class ProfileLogic extends GetxController {
 
         await _authService.saveDevNpp(!currentDev);
 
+        // Clear toàn bộ cache khi đổi dev/prod
+        await _signOutClear.clearCacheOnly();
+        // Clear awaiting flag để không ảnh hưởng đến URL thủ công
+        final checkAwaiting =
+            await CheckAwaitingServices.createCheckAwaitingServices();
+        await checkAwaiting.deleteawaiting();
+        // KHÔNG clear manual environment flag - giữ nguyên môi trường đã set
         await _authService.clearAccessTokenNpp();
-
         await _authService.signOut();
         Get.offAllNamed(AppRouter.login);
       }
@@ -388,6 +394,14 @@ class ProfileLogic extends GetxController {
                               Get.back();
                               tapCount.value = 0;
                               Get.snackbar('Success', 'Base URL updated');
+
+                              // Clear toàn bộ cache và data khi đổi môi trường
+                              await _signOutClear.clearCacheOnly();
+                              // Clear awaiting flag để không ảnh hưởng đến URL thủ công
+                              final checkAwaiting =
+                                  await CheckAwaitingServices.createCheckAwaitingServices();
+                              await checkAwaiting.deleteawaiting();
+                              // KHÔNG clear manual environment flag - giữ nguyên môi trường đã set
                               await _authService.signOut();
                               await _authService.clearAccessTokenNpp();
                               Get.offAllNamed(AppRouter.login);

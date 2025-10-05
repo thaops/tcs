@@ -6,7 +6,6 @@ import 'package:tcs_flutter/common/Services/api_endpoints.dart';
 import 'package:tcs_flutter/common/constants/http_status_codes.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/common/share/cache/my_id.dart';
-import 'package:tcs_flutter/src/api/models/profile_model.dart';
 import 'package:tcs_flutter/src/api/models/sprint_model.dart';
 import 'package:tcs_flutter/src/api/models/users_model.dart';
 import 'package:tcs_flutter/src/config/constants/url/url.dart';

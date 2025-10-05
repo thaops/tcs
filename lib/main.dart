@@ -12,7 +12,6 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:tcs_flutter/common/Services/config.dart';
 import 'package:tcs_flutter/common/Services/device_udid.dart';
 import 'package:tcs_flutter/common/Services/network_controller.dart';
 import 'package:tcs_flutter/common/Services/services.dart';
@@ -64,9 +63,17 @@ void main() async {
 Future<void> _initializeServices() async {
   await Hive.initFlutter();
 
+  // Kiểm tra xem có môi trường được set thủ công không
   final savedBaseUrl = GetStorage().read<String>('base_url');
-  if (savedBaseUrl != null && savedBaseUrl.isNotEmpty) {
-    Config.baseUrl = savedBaseUrl;
+  final isManualEnv =
+      GetStorage().read<bool>('manual_environment_set') ?? false;
+
+  if (savedBaseUrl != null && savedBaseUrl.isNotEmpty && isManualEnv) {
+    // URL đã được set thủ công, giữ nguyên và không bị ghi đè
+    print("Using manually set base URL: $savedBaseUrl");
+  } else {
+    // Chưa có URL thủ công, để Config tự động chọn dựa trên awaiting flag
+    print("No manual URL set, using awaiting logic");
   }
   Get.put(NetworkController());
 

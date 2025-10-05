@@ -11,7 +11,7 @@ class LeaveRequest {
   final DateTime? fromDate;
   final DateTime? toDate;
   final String? category;
-  final int? totalDay;
+  final num? totalDay;
   final String? reason;
   final DateTime? approvedDate;
   final String? status;
@@ -76,9 +76,9 @@ class LeaveRequest {
         toDate: _safeParse(json['toDate']?.toString()),
         category: json['category']?.toString() ?? '',
         totalDay:
-            json['totalDay'] is int
+            json['totalDay'] is num
                 ? json['totalDay']
-                : int.tryParse(json['totalDay']?.toString() ?? '0') ?? 0,
+                : num.tryParse(json['totalDay']?.toString() ?? '0') ?? 0,
         reason: json['reason']?.toString() ?? '',
         approvedDate:
             json['approvedDate'] != null

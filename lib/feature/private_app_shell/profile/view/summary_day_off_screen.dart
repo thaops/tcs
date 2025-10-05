@@ -58,7 +58,7 @@ class _SummaryDayOffScreenState extends State<SummaryDayOffScreen> {
                     children: [
                       SummaryUserProfile(
                         title: 'Tiêu chuẩn phép',
-                        subtitle: data.quota.toString(),
+                        subtitle: data.quota?.toString() ?? '0',
                       ),
                       SummaryUserProfile(
                         title: 'Tổng ngày phép đã nghỉ',
@@ -67,7 +67,7 @@ class _SummaryDayOffScreenState extends State<SummaryDayOffScreen> {
                       ),
                       SummaryUserProfile(
                         title: 'Ngày phép còn tồn',
-                        subtitle: data.leaveDaysLeft.toString(),
+                        subtitle: data.leaveDaysLeft?.toString() ?? '0',
                       ),
                     ],
                   );

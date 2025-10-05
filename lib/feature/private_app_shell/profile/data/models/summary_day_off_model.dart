@@ -4,8 +4,8 @@ class SummaryDayOffModel {
   final String employeeCode;
   final String departmentCode;
   final String departmentName;
-  final int quota;
-  final int leaveDaysLeft;
+  final num? quota;
+  final num? leaveDaysLeft;
 
   SummaryDayOffModel({
     required this.id,
@@ -13,19 +13,31 @@ class SummaryDayOffModel {
     required this.employeeCode,
     required this.departmentCode,
     required this.departmentName,
-    required this.quota,
-    required this.leaveDaysLeft,
+    this.quota,
+    this.leaveDaysLeft,
   });
 
-  factory SummaryDayOffModel.fromJson(Map<String, dynamic> json) {
+  factory SummaryDayOffModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return SummaryDayOffModel(
+        id: '',
+        fullName: '',
+        employeeCode: '',
+        departmentCode: '',
+        departmentName: '',
+        quota: 0,
+        leaveDaysLeft: 0,
+      );
+    }
+
     return SummaryDayOffModel(
-      id: json['id'] ?? '',
-      fullName: json['fullName'] ?? '',
-      employeeCode: json['employeeCode'] ?? '',
-      departmentCode: json['departmentCode'] ?? '',
-      departmentName: json['departmentName'] ?? '',
-      quota: json['quota'] ?? 0,
-      leaveDaysLeft: json['leaveDaysLeft'] ?? 0,
+      id: json['id']?.toString() ?? '',
+      fullName: json['fullName']?.toString() ?? '',
+      employeeCode: json['employeeCode']?.toString() ?? '',
+      departmentCode: json['departmentCode']?.toString() ?? '',
+      departmentName: json['departmentName']?.toString() ?? '',
+      quota: json['quota'] as num?,
+      leaveDaysLeft: json['leaveDaysLeft'] as num?,
     );
   }
 
@@ -55,14 +67,25 @@ class SummaryDayOffApiResponse {
     this.data,
   });
 
-  factory SummaryDayOffApiResponse.fromJson(Map<String, dynamic> json) {
+  factory SummaryDayOffApiResponse.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return SummaryDayOffApiResponse(
+        statusCode: 0,
+        message: '',
+        totalRecord: 0,
+        data: null,
+      );
+    }
+
     return SummaryDayOffApiResponse(
-      statusCode: json['statusCode'] ?? 0,
-      message: json['message'] ?? '',
-      totalRecord: json['totalRecord'] ?? 0,
+      statusCode: json['statusCode'] as int? ?? 0,
+      message: json['message']?.toString() ?? '',
+      totalRecord: json['totalRecord'] as int? ?? 0,
       data:
           json['data'] != null
-              ? SummaryDayOffModel.fromJson(json['data'])
+              ? SummaryDayOffModel.fromJson(
+                json['data'] as Map<String, dynamic>?,
+              )
               : null,
     );
   }

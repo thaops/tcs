@@ -31,8 +31,8 @@ class LeaveCareateController extends GetxController {
       DateTime.now().add(Duration(days: 1)).year,
       DateTime.now().add(Duration(days: 1)).month,
       DateTime.now().add(Duration(days: 1)).day,
-      8,
-      0,
+      7,
+      30,
     ),
   );
   Rx<DateTime> toDate = Rx<DateTime>(
@@ -41,7 +41,7 @@ class LeaveCareateController extends GetxController {
       DateTime.now().add(Duration(days: 1)).month,
       DateTime.now().add(Duration(days: 1)).day,
       17,
-      30,
+      00,
     ),
   );
   String? reason; // Lý do nghỉ phép
@@ -175,7 +175,7 @@ class LeaveCareateController extends GetxController {
         newStartDate.month,
         newStartDate.day,
         17,
-        30,
+        0, // Sửa từ 30 thành 0 để đặt thời gian kết thúc là 17:00
       );
     }
   }
@@ -189,8 +189,8 @@ class LeaveCareateController extends GetxController {
         newDueDate.year,
         newDueDate.month,
         newDueDate.day,
-        8,
-        0,
+        7,
+        30, // Giữ nguyên thời gian bắt đầu là 7:30
       );
     }
   }

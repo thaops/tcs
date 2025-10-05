@@ -15,13 +15,25 @@ class SummaryDayOffApiService {
         data: {},
       );
 
-      if (response.statusCode == 200) {
-        return SummaryDayOffApiResponse.fromJson(response.data);
+      if (response.statusCode == 200 && response.data != null) {
+        return SummaryDayOffApiResponse.fromJson(
+          response.data as Map<String, dynamic>?,
+        );
       } else {
-        throw Exception('API call failed with status: ${response.statusCode}');
+        return SummaryDayOffApiResponse(
+          statusCode: response.statusCode ?? 0,
+          message: 'API call failed',
+          totalRecord: 0,
+          data: null,
+        );
       }
     } catch (e) {
-      throw Exception('Failed to get summary day off data: $e');
+      return SummaryDayOffApiResponse(
+        statusCode: 0,
+        message: 'Failed to get summary day off data: $e',
+        totalRecord: 0,
+        data: null,
+      );
     }
   }
 }

@@ -57,68 +57,80 @@ class LeaveID {
 
   factory LeaveID.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
+      print('LeaveID.fromJson: json is null');
       return LeaveID(numberOfDaysOffRemaining: 0, fullName: '', reason: '');
     }
 
-    return LeaveID(
-      numberOfDaysOffRemaining: json['numberOfDaysOffRemaining'] as int? ?? 0,
-      id: json['id'] ?? '',
-      employeeId: json['employeeId'] ?? '',
-      department: json['department'] ?? '',
-      avatarUrl: json['avatarUrl'] ?? '',
-      fullName: json['fullName'] ?? '',
-      fromDate:
-          json['fromDate'] != null
-              ? DateTime.tryParse(json['fromDate'] as String)
-              : null,
-      toDate:
-          json['toDate'] != null
-              ? DateTime.tryParse(json['toDate'] as String)
-              : null,
-      totalDay: json['totalDay'],
-      categoryId: json['categoryId'] ?? '',
-      category: json['category'] ?? '',
-      status: json['status'] as int?,
-      statusLabel: json['statusLabel'] ?? '',
-      approvalDate:
-          json['approvalDate'] != null
-              ? DateTime.tryParse(json['approvalDate'] as String)
-              : null,
-      lastApprovalDate:
-          json['lastApprovalDate'] != null
-              ? DateTime.tryParse(json['lastApprovalDate'] as String)
-              : null,
-      reason: json['reason'] ?? '',
-      note: json['note'] ?? '',
-      createdDate:
-          json['createdDate'] != null
-              ? DateTime.tryParse(json['createdDate'] as String)
-              : null,
-      isDeleted: json['isDeleted'] as bool?,
-      workFlows:
-          json['workFlows'] != null
-              ? (json['workFlows'] as List<dynamic>)
-                  .map(
-                    (workflow) =>
-                        WorkFlow.fromJson(workflow as Map<String, dynamic>?),
-                  )
-                  .toList()
-              : null,
-      employeeCode: json['employeeCode'] ?? '',
-      jobTitle: json['jobTitle'] ?? '',
-      quota: json['quota'] as int?,
-      leaveDaysLeft: json['leaveDaysLeft'] as int?,
-      attachments:
-          json['attachments'] != null
-              ? (json['attachments'] as List<dynamic>)
-                  .map(
-                    (attachment) => Attachment.fromJson(
-                      attachment as Map<String, dynamic>?,
-                    ),
-                  )
-                  .toList()
-              : null,
-    );
+    print('LeaveID.fromJson: parsing json with keys: ${json.keys.toList()}');
+
+    try {
+      return LeaveID(
+        numberOfDaysOffRemaining: json['numberOfDaysOffRemaining'] as int? ?? 0,
+        id: json['id']?.toString() ?? '',
+        employeeId: json['employeeId']?.toString() ?? '',
+        department: json['department']?.toString() ?? '',
+        avatarUrl: json['avatarUrl']?.toString() ?? '',
+        fullName:
+            json['fullName']?.toString() ??
+            json['employeeCode']?.toString() ??
+            '',
+        fromDate:
+            json['fromDate'] != null
+                ? DateTime.tryParse(json['fromDate'].toString())
+                : null,
+        toDate:
+            json['toDate'] != null
+                ? DateTime.tryParse(json['toDate'].toString())
+                : null,
+        totalDay: json['totalDay'],
+        categoryId: json['categoryId']?.toString() ?? '',
+        category: json['category']?.toString() ?? '',
+        status: json['status'] as int?,
+        statusLabel: json['statusLabel']?.toString() ?? '',
+        approvalDate:
+            json['approvalDate'] != null
+                ? DateTime.tryParse(json['approvalDate'].toString())
+                : null,
+        lastApprovalDate:
+            json['lastApprovalDate'] != null
+                ? DateTime.tryParse(json['lastApprovalDate'].toString())
+                : null,
+        reason: json['reason']?.toString() ?? '',
+        note: json['note']?.toString() ?? '',
+        createdDate:
+            json['createdDate'] != null
+                ? DateTime.tryParse(json['createdDate'].toString())
+                : null,
+        isDeleted: json['isDeleted'] as bool?,
+        workFlows:
+            json['workFlows'] != null
+                ? (json['workFlows'] as List<dynamic>)
+                    .map(
+                      (workflow) =>
+                          WorkFlow.fromJson(workflow as Map<String, dynamic>?),
+                    )
+                    .toList()
+                : null,
+        employeeCode: json['employeeCode']?.toString() ?? '',
+        jobTitle: json['jobTitle']?.toString() ?? '',
+        quota: json['quota'] as int?,
+        leaveDaysLeft: (json['leaveDaysLeft'] as num?)?.toInt(),
+        attachments:
+            json['attachments'] != null
+                ? (json['attachments'] as List<dynamic>)
+                    .map(
+                      (attachment) => Attachment.fromJson(
+                        attachment as Map<String, dynamic>?,
+                      ),
+                    )
+                    .toList()
+                : null,
+      );
+    } catch (e) {
+      print('LeaveID.fromJson error: $e');
+      print('LeaveID.fromJson json: $json');
+      return LeaveID(numberOfDaysOffRemaining: 0, fullName: '', reason: '');
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -222,24 +234,27 @@ class WorkFlow {
     }
 
     return WorkFlow(
-      id: json['id'] ?? '' ?? '',
-      approverId: json['approverId'] ?? '' ?? '',
-      approver: json['approver'],
+      id: json['id']?.toString() ?? '',
+      approverId: json['approverId']?.toString() ?? '',
+      approver: json['approver']?.toString(),
       approvalDate:
           json['approvalDate'] != null
-              ? DateTime.tryParse(json['approvalDate'] as String)
+              ? DateTime.tryParse(json['approvalDate'].toString())
               : null,
       step: json['step'] as int?,
       status: json['status'] as int?,
-      statusLabel: json['statusLabel'] == "Không xác định" ? "" : json['statusLabel'] ?? '',
-      note: json['note'] ?? '',
+      statusLabel:
+          json['statusLabel'] == "Không xác định"
+              ? ""
+              : json['statusLabel']?.toString() ?? '',
+      note: json['note']?.toString() ?? '',
       createdDate:
           json['createdDate'] != null
-              ? DateTime.tryParse(json['createdDate'] as String)
+              ? DateTime.tryParse(json['createdDate'].toString())
               : null,
       isDeleted: json['isDeleted'] as bool?,
-      receiver: json['receiver'] ?? '',
-      jobTitle: json['jobTitle'] ?? '',
+      receiver: json['receiver']?.toString() ?? '',
+      jobTitle: json['jobTitle']?.toString() ?? '',
     );
   }
 

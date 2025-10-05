@@ -74,9 +74,15 @@ class MyAnnualLeaveApiService {
 
       print('Update API Response: ${response.data}');
 
-      // Kiểm tra statusCode từ server (có thể là StatusCode hoặc statusCode)
+      // Kiểm tra HTTP status code trước
+      if (response.statusCode != 200) {
+        throw Exception('HTTP Error: ${response.statusCode}');
+      }
+
+      // Kiểm tra statusCode từ server response
       final statusCode =
           response.data['StatusCode'] ?? response.data['statusCode'];
+
       if (statusCode == 200) {
         return true;
       } else {
@@ -88,6 +94,7 @@ class MyAnnualLeaveApiService {
         throw Exception(message);
       }
     } catch (e) {
+      print('API Error: $e');
       // Re-throw exception để message được truyền lên
       rethrow;
     }

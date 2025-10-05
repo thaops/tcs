@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/repositories/leave_management_repository.dart';
@@ -75,27 +75,20 @@ class LeaveUpdateController extends GetxController {
 
   Future<void> leaveUpdate(BuildContext context) async {
     if (leaveID == null || usersID == null) {
-      Get.snackbar('Thông báo', 'Vui lòng điền đầy đủ thông tin');
+      _showErrorSnackBar('Vui lòng điền đầy đủ thông tin');
       return;
     }
     if (startDate.value == null || dueDate.value == null) {
-      Get.snackbar(
-        'Thông báo',
-        'Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.',
-      );
+      _showErrorSnackBar('Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.');
       return;
     }
     if (dueDate.value!.isBefore(startDate.value!)) {
-      Get.snackbar(
-        'Thông báo',
-        'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.',
-      );
+      _showErrorSnackBar('Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
       return;
     }
 
     final String leaveId = leave.value?.id.toString() ?? '';
 
-    // Chỉ gửi file mới (có path) lên API
     final List<Map<String, dynamic>> newFiles =
         attachmentFiles
             .where(
@@ -117,16 +110,71 @@ class LeaveUpdateController extends GetxController {
     try {
       isLoading.value = true;
       final result = await _updateLeave(updateData, leaveId, context);
+
+      // Debug logging để kiểm tra response
+      debugPrint("Update result - statusCode: ${result.statusCode}");
+      debugPrint("Update result - message: ${result.message}");
+      debugPrint("Update result - data: ${result.data}");
+
       if (result.statusCode == HttpStatusCodes.STATUS_CODE_OK) {
         Get.back(result: true);
       } else {
-        return;
+        // Xử lý lỗi từ server
+        final errorMessage =
+            result.message.isNotEmpty
+                ? result.message
+                : 'Cập nhật thất bại. Vui lòng thử lại.';
+        debugPrint("Server error message: $errorMessage");
+        _showErrorSnackBar(errorMessage);
       }
     } catch (e) {
-      debugPrint("error: $e");
+      debugPrint("Error updating leave: $e");
+      // Xử lý lỗi network hoặc lỗi khác
+      String errorMessage = 'Không thể cập nhật đơn nghỉ phép. ';
+
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('TimeoutException')) {
+        errorMessage += 'Vui lòng kiểm tra kết nối mạng và thử lại.';
+      } else if (e.toString().contains('FormatException')) {
+        errorMessage += 'Dữ liệu không hợp lệ.';
+      } else {
+        errorMessage += 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.';
+      }
+
+      _showErrorSnackBar(errorMessage);
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Hiển thị thông báo lỗi
+  void _showErrorSnackBar(String message) {
+    Get.snackbar(
+      'Lỗi cập nhật',
+      message,
+      backgroundColor: Color(0xFFEF4444), // Màu đỏ
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      duration: Duration(seconds: 4),
+      margin: EdgeInsets.all(16),
+      borderRadius: 8,
+      icon: Icon(Icons.error_outline, color: Colors.white),
+    );
+  }
+
+  /// Hiển thị thông báo thành công
+  void _showSuccessSnackBar(String message) {
+    Get.snackbar(
+      'Thành công',
+      message,
+      backgroundColor: Color(0xFF10B981), // Màu xanh lá
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      duration: Duration(seconds: 3),
+      margin: EdgeInsets.all(16),
+      borderRadius: 8,
+      icon: Icon(Icons.check_circle_outline, color: Colors.white),
+    );
   }
 
   Future<void> fetchLeave() async {

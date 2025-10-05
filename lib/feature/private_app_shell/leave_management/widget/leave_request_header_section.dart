@@ -60,6 +60,10 @@ class LeaveRequestHeaderSection extends StatelessWidget {
           SizedBox(height: 16.h),
 
           // Leave Details
+          _buildModernInfoRow(
+            "Số ngày nghỉ",
+            leave?.totalDay?.toString() ?? '0',
+          ),
           _buildModernInfoRow("Loại nghỉ phép", leave?.category ?? '-------'),
           _buildModernInfoRow("Lý do", leave?.reason ?? '-------'),
         ],
@@ -178,8 +182,17 @@ class LeaveRequestHeaderSection extends StatelessWidget {
       children: [
         Expanded(
           child: _buildQuickStat(
-            'Ngày nghỉ',
-            leave?.totalDay?.toString() ?? '0',
+            'Tổng quota',
+            leave?.quota?.toString() ?? '0',
+            Icons.assignment,
+            Color(0xFF8B5CF6),
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Expanded(
+          child: _buildQuickStat(
+            'Tổng nghỉ',
+            "${(leave?.quota ?? 0) - (leave?.numberOfDaysOffRemaining ?? 0)}",
             Icons.calendar_today,
             Color(0xFF3B82F6),
           ),
@@ -188,18 +201,9 @@ class LeaveRequestHeaderSection extends StatelessWidget {
         Expanded(
           child: _buildQuickStat(
             'Còn lại',
-            leave?.leaveDaysLeft?.toString() ?? '0',
+            leave?.numberOfDaysOffRemaining?.toString() ?? '0',
             Icons.schedule,
             Color(0xFF10B981),
-          ),
-        ),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: _buildQuickStat(
-            'Tổng quota',
-            leave?.quota?.toString() ?? '0',
-            Icons.assignment,
-            Color(0xFF8B5CF6),
           ),
         ),
       ],

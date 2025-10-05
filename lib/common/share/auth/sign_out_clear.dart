@@ -23,9 +23,20 @@ class SignOutClear extends GetxService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
 
-      // 4. Clear GetStorage (local storage)
+      // 4. Clear GetStorage (local storage) nhưng giữ manual environment
       final GetStorage storage = GetStorage();
+      final String? savedBaseUrl = storage.read<String>('base_url');
+      final bool? isManualEnv = storage.read<bool>('manual_environment_set');
       await storage.erase();
+
+      // Khôi phục manual environment nếu có
+      if (savedBaseUrl != null &&
+          savedBaseUrl.isNotEmpty &&
+          isManualEnv == true) {
+        await storage.write('base_url', savedBaseUrl);
+        await storage.write('manual_environment_set', true);
+        print("Restored manual environment: $savedBaseUrl");
+      }
 
       // 5. Navigate to login screen trước khi clear controllers
       if (Get.context != null) {
@@ -64,9 +75,20 @@ class SignOutClear extends GetxService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
 
-      // Clear GetStorage
+      // Clear GetStorage nhưng giữ manual environment
       final GetStorage storage = GetStorage();
+      final String? savedBaseUrl = storage.read<String>('base_url');
+      final bool? isManualEnv = storage.read<bool>('manual_environment_set');
       await storage.erase();
+
+      // Khôi phục manual environment nếu có
+      if (savedBaseUrl != null &&
+          savedBaseUrl.isNotEmpty &&
+          isManualEnv == true) {
+        await storage.write('base_url', savedBaseUrl);
+        await storage.write('manual_environment_set', true);
+        print("Restored manual environment in clearCacheOnly: $savedBaseUrl");
+      }
 
       // Clear user cache
       final MyId _myId = await MyId.create();

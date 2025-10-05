@@ -4,7 +4,6 @@ import 'package:tcs_flutter/common/share/cache/my_id.dart';
 import 'package:tcs_flutter/common/utils/custom_dialog.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_id.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_comment.dart';
-import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/approval_list_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_approve_controller.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_logic.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/models/leave_update.dart';
@@ -26,6 +25,7 @@ class LeaveRequestDetailController extends GetxController {
   LeaveID? leave;
   final RxBool isLoading = false.obs;
   final RxBool shouldShowApproveButtons = false.obs;
+
   final RxBool canShowModifyButtons = false.obs;
   final RxBool canShowEditButton = false.obs;
   final RxBool canShowBlockButton = false.obs;
@@ -45,24 +45,16 @@ class LeaveRequestDetailController extends GetxController {
     final arguments = Get.arguments;
     leaveId = arguments != null ? arguments['leaveId'] as String? : null;
 
-    debugPrint(
-      'LeaveRequestDetailController initialized with leaveId: $leaveId',
-    );
-
     if (leaveId != null) {
       loadLeaveData();
       loadMyId();
       loadComments();
-    } else {
-      debugPrint('No leaveId provided, showing error');
     }
   }
 
   @override
   void onReady() {
     super.onReady();
-    debugPrint('Controller onReady - checking canShowModifyButtons');
-    debugPrint('canShowModifyButtons: ${canShowModifyButtons.value}');
   }
 
   @override
@@ -81,37 +73,22 @@ class LeaveRequestDetailController extends GetxController {
 
       if (result != null) {
         leave = result;
-        debugPrint('loadLeaveData SUCCESS:');
-        debugPrint('  - leave.employeeId: ${leave!.employeeId}');
-        debugPrint('  - leave.status: ${leave!.status}');
-        debugPrint('  - leave.statusLabel: ${leave!.statusLabel}');
-        debugPrint('  - myId: $myId');
 
-        // Update modify buttons visibility
         _updateCanShowModifyButtons();
         _safeUpdateButtonVisibility();
 
-        update(); // Notify UI to rebuild AFTER updating canShowModifyButtons
+        update();
 
-        // Recompute approve buttons visibility if myId is available
         if (myId != null) {
           await _updateApproveButtonsVisibility();
         }
 
-        // Force check canShowModifyButtons after data loaded
-        debugPrint(
-          'After loadLeaveData - canShowModifyButtons: ${canShowModifyButtons.value}',
-        );
-        
-        // Update button visibility if myId is also available
         if (myId != null) {
           _safeUpdateButtonVisibility();
         }
-      } else {
-        debugPrint('Failed to load leave data');
       }
     } catch (e) {
-      debugPrint('Error loading leave data: $e');
+      // Error loading leave data
     } finally {
       isLoading.value = false;
     }
@@ -124,39 +101,33 @@ class LeaveRequestDetailController extends GetxController {
       final id = await create.getMyId();
 
       myId = id;
-      debugPrint('loadMyId SUCCESS: myId = $myId');
 
-      // Update modify buttons visibility
       _updateCanShowModifyButtons();
       _safeUpdateButtonVisibility();
 
-      update(); // Notify UI to rebuild AFTER updating canShowModifyButtons
+      update();
 
-      // If leave is available, recompute approve buttons visibility
       if (leave != null) {
         await _updateApproveButtonsVisibility();
       }
 
-      // Force check canShowModifyButtons after myId loaded
-      debugPrint(
-        'After loadMyId - canShowModifyButtons: ${canShowModifyButtons.value}',
-      );
-      
-      // Update button visibility if leave is also available
       if (leave != null) {
         _safeUpdateButtonVisibility();
       }
     } catch (e) {
-      debugPrint('Failed to load myId: $e');
+      // Failed to load myId
     }
   }
 
-  /// Update approve buttons visibility based on current state
   Future<void> _updateApproveButtonsVisibility() async {
+    debugPrint('=== _updateApproveButtonsVisibility called ===');
     if (leave == null || myId == null) {
       shouldShowApproveButtons.value = false;
       return;
     }
+
+    debugPrint('  - leave.status: ${leave!.status}');
+    debugPrint('  - leave.statusLabel: ${leave!.statusLabel}');
 
     final bool isRejectedOrCancelled =
         (leave!.status == 3) ||
@@ -164,69 +135,80 @@ class LeaveRequestDetailController extends GetxController {
         (leave!.statusLabel == 'Từ chối') ||
         (leave!.statusLabel == 'Huỷ đơn');
 
+    debugPrint('  - isRejectedOrCancelled: $isRejectedOrCancelled');
+
     if (isRejectedOrCancelled) {
       shouldShowApproveButtons.value = false;
+      debugPrint('  - Ẩn nút duyệt: đơn đã bị từ chối/huỷ đơn');
       return;
     }
 
-    final bool isApproved = (leave!.status == 2) || (leave!.statusLabel == 'Đã duyệt');
+    final bool isApproved =
+        (leave!.status == 2) || (leave!.statusLabel == 'Đã duyệt');
+
+    debugPrint('  - isApproved: $isApproved');
+
     if (isApproved) {
       shouldShowApproveButtons.value = false;
+      debugPrint('  - Ẩn nút duyệt: đơn đã được duyệt hoàn toàn');
       return;
     }
+
+    // Kiểm tra đơn đang chờ hủy đơn - nhưng vẫn cho phép hiển thị nút duyệt
+    final bool isPendingCancel =
+        (leave!.status == 99) || (leave!.statusLabel == 'Chờ hủy đơn');
+
+    debugPrint('  - isPendingCancel: $isPendingCancel');
+
+    // Không ẩn nút duyệt khi đơn chờ hủy - trưởng phòng vẫn có thể duyệt
+    // if (isPendingCancel) {
+    //   shouldShowApproveButtons.value = false;
+    //   return;
+    // }
 
     try {
       final approvals = await controllerApprove.getListApprovalByUser(
         leaveId ?? '',
       );
 
-      // Kiểm tra user có quyền duyệt
       final bool hasApprovalPermission = approvals.any(
         (approval) => approval.receiverId == myId,
       );
 
+      debugPrint('  - hasApprovalPermission: $hasApprovalPermission');
+
       if (!hasApprovalPermission) {
         shouldShowApproveButtons.value = false;
+        debugPrint('  - Ẩn nút duyệt: user không có trong danh sách phê duyệt');
         return;
       }
 
-      // Tìm step hiện tại của user
-      final currentUserApproval = approvals.firstWhere(
+      final userApproval = approvals.firstWhere(
         (approval) => approval.receiverId == myId,
-        orElse: () => ApprovalData(
-          id: '',
-          receiverId: '',
-          receiverName: '',
-          step: 0,
-          status: 0,
-          isCompleted: false,
-        ),
       );
 
-      // Kiểm tra step hiện tại đã hoàn thành chưa
-      if (currentUserApproval.isCompleted) {
-        shouldShowApproveButtons.value = false;
-        return;
-      }
+      final bool hasNotApproved =
+          !userApproval.isCompleted &&
+          (userApproval.status == 0 || userApproval.status == 1);
 
-      // Kiểm tra các step trước đó đã hoàn thành chưa
-      final bool arePreviousStepsCompleted = _arePreviousStepsCompleted(
-        approvals,
-        currentUserApproval.step,
+      debugPrint('  - userApproval: $userApproval');
+      debugPrint('  - userApproval.isCompleted: ${userApproval.isCompleted}');
+      debugPrint('  - userApproval.status: ${userApproval.status}');
+      debugPrint('  - hasNotApproved: $hasNotApproved');
+
+      shouldShowApproveButtons.value = hasApprovalPermission && hasNotApproved;
+
+      debugPrint(
+        '  - shouldShowApproveButtons: ${shouldShowApproveButtons.value}',
       );
-
-      debugPrint('  - currentUserStep: ${currentUserApproval.step}');
-      debugPrint('  - isCurrentStepCompleted: ${currentUserApproval.isCompleted}');
-      debugPrint('  - arePreviousStepsCompleted: $arePreviousStepsCompleted');
-
-      // Chỉ hiển thị nút khi step hiện tại chưa hoàn thành và các step trước đã hoàn thành
-      shouldShowApproveButtons.value = !currentUserApproval.isCompleted && arePreviousStepsCompleted;
     } catch (e) {
-      debugPrint('Error checking approval permissions: $e');
       shouldShowApproveButtons.value = false;
+      debugPrint('  - Error: $e');
     }
+    debugPrint(
+      '=== _updateApproveButtonsVisibility finished: ${shouldShowApproveButtons.value} ===',
+    );
   }
-
 
   /// Kiểm tra user có phải là trưởng phòng không
   bool _isManager() {
@@ -243,39 +225,8 @@ class LeaveRequestDetailController extends GetxController {
     return jobTitle != null && jobTitle.contains('trưởng phòng');
   }
 
-
-
-  /// Kiểm tra các step trước đó đã hoàn thành chưa
-  bool _arePreviousStepsCompleted(List<ApprovalData> approvals, int currentStep) {
-    if (currentStep <= 1) return true; // Step 1 không cần kiểm tra step trước
-
-    // Kiểm tra tất cả step trước đó đã hoàn thành chưa
-    for (int step = 1; step < currentStep; step++) {
-      final stepApproval = approvals.firstWhere(
-        (approval) => approval.step == step,
-        orElse: () => ApprovalData(
-          id: '',
-          receiverId: '',
-          receiverName: '',
-          step: step,
-          status: 0,
-          isCompleted: false,
-        ),
-      );
-
-      // Nếu step trước đó chưa hoàn thành
-      if (!stepApproval.isCompleted) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /// Update button visibility based on leave status and user role
   void _updateButtonVisibility() {
-    debugPrint('_updateButtonVisibility called');
     if (leave == null || myId == null) {
-      debugPrint('_updateButtonVisibility: leave=$leave, myId=$myId - SKIPPING');
       canShowEditButton.value = false;
       canShowBlockButton.value = false;
       return;
@@ -286,71 +237,42 @@ class LeaveRequestDetailController extends GetxController {
     final String? employeeId = leave!.employeeId;
     final bool isOwner = myId == employeeId;
     final bool isManager = _isManager();
-    // Kiểm tra đơn đã bị từ chối hoặc huỷ đơn (không cho phép chỉnh sửa)
+
     final bool isRejectedOrCancelled =
         (status == 3) ||
         (status == 4) ||
         (statusLabel == 'Từ chối') ||
         (statusLabel == 'Huỷ đơn');
 
-    // Kiểm tra đơn đã được duyệt
     final bool isApproved = (status == 2) || (statusLabel == 'Đã duyệt');
-    
-    // Kiểm tra đơn đang chờ hủy đơn
-    final bool isPendingCancel = (status == 99) || (statusLabel == 'Chờ hủy đơn');
 
-    debugPrint('  - isRejectedOrCancelled: $isRejectedOrCancelled');
-    debugPrint('  - isApproved: $isApproved');
-    debugPrint('  - isPendingCancel: $isPendingCancel');
-    debugPrint('  - isOwner: $isOwner');
-    debugPrint('  - isManager: $isManager');
+    final bool isPendingCancel =
+        (status == 99) || (statusLabel == 'Chờ hủy đơn');
 
     if (isRejectedOrCancelled || isPendingCancel) {
-      // Đơn đã từ chối, huỷ đơn hoặc chờ hủy đơn - không hiển thị nút nào
       canShowEditButton.value = false;
       canShowBlockButton.value = false;
-      debugPrint('  - Result: No buttons (đơn đã từ chối/huỷ đơn/chờ hủy đơn)');
     } else if (isApproved) {
-      // Đơn đã được duyệt - hiển thị nút block cho chủ đơn hoặc trưởng phòng
       canShowEditButton.value = false;
       canShowBlockButton.value = isOwner || isManager;
-      debugPrint('  - Result: Block button only (đơn đã duyệt, isOwner: $isOwner, isManager: $isManager)');
     } else {
-      // Đơn chưa được duyệt (chờ duyệt) - hiển thị cả nút edit và block cho chủ đơn hoặc trưởng phòng
       canShowEditButton.value = isOwner;
       canShowBlockButton.value = isOwner || isManager;
-      debugPrint('  - Result: Both buttons (đơn chờ duyệt, isOwner: $isOwner, isManager: $isManager)');
     }
-
-    debugPrint('  - canShowEditButton: ${canShowEditButton.value}');
-    debugPrint('  - canShowBlockButton: ${canShowBlockButton.value}');
   }
 
-  /// Safely update button visibility - only when both myId and leave are available
   void _safeUpdateButtonVisibility() {
-    debugPrint('_safeUpdateButtonVisibility called');
     if (leave != null && myId != null) {
-      debugPrint('Both leave and myId available - updating button visibility');
       _updateButtonVisibility();
     } else {
-      debugPrint('Missing data - leave: ${leave != null}, myId: ${myId != null}');
       canShowEditButton.value = false;
       canShowBlockButton.value = false;
     }
   }
 
-  /// Update canShowModifyButtons reactive variable
   void _updateCanShowModifyButtons() {
-    debugPrint('_updateCanShowModifyButtons called');
     if (leave == null || myId == null) {
-      debugPrint('_updateCanShowModifyButtons: leave=$leave, myId=$myId');
-      debugPrint(
-        '  - Setting canShowModifyButtons.value from ${canShowModifyButtons.value} to false',
-      );
       canShowModifyButtons.value = false;
-      debugPrint(
-        '  - canShowModifyButtons.value is now: ${canShowModifyButtons.value}',
-      );
       return;
     }
 
@@ -360,40 +282,25 @@ class LeaveRequestDetailController extends GetxController {
     final bool isOwner = myId == employeeId;
     final bool isManager = _isManager();
 
-   
-
-    // Kiểm tra đơn đã bị từ chối hoặc huỷ đơn (không cho phép chỉnh sửa)
     final bool isRejectedOrCancelled =
         (status == 3) ||
         (status == 4) ||
         (statusLabel == 'Từ chối') ||
         (statusLabel == 'Huỷ đơn');
-    
-    // Kiểm tra đơn đang chờ hủy đơn
-    final bool isPendingCancel = (status == 99) || (statusLabel == 'Chờ hủy đơn');
 
-    debugPrint('  - isRejectedOrCancelled: $isRejectedOrCancelled');
-    debugPrint('  - isPendingCancel: $isPendingCancel');
+    final bool isPendingCancel =
+        (status == 99) || (statusLabel == 'Chờ hủy đơn');
 
     if (isRejectedOrCancelled || isPendingCancel) {
-   
       canShowModifyButtons.value = false;
-      
       return;
     }
 
-    // Kiểm tra đơn đã được duyệt
-    final bool isApproved = (status == 2) || (statusLabel == 'Đã duyệt');
-    debugPrint('  - isApproved: $isApproved');
-
     final bool canModify = (isOwner || isManager) && !isRejectedOrCancelled;
-    
-    debugPrint('  - isOwner: $isOwner, isManager: $isManager, canModify: $canModify');
+
     canShowModifyButtons.value = canModify;
-   
   }
 
-  /// Check if comment input should be shown
   bool get canShowCommentInput {
     if (leave == null) return false;
 
@@ -403,69 +310,67 @@ class LeaveRequestDetailController extends GetxController {
         (status == 4) ||
         (leave!.statusLabel == 'Từ chối') ||
         (leave!.statusLabel == 'Huỷ đơn');
-    
-    // Kiểm tra đơn đang chờ hủy đơn
-    final bool isPendingCancel = (status == 99) || (leave!.statusLabel == 'Chờ hủy đơn');
 
-   
+    final bool isPendingCancel =
+        (status == 99) || (leave!.statusLabel == 'Chờ hủy đơn');
+
     return !isRejectedOrCancelled && !isPendingCancel;
   }
 
-  /// Navigate to update screen
   void navigateToUpdate() {
     if (leave == null) return;
 
-    Get.toNamed(
-      AppRouter.leaveUpdate,
-      arguments: LeaveUpdateData(leave: leave),
-    )?.then((value) {
-      if (value == true) {
-        loadLeaveData(); // Reload data after update
-      }
-    });
+    debugPrint("Navigating to update screen...");
+    Get.toNamed(AppRouter.leaveUpdate, arguments: LeaveUpdateData(leave: leave))
+        ?.then((value) {
+          debugPrint("Update screen returned with value: $value");
+          debugPrint("Value type: ${value.runtimeType}");
+          if (value == true) {
+            debugPrint("Reloading leave data after successful update");
+            loadLeaveData();
+          } else {
+            debugPrint("Update was not successful or cancelled");
+          }
+        })
+        .catchError((error) {
+          debugPrint("Error in navigation: $error");
+        });
   }
 
-  /// Cancel leave request với dialog nhập lý do
   Future<void> cancelLeave() async {
     if (leaveId == null || Get.context == null) return;
 
     try {
-      // Kiểm tra trạng thái đơn để quyết định hiển thị dialog
-      final bool isApproved = (leave?.status == 2) || (leave?.statusLabel == 'Đã duyệt');
-      
-      // Hiển thị dialog nhập lý do hủy đơn
+      final bool isApproved =
+          (leave?.status == 2) || (leave?.statusLabel == 'Đã duyệt');
+
       final result = await LeaveRequestDialogs.showCancelLeaveDialog(
         Get.context!,
         isApproved: isApproved,
       );
-      
+
       if (result != null && result['confirmed'] == true) {
         final String reason = result['reason'] as String;
-        
-        // Hiển thị loading
+
         isLoading.value = true;
-        
-        // Sử dụng repository có sẵn
+
         final repository = LeaveManagementRepository();
         final success = await repository.cancelLeave(
           leaveId!,
           Get.context!,
           reason,
         );
-        
+
         isLoading.value = false;
-        
+
         if (success) {
-     
           await loadLeaveData();
-          
           Get.back(result: true);
         }
       }
     } catch (e) {
       isLoading.value = false;
-      
-      // Hiển thị message lỗi từ server
+
       final String errorMessage = e.toString().replaceFirst('Exception: ', '');
       if (Get.context != null) {
         ScaffoldMessenger.of(Get.context!).showSnackBar(
@@ -518,6 +423,7 @@ class LeaveRequestDetailController extends GetxController {
 
         await loadLeaveData();
       } catch (e) {
+        // Error handling
       }
     }
   }
@@ -563,7 +469,6 @@ class LeaveRequestDetailController extends GetxController {
         // Reload data sau khi từ chối để cập nhật UI
         await loadLeaveData();
       } catch (e) {
-        debugPrint('Error in showRejectDialog: $e');
         Get.snackbar(
           'Lỗi',
           'Không thể từ chối đơn: ${e.toString()}',
@@ -573,7 +478,6 @@ class LeaveRequestDetailController extends GetxController {
     }
   }
 
-  /// Load comments for current leave request
   Future<void> loadComments() async {
     if (leaveId == null) return;
 
@@ -586,39 +490,32 @@ class LeaveRequestDetailController extends GetxController {
 
       if (response != null && response.statusCode == 200) {
         comments.value = response.data;
-      } else {
-        debugPrint('Failed to load comments');
       }
     } catch (e) {
-      debugPrint('Error loading comments: $e');
+      // Error loading comments
     } finally {
       isLoadingComments.value = false;
     }
   }
 
-  /// Add new comment - Optimized for smooth UX
   Future<void> addComment() async {
     if (leaveId == null || commentController.text.trim().isEmpty) return;
 
     final commentText = commentController.text.trim();
-
-    // Clear input immediately for better UX
     commentController.clear();
 
-    // Add comment to list optimistically
     final newComment = LeaveComment(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       parentId: '00000000-0000-0000-0000-000000000000',
       content: commentText,
       createdDate: DateTime.now().toIso8601String(),
-      creator: 'Bạn', // Temporary, will be updated after API call
+      creator: 'Bạn',
       createdById: myId ?? '',
     );
 
     comments.insert(0, newComment);
 
     try {
-      // Show minimal loading state
       isLoadingComments.value = true;
 
       final response = await commentService.addLeaveComment(
@@ -628,64 +525,63 @@ class LeaveRequestDetailController extends GetxController {
       );
 
       if (response != null && response.statusCode == 200 && response.data) {
-        // Success - reload comments to get real data
         await loadComments();
       } else {
-        // Remove optimistic comment on failure
         comments.removeWhere((comment) => comment.id == newComment.id);
-        debugPrint('Failed to add comment: ${response?.message}');
       }
     } catch (e) {
-      // Remove optimistic comment on error
       comments.removeWhere((comment) => comment.id == newComment.id);
-      debugPrint('Error adding comment: $e');
     } finally {
       isLoadingComments.value = false;
     }
   }
 
-  /// Get status color based on status label
   Color getStatusColor(String? statusLabel) {
-    switch (statusLabel) {
-      case 'Đang xử lý':
-        return Color(0xFFF59E0B); // Amber 500
-      case 'Đã duyệt':
-        return Color(0xFF10B981); // Emerald 500
-      case 'Từ chối':
-        return Color(0xFFEF4444); // Red 500
-      case 'Chờ xử lý':
-        return Color(0xFF6B7280); // Gray 500
+    if (statusLabel == null || statusLabel.isEmpty) {
+      return Color(0xFF455A64); // Tạo mới - Xám đậm
+    }
+
+    switch (statusLabel.toLowerCase().trim()) {
+      case 'đang xử lý':
+      case 'đơn cần duyệt':
+        return Color(0xFFF9A825); // Chờ duyệt - Vàng cam
+      case 'đã duyệt':
+        return Color(0xFF43A047); // Đã duyệt - Xanh lá
+      case 'chờ xử lý':
+      case 'chờ duyệt':
+        return Color(0xFFF9A825); // Chờ duyệt - Vàng cam
+      case 'chờ huỷ đơn':
+        return Color(0xFFF9A825); // Tạo mới - Xám đậm
+      case 'từ chối':
+        return Color(0xFFED3241); // Từ chối - Đỏ
+      case 'hủy đơn':
+        return Color(0xFFED3241); // Hủy đơn - Đỏ
+      case 'hủy':
+        return Color(0xFFED3241); // Hủy - Đỏ
+      case 'tạo mới':
+        return Color(0xFF455A64); // Tạo mới - Xám đậm
+      case '1': // Trạng thái số - Đơn cần duyệt
+        return Color(0xFFF9A825); // Chờ duyệt - Vàng cam
+      case '2': // Trạng thái số - Đã duyệt
+        return Color(0xFF43A047); // Đã duyệt - Xanh lá
+      case '3': // Trạng thái số - Từ chối
+        return Color(0xFFED3241); // Từ chối - Đỏ
+      case '4': // Trạng thái số - Hủy đơn
+        return Color(0xFFED3241); // Hủy đơn - Đỏ
+      case '99': // Trạng thái số - Chờ hủy đơn
+        return Color(0xFF455A64); // Tạo mới - Xám đậm
       default:
-        return Color(0xFF374151); // Gray 700
+        return Color(0xFF455A64); // Tạo mới - Xám đậm
     }
   }
 
-  /// Force rebuild UI - for debugging
   void forceRebuild() {
-    debugPrint('Force rebuild called');
     _updateCanShowModifyButtons();
     _safeUpdateButtonVisibility();
-    debugPrint(
-      'Current state: myId=$myId, leave=${leave?.id}, canShowModifyButtons=${canShowModifyButtons.value}',
-    );
-    debugPrint(
-      'Button visibility: canShowEditButton=${canShowEditButton.value}, canShowBlockButton=${canShowBlockButton.value}',
-    );
     update();
   }
 
-  /// Debug button visibility - for troubleshooting
   void debugButtonVisibility() {
-    debugPrint('=== DEBUG BUTTON VISIBILITY ===');
-    debugPrint('myId: $myId');
-    debugPrint('leave: ${leave?.id}');
-    debugPrint('leave.employeeId: ${leave?.employeeId}');
-    debugPrint('leave.status: ${leave?.status}');
-    debugPrint('leave.statusLabel: ${leave?.statusLabel}');
-    debugPrint('isOwner: ${myId == leave?.employeeId}');
-    debugPrint('canShowEditButton: ${canShowEditButton.value}');
-    debugPrint('canShowBlockButton: ${canShowBlockButton.value}');
-    debugPrint('canShowModifyButtons: ${canShowModifyButtons.value}');
-    debugPrint('=== END DEBUG ===');
+    // Debug method removed
   }
 }

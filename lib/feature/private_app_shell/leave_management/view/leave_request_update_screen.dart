@@ -73,26 +73,59 @@ class _LeaveRequestUpdateScreenState extends State<LeaveRequestUpdateScreen> {
         if (canEdit) 20.horizontalSpace,
         if (canEdit)
           Flexible(
-            child: GestureDetector(
-              onTap: () async {
-                await controllerUpdate.leaveUpdate(context);
-              },
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(12.0),
-                  border: Border.all(color: Colors.grey.shade300, width: 1),
-                ),
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: TextWidget(
-                    text: "Cập nhật",
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    textAlign: TextAlign.center,
-                    color: Colors.white,
+            child: Obx(
+              () => GestureDetector(
+                onTap:
+                    controllerUpdate.isLoading.value
+                        ? null
+                        : () async {
+                          await controllerUpdate.leaveUpdate(context);
+                        },
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    color:
+                        controllerUpdate.isLoading.value
+                            ? Colors.grey.shade400
+                            : AppColors.primary,
+                    borderRadius: BorderRadius.circular(12.0),
+                    border: Border.all(color: Colors.grey.shade300, width: 1),
+                  ),
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child:
+                        controllerUpdate.isLoading.value
+                            ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                TextWidget(
+                                  text: "Đang cập nhật...",
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  textAlign: TextAlign.center,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            )
+                            : TextWidget(
+                              text: "Cập nhật",
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              textAlign: TextAlign.center,
+                              color: Colors.white,
+                            ),
                   ),
                 ),
               ),
