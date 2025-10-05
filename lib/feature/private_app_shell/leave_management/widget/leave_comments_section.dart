@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/controller/leave_request_detail_controller.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_comment.dart';
@@ -21,6 +22,26 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
     controller.commentController.addListener(() {
       setState(() {});
     });
+  }
+
+  /// Format thời gian hiển thị cho comment
+  String _formatCommentTime(String createdDate) {
+    try {
+      final dateTime = DateTime.parse(createdDate);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      // Nếu trong cùng ngày, hiển thị giờ:phút
+      if (difference.inDays == 0) {
+        return DateFormat('HH:mm').format(dateTime);
+      }
+      // Nếu khác ngày, hiển thị đầy đủ ngày/tháng/năm + giờ:phút
+      else {
+        return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
+      }
+    } catch (e) {
+      return '--/--/---- --:--';
+    }
   }
 
   @override
@@ -253,6 +274,14 @@ class _LeaveCommentsSectionState extends State<LeaveCommentsSection> {
                           ),
                         ],
                       ],
+                    ),
+                    SizedBox(height: 2.h),
+                    // Hiển thị thời gian comment
+                    TextWidget(
+                      text: _formatCommentTime(comment.createdDate),
+                      fontSize: 11.sp,
+                      color:
+                          isOptimistic ? Color(0xFF9CA3AF) : Color(0xFF6B7280),
                     ),
                   ],
                 ),
