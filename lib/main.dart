@@ -22,6 +22,7 @@ import 'package:tcs_flutter/common/utils/navigation_utils.dart';
 import 'package:tcs_flutter/core/configs/theme/app_theme.dart';
 import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/router/deep_link_handler.dart';
+import 'package:tcs_flutter/router/one_signal_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uuid/uuid.dart';
 
@@ -106,6 +107,15 @@ Future<void> _initializeServices() async {
   await serviceCheckawaiting.saveawaiting(result);
   await initializeDateFormatting('vi_VN', null);
   await Get.put(SignOutClear());
+  
+  // Initialize OneSignal
+  if (Platform.isAndroid) {
+    try {
+      await OneSignalService().init();
+    } catch (e) {
+      debugPrint('Lỗi khi khởi tạo OneSignal: $e');
+    }
+  }
 }
 
 // Future<void> _loadUserData() async {
@@ -134,7 +144,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // OneSignalService().handlePendingNavigation();
+      OneSignalService().handlePendingNavigation();
     }
   }
 
