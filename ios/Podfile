@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -36,8 +36,81 @@ target 'Runner' do
   end
 end
 
+# ⚙️ Patch for Xcode 26 compatibility (object version 70) - Must be before post_install
+require 'xcodeproj'
+
+# Add objectVersion to REFERENCE_ATTRIBUTES if it exists
+if Xcodeproj::Project::Object::AbstractObject.const_defined?(:REFERENCE_ATTRIBUTES)
+  Xcodeproj::Project::Object::AbstractObject::REFERENCE_ATTRIBUTES << 'objectVersion' unless Xcodeproj::Project::Object::AbstractObject::REFERENCE_ATTRIBUTES.include?('objectVersion')
+end
+
+# Patch compatibility version for object version 70
+# Try multiple ways to patch the constant
+begin
+  if Xcodeproj::Project::Object.const_defined?(:COMPATIBILITY_VERSION_BY_OBJECT_VERSION)
+    Xcodeproj::Project::Object::COMPATIBILITY_VERSION_BY_OBJECT_VERSION[70] = 'Xcode 15.0' unless Xcodeproj::Project::Object::COMPATIBILITY_VERSION_BY_OBJECT_VERSION.key?(70)
+  end
+rescue
+  # Constant might not exist, try to create it
+end
+
+# Patch Project class to handle object version 70
+Xcodeproj::Project.class_eval do
+  unless method_defined?(:original_initialize)
+    alias_method :original_initialize, :initialize
+    
+    def initialize(path, skip_loading = false, object_version = nil)
+      # Try to patch compatibility version before initialization
+      begin
+        # Try to access and patch the constant
+        if Xcodeproj::Project::Object.const_defined?(:COMPATIBILITY_VERSION_BY_OBJECT_VERSION)
+          Xcodeproj::Project::Object::COMPATIBILITY_VERSION_BY_OBJECT_VERSION[70] = 'Xcode 15.0' unless Xcodeproj::Project::Object::COMPATIBILITY_VERSION_BY_OBJECT_VERSION.key?(70)
+        end
+      rescue
+        # If constant doesn't exist, try to monkey patch the lookup
+      end
+      
+      begin
+        original_initialize(path, skip_loading, object_version)
+      rescue ArgumentError => e
+        if e.message.include?('object version `70`')
+          # Try to patch compatibility version map using reflection
+          begin
+            # Try to find and patch the constant using different paths
+            [Xcodeproj::Project::Object, Xcodeproj::Project].each do |mod|
+              if mod.const_defined?(:COMPATIBILITY_VERSION_BY_OBJECT_VERSION)
+                mod::COMPATIBILITY_VERSION_BY_OBJECT_VERSION[70] = 'Xcode 15.0'
+                # Retry after patching
+                return original_initialize(path, skip_loading, object_version)
+              end
+            end
+            
+            # If constant doesn't exist, try to monkey patch the method that looks it up
+            # This is a last resort - we'll intercept the error and provide a default
+            raise ArgumentError, "Unable to find compatibility version string for object version `70`. Using 'Xcode 15.0' as fallback."
+          rescue ArgumentError => e2
+            if e2.message.include?('object version `70`')
+              # Final fallback: use object version 56 (Xcode 15) instead
+              return original_initialize(path, skip_loading, 56)
+            else
+              raise
+            end
+          end
+        else
+          raise
+        end
+      end
+    end
+  end
+end
+
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
   end
+end
+target 'OneSignalNotificationServiceExtension' do
+  platform :ios, '13.0'
+  use_frameworks!
+  pod 'OneSignalXCFramework', '>= 5.0.0', '< 6.0'
 end

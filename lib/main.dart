@@ -109,12 +109,11 @@ Future<void> _initializeServices() async {
   await Get.put(SignOutClear());
   
   // Initialize OneSignal
-  if (Platform.isAndroid) {
-    try {
-      await OneSignalService().init();
-    } catch (e) {
-      debugPrint('Lỗi khi khởi tạo OneSignal: $e');
-    }
+  try {
+    await OneSignalService().init();
+    debugPrint('OneSignal initialized successfully');
+  } catch (e) {
+    debugPrint('Lỗi khi khởi tạo OneSignal: $e');
   }
 }
 

@@ -41,7 +41,7 @@ class OneSignalService {
     OneSignal.Notifications.addClickListener((event) async {
       _handleNotificationClick(event);
     });
-    // await listenForPushToken();
+    await listenForPushToken();
   }
 
   Future<void> handlePendingNavigation() async {
