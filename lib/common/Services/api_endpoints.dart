@@ -3,7 +3,9 @@ import 'package:tcs_flutter/common/Services/config.dart';
 
 class ApiEndpoints {
   //notification
-  static String notification = "${Config.baseUrl}/device/onesignal-register";
+  static String notification = "${Config.baseUrl}/user/onesignal-register";
+  static String unregisterNotification =
+      "${Config.baseUrl}/user/onesignal-unregister";
 
   static String login = "${Config.baseUrl}/users/oauth2-google";
   static String loginUrlMicrosoft(int platform, int type) =>

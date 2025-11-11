@@ -12,6 +12,7 @@ import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/src/api/api_service.dart';
 import 'package:tcs_flutter/src/api/models/apiResponse_model.dart';
 import 'package:tcs_flutter/src/services/lib/services/auth_service.dart';
+import 'package:tcs_flutter/router/one_signal_service.dart';
 
 class LoginController extends GetxController {
   DioApi dioApi = DioApi();
@@ -204,6 +205,14 @@ class LoginController extends GetxController {
     }
     await services.saveAccessToken(accessTokenId);
     await apiService.getProfile(dioApi);
+
+    // Đăng ký lại push token sau khi đăng nhập thành công
+    try {
+      final oneSignalService = OneSignalService();
+      await oneSignalService.retryRegisterTokenAfterLogin();
+    } catch (e) {
+      print("Lỗi khi đăng ký lại push token sau đăng nhập: $e");
+    }
 
     Navigator.pop(context);
     Get.offAllNamed(AppRouter.main);

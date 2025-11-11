@@ -4,12 +4,21 @@ import 'package:tcs_flutter/common/Services/services.dart';
 import 'package:tcs_flutter/common/share/cache/my_id.dart';
 import 'package:tcs_flutter/common/share/auth/controller_cache_clear.dart';
 import 'package:tcs_flutter/router/app_router.dart';
+import 'package:tcs_flutter/router/one_signal_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignOutClear extends GetxService {
   /// Clear tất cả dữ liệu và cache khi đăng xuất
   Future<void> signOut() async {
     try {
+      // 0. Unregister OneSignal push token trước khi clear data
+      try {
+        final oneSignalService = OneSignalService();
+        await oneSignalService.unregisterPushToken();
+      } catch (e) {
+        print('Error unregistering push token: $e');
+      }
+
       // 1. Clear access token và authentication data
       final Services services = await Services.create();
       await services.deleteAccessToken();
