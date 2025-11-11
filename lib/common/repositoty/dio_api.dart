@@ -29,6 +29,13 @@ class DioApi {
   static final Map<String, dynamic> _cache = {};
   static DateTime? _tokenCacheTime;
 
+  /// Clear static cache (dùng khi đổi môi trường)
+  static void clearStaticCache() {
+    _cache.clear();
+    _tokenCacheTime = null;
+    print("✅ Đã clear static cache trong DioApi");
+  }
+
   Future<void> _buildHeader() async {
     try {
       final services = await Services.create();

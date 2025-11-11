@@ -389,26 +389,35 @@ class ProfileLogic extends GetxController {
                             String currentBaseUrl =
                                 baseUrlController.text.trim();
                             if (currentBaseUrl != initialBaseUrl) {
-                              Config.baseUrl = baseUrlController.text;
-                              dioApi = DioApi();
-                              Get.back();
-                              tapCount.value = 0;
-                              Get.snackbar('Success', 'Base URL updated');
+                              // 1. Clear TOÀN BỘ cache TRƯỚC (KHÔNG khôi phục gì cả)
+                              await _signOutClear
+                                  .clearAllForEnvironmentChange();
 
-                              // Clear toàn bộ cache và data khi đổi môi trường
-                              await _signOutClear.clearCacheOnly();
-                              // Clear awaiting flag để không ảnh hưởng đến URL thủ công
+                              // 2. Set base URL mới SAU KHI clear (để không bị xóa)
+                              Config.baseUrl = currentBaseUrl;
+
+                              // 3. Clear static cache trong DioApi
+                              DioApi.clearStaticCache();
+
+                              // 4. Tạo lại DioApi instance với URL mới
+                              dioApi = DioApi();
+
+                              // 5. Clear awaiting flag
                               final checkAwaiting =
                                   await CheckAwaitingServices.createCheckAwaitingServices();
                               await checkAwaiting.deleteawaiting();
-                              // KHÔNG clear manual environment flag - giữ nguyên môi trường đã set
+
+                              // 6. Sign out và navigate
                               await _authService.signOut();
                               await _authService.clearAccessTokenNpp();
+
+                              Get.back();
+                              tapCount.value = 0;
+                              Get.snackbar('Success', 'Base URL updated');
                               Get.offAllNamed(AppRouter.login);
                             } else {
                               // Nếu không thay đổi, chỉ thông báo
                               Get.back();
-
                               Get.snackbar(
                                 'Info',
                                 'No changes made to Base URL',

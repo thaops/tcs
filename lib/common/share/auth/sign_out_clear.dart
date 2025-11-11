@@ -128,4 +128,44 @@ class SignOutClear extends GetxService {
       print('Error clearing user cache: $e');
     }
   }
+
+  /// Clear TOÀN BỘ cache khi đổi môi trường (KHÔNG khôi phục gì cả)
+  /// Method này dùng khi đổi base URL, sẽ clear hết và để app như mới
+  Future<void> clearAllForEnvironmentChange() async {
+    try {
+      // 0. Unregister OneSignal push token
+      try {
+        final oneSignalService = OneSignalService();
+        await oneSignalService.unregisterPushToken();
+        await OneSignalService.clearCachedToken();
+      } catch (e) {
+        print('Error unregistering push token: $e');
+      }
+
+      // 1. Clear access token
+      final Services services = await Services.create();
+      await services.deleteAccessToken();
+
+      // 2. Clear user ID và name cache
+      final MyId _myId = await MyId.create();
+      await _myId.deleteMyId();
+      await _myId.deleteMyName();
+
+      // 3. Clear TOÀN BỘ SharedPreferences (KHÔNG giữ gì)
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // 4. Clear TOÀN BỘ GetStorage (KHÔNG khôi phục gì cả)
+      // Đây là điểm khác biệt với clearCacheOnly() - không restore base_url
+      final GetStorage storage = GetStorage();
+      await storage.erase();
+
+      // 5. Clear controllers
+      ControllerCacheClear.clearControllersOnly();
+
+      print("✅ Đã clear toàn bộ cache cho việc đổi môi trường");
+    } catch (e) {
+      print('Error clearing all for environment change: $e');
+    }
+  }
 }
