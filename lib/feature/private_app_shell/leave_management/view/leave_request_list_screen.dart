@@ -12,6 +12,7 @@ import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/le
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/widget/listoff_widgets.dart';
 import 'package:tcs_flutter/router/app_router.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/data/models/leave_request_model.dart';
+import 'package:tcs_flutter/feature/private_app_shell/notification/logic/notification_controller.dart';
 
 class LeaveScreen extends StatefulWidget {
   final Function(bool) onUpdateCallback;
@@ -31,6 +32,8 @@ class _LeaveScreenState extends State<LeaveScreen>
   final FilterUserController filterUserController = Get.put(
     FilterUserController(),
   );
+  final NotificationController notificationController =
+      Get.put(NotificationController());
   DateTime? selectedMonth;
   final Rx<DateTime?> _userSelectedStart = Rx<DateTime?>(null);
   final Rx<DateTime?> _userSelectedEnd = Rx<DateTime?>(null);
@@ -224,6 +227,58 @@ class _LeaveScreenState extends State<LeaveScreen>
               title: "Danh sách nghỉ phép",
               isBack: false,
               isTitleCenter: false,
+              badgeIcon: Obx(
+                () => notificationController.unreadCount.value > 0
+                    ? Stack(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Get.toNamed(AppRouter.notificationList);
+                            },
+                            icon: Icon(
+                              Icons.notifications_outlined,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          Positioned(
+                            right: 8,
+                            top: 8,
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColors.colorRed,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  notificationController.unreadCount.value > 99
+                                      ? '99+'
+                                      : '${notificationController.unreadCount.value}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : IconButton(
+                        onPressed: () {
+                          Get.toNamed(AppRouter.notificationList);
+                        },
+                        icon: Icon(
+                          Icons.notifications_outlined,
+                          color: AppColors.primary,
+                        ),
+                      ),
+              ),
               iconRightfirst: Icons.add_circle_rounded,
               colorfirst: AppColors.primary,
               functionfirst: _addScreen,

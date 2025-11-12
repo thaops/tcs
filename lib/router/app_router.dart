@@ -14,6 +14,8 @@ import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_scree
 import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_detail_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_annual_goals_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/view/summary_day_off_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/notification/view/notification_list_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/notification/view/notification_detail_screen.dart';
 import 'package:tcs_flutter/router/bottom_navigation_main.dart';
 
 class AppRouter {
@@ -41,6 +43,10 @@ class AppRouter {
   static const profileAnnualGoals = '/profile/annualGoals';
   static const profileDetail = '/profile/detail';
   static const summaryDayOff = '/profile/summaryDayOff';
+
+  // Notification routes
+  static const notificationList = '/notification/list';
+  static const notificationDetail = '/notification/detail';
 
   static final List<GetPage> routes = [
     // Auth
@@ -88,6 +94,18 @@ class AppRouter {
       name: summaryDayOff,
       page: () => SummaryDayOffScreen(),
       binding: SummaryDayOffBinding(),
+    ),
+
+    // Notification
+    GetPage(
+      name: notificationList,
+      page: () => NotificationListScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: notificationDetail,
+      page: () => NotificationDetailScreen(),
+      transition: Transition.rightToLeft,
     ),
   ];
 }

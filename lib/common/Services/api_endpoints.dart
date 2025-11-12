@@ -185,4 +185,20 @@ class ApiEndpoints {
     final to = Uri.encodeComponent(lastDayOfMonth.toIso8601String());
     return "${Config.baseUrl}/dayoff/list-day-off?pageIndex=1&pageSize=9999&fromDate=$from&toDate=$to&keyword=";
   }
+
+  // Notification endpoints
+  static String getNotificationList({
+    int pageIndex = 1,
+    int pageSize = 10,
+  }) {
+    return "${Config.baseUrl}/notification/getlistnotify?pageIndex=$pageIndex&pageSize=$pageSize";
+  }
+
+  static String getNotificationDetail(String notificationId) {
+    return "${Config.baseUrl}/notification/getnotifydetail/$notificationId";
+  }
+
+  static String readAllNotifications() {
+    return "${Config.baseUrl}/notification/readallnotifications";
+  }
 }
