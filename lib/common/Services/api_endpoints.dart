@@ -201,4 +201,8 @@ class ApiEndpoints {
   static String readAllNotifications() {
     return "${Config.baseUrl}/notification/readallnotifications";
   }
+
+  static String readNotifications() {
+    return "${Config.baseUrl}/notification/readnotifications";
+  }
 }

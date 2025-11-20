@@ -9,6 +9,7 @@ import 'package:tcs_flutter/common/widgets/text_widget.dart';
 import 'package:tcs_flutter/core/configs/theme/app_colors.dart';
 import 'package:tcs_flutter/feature/private_app_shell/notification/data/models/notification_model.dart';
 import 'package:tcs_flutter/feature/private_app_shell/notification/logic/notification_controller.dart';
+import 'package:tcs_flutter/feature/private_app_shell/notification/widget/notification_filter_dialog.dart';
 import 'package:tcs_flutter/router/app_router.dart';
 
 class NotificationListScreen extends StatefulWidget {
@@ -103,16 +104,183 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
     }
   }
 
-  Future<void> _handleMarkAllAsRead() async {
+  void _showFilterDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => NotificationFilterDialog(),
+    );
+  }
+
+  Widget _buildFilterBar() {
+    return Obx(() {
+      final hasStatusFilter =
+          controller.selectedStatus.value != NotificationStatus.all;
+      final hasReadStatusFilter =
+          controller.selectedReadStatus.value != ReadStatus.all;
+
+      if (!hasStatusFilter && !hasReadStatusFilter) {
+        return SizedBox.shrink();
+      }
+
+      return Container(
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.05),
+          border: Border(
+            bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.filter_alt, size: 16, color: AppColors.primary),
+            SizedBox(width: 8),
+            Expanded(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (hasStatusFilter)
+                    _buildFilterChip(
+                      label: NotificationUtils.getStatusDisplayName(
+                        controller.selectedStatus.value,
+                      ),
+                      onTap:
+                          () => controller.setStatusFilter(
+                            NotificationStatus.all,
+                          ),
+                    ),
+                  if (hasReadStatusFilter)
+                    _buildFilterChip(
+                      label: NotificationUtils.getReadStatusDisplayName(
+                        controller.selectedReadStatus.value,
+                      ),
+                      onTap:
+                          () => controller.setReadStatusFilter(ReadStatus.all),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextWidget(
+              text: label,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+            SizedBox(width: 4),
+            Icon(Icons.close, size: 14, color: Colors.white),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectionBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Checkbox "Tất cả"
+          Obx(() {
+            final hasUnread = controller.unreadNotifications.isNotEmpty;
+            final isSelectAll = controller.isSelectAll.value;
+            final hasSelection = controller.selectedNotificationIds.isNotEmpty;
+
+            // Enable nếu có unread hoặc đang có selection
+            final isEnabled = hasUnread || hasSelection;
+
+            return GestureDetector(
+              onTap: isEnabled ? () => controller.toggleSelectAll() : null,
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: isSelectAll,
+                    onChanged:
+                        isEnabled
+                            ? (value) => controller.toggleSelectAll()
+                            : null,
+                    activeColor: AppColors.primary,
+                  ),
+                  SizedBox(width: 2),
+                  TextWidget(
+                    text: 'Tất cả',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: isEnabled ? AppColors.black : Colors.grey.shade400,
+                  ),
+                ],
+              ),
+            );
+          }),
+          Spacer(),
+          // Nút đánh dấu đã đọc
+          Obx(() {
+            final hasSelection = controller.selectedNotificationIds.isNotEmpty;
+            final isSelectAll = controller.isSelectAll.value;
+            final isEnabled = hasSelection || isSelectAll;
+
+            return InkWell(
+              onTap: isEnabled ? () => _handleMarkSelectedAsRead() : null,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check,
+                    color: isEnabled ? AppColors.primary : Colors.grey,
+                  ),
+                  TextWidget(
+                    text: 'Đã đọc',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: isEnabled ? AppColors.primary : Colors.grey,
+                  ),
+                ],
+              ),
+            );
+          }),
+          SizedBox(width: 4),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleMarkSelectedAsRead() async {
     if (_isMarkingAllAsRead.value) {
       return;
     }
 
-    final unreadCount = controller.unreadCount.value;
-    if (unreadCount == 0) {
+    final selectedCount = controller.selectedNotificationIds.length;
+    final isSelectAll = controller.isSelectAll.value;
+
+    if (!isSelectAll && selectedCount == 0) {
       Get.snackbar(
         'Thông báo',
-        'Không có thông báo chưa đọc',
+        'Vui lòng chọn thông báo cần đánh dấu đã đọc',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.grey.shade600,
         colorText: Colors.white,
@@ -123,10 +291,12 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
     _isMarkingAllAsRead.value = true;
 
     try {
-      await controller.markAllAsRead();
+      await controller.markSelectedAsRead();
       Get.snackbar(
         'Thành công',
-        'Đã đánh dấu tất cả thông báo đã đọc',
+        isSelectAll
+            ? 'Đã đánh dấu tất cả thông báo đã đọc'
+            : 'Đã đánh dấu $selectedCount thông báo đã đọc',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.success,
         colorText: Colors.white,
@@ -134,7 +304,7 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
     } catch (e) {
       Get.snackbar(
         'Lỗi',
-        'Không thể đánh dấu tất cả đã đọc',
+        'Không thể đánh dấu thông báo đã đọc',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.colorRed,
         colorText: Colors.white,
@@ -152,47 +322,63 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
         title: 'Thông báo',
         isBack: true,
         isTitleCenter: true,
-        iconRightfirst: Icons.check,
-        functionfirst: () => _handleMarkAllAsRead(),
+        iconRightSecond: Icons.filter_list,
+        functionSecond: () => _showFilterDialog(context),
       ),
       body: Obx(
-        () => LoadingOverlay(
-          isLoading:
-              controller.isLoading.value && controller.notifications.isEmpty,
-          child: AbsorbPointer(
-            absorbing: _isMarkingAllAsRead.value,
-            child: RefreshIndicator(
-              onRefresh: () => controller.refresh(),
-              child:
-                  controller.notifications.isEmpty &&
-                          !controller.isLoading.value
-                      ? _buildEmptyState()
-                      : ListView.builder(
-                        controller: _scrollController,
-                        itemCount:
-                            controller.notifications.length +
-                            (controller.isLoadingMore.value ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index >= controller.notifications.length) {
-                            return Container(
-                              padding: EdgeInsets.all(16),
-                              alignment: Alignment.center,
-                              child: CircularProgressIndicator(),
-                            );
-                          }
+        () => Padding(
+          padding: EdgeInsets.only(right: 4),
+          child: Column(
+            children: [
+              Divider(color: Colors.grey.shade200, height: 0.5),
+              _buildFilterBar(),
+              _buildSelectionBar(),
+              Expanded(
+                child: LoadingOverlay(
+                  isLoading:
+                      controller.isLoading.value &&
+                      controller.notifications.isEmpty,
+                  child: AbsorbPointer(
+                    absorbing: _isMarkingAllAsRead.value,
+                    child: RefreshIndicator(
+                      onRefresh: () => controller.refresh(),
+                      child:
+                          controller.filteredNotifications.isEmpty &&
+                                  !controller.isLoading.value
+                              ? _buildEmptyState()
+                              : ListView.builder(
+                                controller: _scrollController,
+                                itemCount:
+                                    controller.filteredNotifications.length +
+                                    (controller.isLoadingMore.value ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index >=
+                                      controller.filteredNotifications.length) {
+                                    return Container(
+                                      padding: EdgeInsets.all(16),
+                                      alignment: Alignment.center,
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
 
-                          final notification = controller.notifications[index];
-                          final isLoading =
-                              _loadingNotificationId.value == notification.id;
+                                  final notification =
+                                      controller.filteredNotifications[index];
+                                  final isLoading =
+                                      _loadingNotificationId.value ==
+                                      notification.id;
 
-                          return _buildNotificationItem(
-                            context,
-                            notification,
-                            isLoading,
-                          );
-                        },
-                      ),
-            ),
+                                  return _buildNotificationItem(
+                                    context,
+                                    notification,
+                                    isLoading,
+                                  );
+                                },
+                              ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -228,23 +414,43 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
     return Obx(
       () => AbsorbPointer(
         absorbing: _loadingNotificationId.value.isNotEmpty,
-        child: GestureDetector(
-          onTap: isLoading ? null : () => _handleNotificationTap(notification),
-          child: Container(
-            decoration: BoxDecoration(
-              color:
-                  isUnread ? AppColors.primary.withOpacity(0.05) : Colors.white,
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            color:
+                isUnread ? AppColors.primary.withOpacity(0.05) : Colors.white,
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade200, width: 1),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Stack(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
+          ),
+          padding: EdgeInsets.only(right: 4, top: 12, bottom: 12),
+          child: Stack(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Checkbox
+                  Obx(
+                    () => Container(
+                      margin: EdgeInsets.only(right: 2),
+                      child: Checkbox(
+                        value: controller.selectedNotificationIds.contains(
+                          notification.id,
+                        ),
+                        onChanged:
+                            notification.isRead
+                                ? null
+                                : (value) => controller
+                                    .toggleSelectNotification(notification.id),
+                        activeColor: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap:
+                          isLoading
+                              ? null
+                              : () => _handleNotificationTap(notification),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -295,17 +501,17 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
                         ],
                       ),
                     ),
-                  ],
-                ),
-                if (isLoading)
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.white.withOpacity(0.7),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
                   ),
-              ],
-            ),
+                ],
+              ),
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.white.withOpacity(0.7),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
