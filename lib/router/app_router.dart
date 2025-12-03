@@ -7,6 +7,7 @@ import 'package:tcs_flutter/feature/private_app_shell/filter_user/filter_user_vi
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_create_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_detail_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_update_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_statistics_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/binding/profile_binding.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/binding/my_annual_leave_binding.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/binding/summary_day_off_binding.dart';
@@ -39,6 +40,7 @@ class AppRouter {
   static const leaveCreate = '/leave/leaveCreate';
   static const leaveUpdate = '/leave/leaveUpdate';
   static const leaveDetail = '/leave/leaveDetail';
+  static const leaveStatistics = '/leave/statistics';
 
   static const profileAnnualGoals = '/profile/annualGoals';
   static const profileDetail = '/profile/detail';
@@ -70,6 +72,11 @@ class AppRouter {
     GetPage(
       name: leaveDetail,
       page: () => ListoffDetail(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: leaveStatistics,
+      page: () => LeaveStatisticsScreen(),
       transition: Transition.rightToLeft,
     ),
 

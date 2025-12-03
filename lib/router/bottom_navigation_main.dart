@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:tcs_flutter/feature/private_app_shell/profile/view/profile_screen.dart';
 import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_request_list_screen.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/view/leave_statistics_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tcs_flutter/feature/private_app_shell/leave_management/logic/leave_statistics_controller.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -19,6 +21,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     Get.put(ProfileLogic());
+    Get.put(LeaveStatisticsController());
   }
 
   int _selectedIndex = 0;
@@ -26,6 +29,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     LeaveScreen(onUpdateCallback: (bool) {}),
+    LeaveStatisticsScreen(),
     ProfileScreen(),
   ];
 
@@ -44,6 +48,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       selectedColor: AppColors.primary,
     ),
+
     // SalomonBottomBarItem(
     //   icon: Icon(Icons.support_agent_rounded, size: 24),
     //   title: Text("Hỗ trợ",
@@ -56,6 +61,14 @@ class _MainScreenState extends State<MainScreen> {
     //       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
     //   selectedColor: Colors.purple,
     // ),
+    SalomonBottomBarItem(
+      icon: Icon(Icons.bar_chart_rounded, size: 24),
+      title: Text(
+        "Thống kê",
+        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+      ),
+      selectedColor: AppColors.primary,
+    ),
     SalomonBottomBarItem(
       icon: Icon(Icons.person, size: 24),
       title: Text(
