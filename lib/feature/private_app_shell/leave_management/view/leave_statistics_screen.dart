@@ -22,6 +22,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
             children: [
               SizedBox(height: 55),
               _buildTabBar(controller),
+              SizedBox(height: 20), 
               Expanded(child: _buildTabContent(controller)),
             ],
           ),
@@ -49,7 +50,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
                 controller.todayLeaves.length,
               ),
             ),
-            const SizedBox(width: 8), // Khoảng cách giữa 2 tab
+            const SizedBox(width: 8), 
             Expanded(
               child: _buildTabItem(
                 controller,
@@ -175,6 +176,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ListView.builder(
+            padding: EdgeInsets.zero, // Loại bỏ padding mặc định
             itemCount: controller.todayLeaves.length,
             itemBuilder: (context, index) {
               return LeaveStatisticsCard(
@@ -198,6 +200,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
       return RefreshIndicator(
         onRefresh: () => controller.fetchStatistics(),
         child: ListView.builder(
+          padding: EdgeInsets.zero, // Loại bỏ padding mặc định
           itemCount: controller.upcomingLeaves.length,
           itemBuilder: (context, index) {
             return Padding(
