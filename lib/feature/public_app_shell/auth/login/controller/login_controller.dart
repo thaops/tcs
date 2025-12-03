@@ -18,8 +18,6 @@ class LoginController extends GetxController {
   DioApi dioApi = DioApi();
   Dio dio = Dio();
 
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
   final AuthService authService = AuthService();
   final ApiService apiService = ApiService();
   final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -39,8 +37,6 @@ class LoginController extends GetxController {
   @override
   void onClose() {
     _sub?.cancel();
-    usernameController.dispose();
-    passwordController.dispose();
     super.onClose();
   }
 
@@ -152,38 +148,6 @@ class LoginController extends GetxController {
     } finally {
       isLoadingMicrosoft.value = false;
       Navigator.pop(context);
-    }
-  }
-
-  Future<void> loginFramework(BuildContext context) async {
-    Services services = await Services.create();
-    try {
-      if (passwordController.text.isEmpty || usernameController.text.isEmpty) {
-        Get.snackbar("Thông báo", "Vui lòng nhập tài khoản");
-        return;
-      }
-      if (passwordController.text != "123456") {
-        Get.snackbar("Thông báo", "Tài khoản không đúng");
-        return;
-      }
-      final response = await dioApi.post(
-        ApiEndpoints.loginFrame,
-        data: {
-          "userName": usernameController.text,
-          "password": passwordController.text,
-        },
-      );
-      if (response.data['statusCode'] == 500) {
-        Get.snackbar("Thông báo", "Tài khoản không đúng");
-        return;
-      }
-      var accessTokenId = response.data['data']['accessToken'].toString();
-      if (response.data['statusCode'] == 200) {
-        saveLoginRouter(services, accessTokenId, context);
-      }
-    } catch (e) {
-      print("Lỗi loginFramework: $e");
-      Get.snackbar("Thông báo", "Lỗi khi đăng nhập: $e");
     }
   }
 

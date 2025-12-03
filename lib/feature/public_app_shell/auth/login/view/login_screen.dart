@@ -41,8 +41,6 @@ class LoginScreen extends StatelessWidget {
           children: [
             FrameLogin(
               controllerLogin: controllerlogin,
-              passwordControllerl: controllerlogin.passwordController,
-              usernameController: controllerlogin.usernameController,
             ),
           ],
         ),

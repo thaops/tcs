@@ -12,8 +12,6 @@ class ApiEndpoints {
       "${Config.baseUrl}/login/get-redirect-url?platform=$platform&type=$type";
   static String loginMicrosoft = "${Config.baseUrl}/login/login-with-ms-token";
 
-  static String loginFrame = "${Config.baseUrl}/users/login";
-
   //task
 
   // profile

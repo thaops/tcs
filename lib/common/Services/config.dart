@@ -11,7 +11,7 @@ class Config {
       "https://api-tcshr.azurewebsites.net/api";
   // "https://namphuong-api.azurewebsites.net/api";
   static const String _defaultDevBaseUrl =
-      "https://namphuong-api-dev.azurewebsites.net/api";
+      "https://api-tcshr-dev.azurewebsites.net/api";
 
   // Internal helper to compute current default based on awaiting flag
   static String _currentDefaultBaseUrl(GetStorage storage) {

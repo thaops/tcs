@@ -170,9 +170,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
         return EmptyLottieState();
       }
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: RefreshIndicator(
+      return  RefreshIndicator(
           onRefresh: () => controller.fetchStatistics(),
           child: ListView.builder(
             itemCount: controller.todayLeaves.length,
@@ -183,7 +181,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
               );
             },
           ),
-        ),
+        
       );
     });
   }
@@ -195,9 +193,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
         return EmptyLottieState();
       }
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: RefreshIndicator(
+      return  RefreshIndicator(
           onRefresh: () => controller.fetchStatistics(),
           child: ListView.builder(
             itemCount: controller.upcomingLeaves.length,
@@ -208,7 +204,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
               );
             },
           ),
-        ),
+        
       );
     });
   }
