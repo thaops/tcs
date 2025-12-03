@@ -170,8 +170,10 @@ class LeaveStatisticsScreen extends StatelessWidget {
         return EmptyLottieState();
       }
 
-      return  RefreshIndicator(
-          onRefresh: () => controller.fetchStatistics(),
+      return RefreshIndicator(
+        onRefresh: () => controller.fetchStatistics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ListView.builder(
             itemCount: controller.todayLeaves.length,
             itemBuilder: (context, index) {
@@ -181,7 +183,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
               );
             },
           ),
-        
+        ),
       );
     });
   }
@@ -193,18 +195,20 @@ class LeaveStatisticsScreen extends StatelessWidget {
         return EmptyLottieState();
       }
 
-      return  RefreshIndicator(
-          onRefresh: () => controller.fetchStatistics(),
-          child: ListView.builder(
-            itemCount: controller.upcomingLeaves.length,
-            itemBuilder: (context, index) {
-              return LeaveStatisticsCard(
+      return RefreshIndicator(
+        onRefresh: () => controller.fetchStatistics(),
+        child: ListView.builder(
+          itemCount: controller.upcomingLeaves.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: LeaveStatisticsCard(
                 leave: controller.upcomingLeaves[index],
                 showDateTime: true, // Tab "Sắp tới" hiển thị ngày/giờ
-              );
-            },
-          ),
-        
+              ),
+            );
+          },
+        ),
       );
     });
   }
