@@ -41,6 +41,18 @@ class LeaveStatisticsController extends GetxController {
           final statusName = leave.statusName?.toLowerCase().trim() ?? '';
           final status = leave.status?.trim() ?? '';
 
+          // Loại trừ các đơn đã bị hủy hoặc từ chối
+          final isRejectedOrCancelled =
+              status == '3' || // Từ chối
+              status == '4' || // Hủy đơn
+              statusName == 'từ chối' ||
+              statusName == 'hủy đơn' ||
+              statusName == 'hủy' ||
+              statusName.contains('hủy') ||
+              statusName.contains('từ chối');
+
+          if (isRejectedOrCancelled) return false;
+
           // Các trạng thái được coi là đã duyệt
           // status = 2 hoặc statusName = "Đã duyệt" (theo logic trong leave_request_detail_controller)
           return status == '2' ||
