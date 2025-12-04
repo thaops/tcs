@@ -16,6 +16,7 @@ class LeaveRequest {
   final DateTime? approvedDate;
   final String? status;
   final String? statusName;
+  final String? employeeCode;
 
   LeaveRequest({
     required this.id,
@@ -33,6 +34,7 @@ class LeaveRequest {
     this.approvedDate,
     this.status,
     this.statusName,
+    this.employeeCode,
   });
 
   factory LeaveRequest.fromJson(Map<String, dynamic> json) {
@@ -75,6 +77,7 @@ class LeaveRequest {
         fromDate: _safeParse(json['fromDate']?.toString()),
         toDate: _safeParse(json['toDate']?.toString()),
         category: json['category']?.toString() ?? '',
+        employeeCode: json['employeeCode']?.toString() ?? '',
         totalDay:
             json['totalDay'] is num
                 ? json['totalDay']

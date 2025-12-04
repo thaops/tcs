@@ -22,7 +22,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
             children: [
               SizedBox(height: 55),
               _buildTabBar(controller),
-              SizedBox(height: 20), 
+              SizedBox(height: 20),
               Expanded(child: _buildTabContent(controller)),
             ],
           ),
@@ -50,7 +50,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
                 controller.todayLeaves.length,
               ),
             ),
-            const SizedBox(width: 8), 
+            const SizedBox(width: 8),
             Expanded(
               child: _buildTabItem(
                 controller,
@@ -174,7 +174,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
       return RefreshIndicator(
         onRefresh: () => controller.fetchStatistics(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 0),
           child: ListView.builder(
             padding: EdgeInsets.zero, // Loại bỏ padding mặc định
             itemCount: controller.todayLeaves.length,
@@ -204,7 +204,7 @@ class LeaveStatisticsScreen extends StatelessWidget {
           itemCount: controller.upcomingLeaves.length,
           itemBuilder: (context, index) {
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               child: LeaveStatisticsCard(
                 leave: controller.upcomingLeaves[index],
                 showDateTime: true, // Tab "Sắp tới" hiển thị ngày/giờ

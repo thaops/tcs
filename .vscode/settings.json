@@ -1,98 +1,176 @@
+// {
+//   // Cấu hình search - chỉ tìm kiếm files quan trọng
+//   "search.exclude": {
+//     // Build và cache folders
+//     "**/build": true,
+//     "**/dist": true,
+//     "**/out": true,
+//     "**/.dart_tool": true,
+    
+//     // Platform-specific folders (không cần search)
+//     "**/ios/Pods": true,
+//     "**/ios/Podfile.lock": true,
+//     "**/ios/Runner.xcodeproj": true,
+//     "**/ios/Runner.xcworkspace": true,
+//     "**/ios/.symlinks": true,
+//     "**/macos/Runner.xcodeproj": true,
+//     "**/macos/Runner.xcworkspace": true,
+//     "**/android/.gradle": true,
+//     "**/android/app/build": true,
+//     "**/android/build": true,
+//     "**/linux/build": true,
+//     "**/windows/build": true,
+    
+//     // Version control và IDE
+//     "**/.git": true,
+//     "**/.idea": true,
+//     "**/.vscode": false,  // Giữ lại .vscode để có thể search config
+    
+//     // Dependencies
+//     "**/node_modules": true,
+    
+//     // Temporary files
+//     "**/.DS_Store": true,
+//     "**/Thumbs.db": true
+//   },
+
+//   // Files hiển thị trong Explorer - ẩn những gì không cần thiết
+//   "files.exclude": {
+//     "**/.git": true,
+//     "**/.DS_Store": true,
+//     "**/.dart_tool": true,
+//     "**/build": true,
+    
+//     // Platform folders (ẩn nhưng vẫn có thể access khi cần)
+//     "**/ios/Pods": true,
+//     "**/ios/Podfile.lock": true,
+//     "**/ios/Runner.xcodeproj": true,
+//     "**/ios/Runner.xcworkspace": true,
+//     "**/macos/Runner.xcodeproj": true,
+//     "**/macos/Runner.xcworkspace": true,
+//     "**/android/.gradle": true,
+//     "**/linux": false,  // Hiển thị để có thể xem khi cần
+//     "**/windows": false  // Hiển thị để có thể xem khi cần
+//   },
+
+//   // Chỉ search trong những file types quan trọng
+//   "search.include": {
+//     "lib/**/*.dart": true,
+//     "test/**/*.dart": true,
+//     "assets/**": true,
+//     "pubspec.yaml": true,
+//     "analysis_options.yaml": true,
+//     "mason.yaml": true,
+//     "bricks/**": true,
+//     "README.md": true,
+//     "*.md": true,
+//     "android/app/build.gradle.kts": true,
+//     "android/build.gradle.kts": true,
+//     "android/key.properties": true,
+//     "ios/Runner/Info.plist": true,
+//     "web/index.html": true,
+//     "web/manifest.json": true
+//   },
+
+//   // Flutter và Dart specific settings
+//   "dart.flutterSdkPath": null,
+//   "dart.debugExternalPackageLibraries": false,
+//   "dart.debugSdkLibraries": false,
+  
+//   // File associations
+//   "files.associations": {
+//     "*.dart": "dart",
+//     "pubspec.yaml": "yaml",
+//     "analysis_options.yaml": "yaml",
+//     "*.arb": "json"
+//   },
+
+//   // Exclude từ file watcher để tăng performance
+//   "files.watcherExclude": {
+//     "**/.git/objects/**": true,
+//     "**/.git/subtree-cache/**": true,
+//     "**/node_modules/*/**": true,
+//     "**/.dart_tool/**": true,
+//     "**/build/**": true,
+//     "**/ios/Pods/**": true,
+//     "**/android/.gradle/**": true
+//   }
+// }
+
 {
-  // Cấu hình search - chỉ tìm kiếm files quan trọng
-  "search.exclude": {
-    // Build và cache folders
-    "**/build": true,
-    "**/dist": true,
-    "**/out": true,
-    "**/.dart_tool": true,
-    
-    // Platform-specific folders (không cần search)
-    "**/ios/Pods": true,
-    "**/ios/Podfile.lock": true,
-    "**/ios/Runner.xcodeproj": true,
-    "**/ios/Runner.xcworkspace": true,
-    "**/ios/.symlinks": true,
-    "**/macos/Runner.xcodeproj": true,
-    "**/macos/Runner.xcworkspace": true,
-    "**/android/.gradle": true,
-    "**/android/app/build": true,
-    "**/android/build": true,
-    "**/linux/build": true,
-    "**/windows/build": true,
-    
-    // Version control và IDE
-    "**/.git": true,
-    "**/.idea": true,
-    "**/.vscode": false,  // Giữ lại .vscode để có thể search config
-    
-    // Dependencies
-    "**/node_modules": true,
-    
-    // Temporary files
-    "**/.DS_Store": true,
-    "**/Thumbs.db": true
-  },
-
-  // Files hiển thị trong Explorer - ẩn những gì không cần thiết
-  "files.exclude": {
-    "**/.git": true,
-    "**/.DS_Store": true,
-    "**/.dart_tool": true,
-    "**/build": true,
-    
-    // Platform folders (ẩn nhưng vẫn có thể access khi cần)
-    "**/ios/Pods": true,
-    "**/ios/Podfile.lock": true,
-    "**/ios/Runner.xcodeproj": true,
-    "**/ios/Runner.xcworkspace": true,
-    "**/macos/Runner.xcodeproj": true,
-    "**/macos/Runner.xcworkspace": true,
-    "**/android/.gradle": true,
-    "**/linux": false,  // Hiển thị để có thể xem khi cần
-    "**/windows": false  // Hiển thị để có thể xem khi cần
-  },
-
-  // Chỉ search trong những file types quan trọng
-  "search.include": {
-    "lib/**/*.dart": true,
-    "test/**/*.dart": true,
-    "assets/**": true,
-    "pubspec.yaml": true,
-    "analysis_options.yaml": true,
-    "mason.yaml": true,
-    "bricks/**": true,
-    "README.md": true,
-    "*.md": true,
-    "android/app/build.gradle.kts": true,
-    "android/build.gradle.kts": true,
-    "android/key.properties": true,
-    "ios/Runner/Info.plist": true,
-    "web/index.html": true,
-    "web/manifest.json": true
-  },
-
-  // Flutter và Dart specific settings
-  "dart.flutterSdkPath": null,
+  // ===== Flutter / Dart Performance =====
+  "dart.analysisServer.clientMemoryMax": 4096,
   "dart.debugExternalPackageLibraries": false,
   "dart.debugSdkLibraries": false,
-  
-  // File associations
-  "files.associations": {
-    "*.dart": "dart",
-    "pubspec.yaml": "yaml",
-    "analysis_options.yaml": "yaml",
-    "*.arb": "json"
+  "dart.showTodos": false,
+  "dart.warnWhenEditingFilesOutsideWorkspace": false,
+
+  // Tắt bớt validation JavaScript/TypeScript để VSCode nhẹ hơn
+  "javascript.validate.enable": false,
+  "typescript.validate.enable": false,
+
+  // ===== Editor =====
+  "editor.formatOnSave": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.fontSize": 14,
+  "editor.minimap.enabled": false,
+  "editor.smoothScrolling": true,
+
+  // ===== Explorer: Ẩn files / folders nặng không cần thiết =====
+  "files.exclude": {
+    "**/.git": true,
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/ios/Pods": true,
+    "**/android/.gradle": true,
+    "**/.DS_Store": true
   },
 
-  // Exclude từ file watcher để tăng performance
+  // ===== Search: chỉ search file quan trọng =====
+  "search.exclude": {
+    "**/build": true,
+    "**/.dart_tool": true,
+    "**/node_modules": true,
+    "**/ios/Pods": true,
+    "**/android/build": true,
+    "**/android/.gradle": true,
+    "**/web/**": false,
+    "**/assets/**": false
+  },
+
+  // ===== File watcher: giảm CPU khi VSCode chạy nền =====
   "files.watcherExclude": {
     "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "**/node_modules/*/**": true,
-    "**/.dart_tool/**": true,
     "**/build/**": true,
-    "**/ios/Pods/**": true,
-    "**/android/.gradle/**": true
+    "**/.dart_tool/**": true,
+    "**/node_modules/**": true,
+    "**/ios/Pods/**": true
+  },
+
+  // ===== Terminal =====
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "terminal.integrated.enablePersistentSessions": false,
+
+  // ===== Git =====
+  "git.autorefresh": false,
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+
+  // ===== Flutter Specific ======
+  "flutter.hotReloadOnSave": true,
+
+  // ===== UI nhẹ hơn =====
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.startupEditor": "none",
+  "workbench.editor.enablePreview": true,
+
+  // ===== File Associations =====
+  "files.associations": {
+    "*.dart": "dart",
+    "*.arb": "json",
+    "*.yaml": "yaml"
   }
 }

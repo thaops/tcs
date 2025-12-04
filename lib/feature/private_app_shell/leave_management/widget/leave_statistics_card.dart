@@ -23,7 +23,7 @@ class LeaveStatisticsCard extends StatelessWidget {
         Get.toNamed(AppRouter.leaveDetail, arguments: {'leaveId': leave.id});
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -45,7 +45,7 @@ class LeaveStatisticsCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextWidget(
-                    text: ' ${leave.fullName ?? 'N/A'}',
+                    text: '${leave.fullName ?? ''}',
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: AppColors.black,
@@ -59,16 +59,10 @@ class LeaveStatisticsCard extends StatelessWidget {
             if (leave.departmentName != null || leave.unitName != null)
               Row(
                 children: [
-                  Icon(
-                    Icons.business_outlined,
-                    size: 16,
-                    color: AppColors.colortextGray,
-                  ),
-                  const SizedBox(width: 6),
                   Expanded(
                     child: TextWidget(
                       text: _getWorkLocation(),
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: AppColors.colortextGray,
                     ),
@@ -83,18 +77,27 @@ class LeaveStatisticsCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    size: 16,
-                    color: AppColors.colortextGray,
-                  ),
-                  const SizedBox(width: 6),
                   Expanded(
-                    child: TextWidget(
-                      text: _formatDateTimeRange(),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.colortextGray,
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Ngày: ",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.colortextGray,
+                            ),
+                          ),
+                          TextSpan(
+                            text: _formatDateTimeRange(),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -106,13 +109,10 @@ class LeaveStatisticsCard extends StatelessWidget {
             // Số ngày nghỉ
             Row(
               children: [
-                Icon(Icons.event_outlined, size: 16, color: AppColors.primary),
-                const SizedBox(width: 6),
                 TextWidget(
-                  text: '${leave.totalDay ?? 0} ngày nghỉ',
+                  text: 'Số ngày: ${leave.totalDay ?? 0} ngày',
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.primary,
                 ),
               ],
             ),
@@ -153,12 +153,12 @@ class LeaveStatisticsCard extends StatelessWidget {
     if (isSameDay) {
       // Cùng ngày: 31/07/2025 – 08:00–17:30
       final toTimeStr = timeFormat.format(leave.toDate!);
-      return '$fromDateStr – $fromTimeStr–$toTimeStr';
+      return '$fromDateStr – ($fromTimeStr - $toTimeStr)';
     } else {
       // Khác ngày: 31/07/2025 08:00 – 02/08/2025 17:30
       final toDateStr = dateFormat.format(leave.toDate!);
       final toTimeStr = timeFormat.format(leave.toDate!);
-      return '$fromDateStr $fromTimeStr – $toDateStr $toTimeStr';
+      return '$fromDateStr ($fromTimeStr) – $toDateStr ($toTimeStr)';
     }
   }
 }
