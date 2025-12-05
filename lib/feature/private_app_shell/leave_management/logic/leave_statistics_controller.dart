@@ -35,37 +35,10 @@ class LeaveStatisticsController extends GetxController {
       final response = await _getListOff.call(todayStart, futureEnd, 1);
 
       if (response != null) {
-        // Helper function để kiểm tra đơn đã được duyệt
-        bool isApproved(LeaveRequest leave) {
-          // Kiểm tra statusName hoặc status để xác định đơn đã duyệt
-          final statusName = leave.statusName?.toLowerCase().trim() ?? '';
-          final status = leave.status?.trim() ?? '';
-
-          // Loại trừ các đơn đã bị hủy hoặc từ chối
-          final isRejectedOrCancelled =
-              status == '3' || // Từ chối
-              status == '4' || // Hủy đơn
-              statusName == 'từ chối' ||
-              statusName == 'hủy đơn' ||
-              statusName == 'hủy' ||
-              statusName.contains('hủy') ||
-              statusName.contains('từ chối');
-
-          if (isRejectedOrCancelled) return false;
-
-          // Các trạng thái được coi là đã duyệt
-          // status = 2 hoặc statusName = "Đã duyệt" (theo logic trong leave_request_detail_controller)
-          return status == '2' ||
-              statusName == 'đã duyệt' ||
-              statusName.contains('đã duyệt') ||
-              statusName.contains('approved') ||
-              (leave.approvedDate != null); // Có ngày duyệt
-        }
-
-        // Filter "Hôm nay": đơn đã được duyệt, có ngày nghỉ = ngày hiện tại
+        // Filter "Hôm nay": đơn có status == '2', có ngày nghỉ = ngày hiện tại
         todayLeaves.value =
             response.where((leave) {
-              if (!isApproved(leave)) return false;
+              if (leave.status != '2') return false;
 
               final fromDate = leave.fromDate;
               final toDate = leave.toDate;
@@ -91,11 +64,11 @@ class LeaveStatisticsController extends GetxController {
                       toDateOnly.isAfter(todayOnly)));
             }).toList();
 
-        // Filter "Sắp tới": đơn đã được duyệt, thời gian nghỉ trong 7 ngày tiếp theo
+        // Filter "Sắp tới": đơn có status == '2', thời gian nghỉ trong 7 ngày tiếp theo
         final sevenDaysLater = now.add(const Duration(days: 7));
         upcomingLeaves.value =
             response.where((leave) {
-                if (!isApproved(leave)) return false;
+                if (leave.status != '2') return false;
 
                 final fromDate = leave.fromDate;
                 if (fromDate == null) return false;
