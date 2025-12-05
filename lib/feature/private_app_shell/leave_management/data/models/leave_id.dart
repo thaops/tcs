@@ -65,11 +65,12 @@ class LeaveID {
 
     try {
       return LeaveID(
-        numberOfDaysOffRemaining: json['numberOfDaysOffRemaining'] as int? ?? 0,
-        id: json['id']?.toString() ?? '',
-        employeeId: json['employeeId']?.toString() ?? '',
-        department: json['department']?.toString() ?? '',
-        avatarUrl: json['avatarUrl']?.toString() ?? '',
+        numberOfDaysOffRemaining:
+            (json['numberOfDaysOffRemaining'] as num?)?.toInt() ?? 0,
+        id: json['id']?.toString(),
+        employeeId: json['employeeId']?.toString(),
+        department: json['department']?.toString(),
+        avatarUrl: json['avatarUrl']?.toString(),
         fullName:
             json['fullName']?.toString() ??
             json['employeeCode']?.toString() ??
@@ -82,11 +83,16 @@ class LeaveID {
             json['toDate'] != null
                 ? DateTime.tryParse(json['toDate'].toString())
                 : null,
-        totalDay: json['totalDay'],
-        categoryId: json['categoryId']?.toString() ?? '',
-        category: json['category']?.toString() ?? '',
-        status: json['status'] as int?,
-        statusLabel: json['statusLabel']?.toString() ?? '',
+        totalDay:
+            json['totalDay'] != null
+                ? (json['totalDay'] is num
+                    ? json['totalDay']
+                    : (num.tryParse(json['totalDay'].toString())))
+                : null,
+        categoryId: json['categoryId']?.toString(),
+        category: json['category']?.toString(),
+        status: (json['status'] as num?)?.toInt(),
+        statusLabel: json['statusLabel']?.toString(),
         approvalDate:
             json['approvalDate'] != null
                 ? DateTime.tryParse(json['approvalDate'].toString())
@@ -96,7 +102,7 @@ class LeaveID {
                 ? DateTime.tryParse(json['lastApprovalDate'].toString())
                 : null,
         reason: json['reason']?.toString() ?? '',
-        note: json['note']?.toString() ?? '',
+        note: json['note']?.toString(),
         createdDate:
             json['createdDate'] != null
                 ? DateTime.tryParse(json['createdDate'].toString())
@@ -111,9 +117,9 @@ class LeaveID {
                     )
                     .toList()
                 : null,
-        employeeCode: json['employeeCode']?.toString() ?? '',
-        jobTitle: json['jobTitle']?.toString() ?? '',
-        quota: json['quota'] as int?,
+        employeeCode: json['employeeCode']?.toString(),
+        jobTitle: json['jobTitle']?.toString(),
+        quota: (json['quota'] as num?)?.toInt(),
         leaveDaysLeft: (json['leaveDaysLeft'] as num?)?.toInt(),
         attachments:
             json['attachments'] != null
@@ -186,11 +192,11 @@ class Attachment {
     }
 
     return Attachment(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      url: json['url'] ?? '',
-      type: json['type'] ?? '',
-      size: json['size'] as int? ?? 0,
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      url: json['url']?.toString() ?? '',
+      type: json['type']?.toString() ?? '',
+      size: (json['size'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -241,20 +247,20 @@ class WorkFlow {
           json['approvalDate'] != null
               ? DateTime.tryParse(json['approvalDate'].toString())
               : null,
-      step: json['step'] as int?,
-      status: json['status'] as int?,
+      step: (json['step'] as num?)?.toInt(),
+      status: (json['status'] as num?)?.toInt(),
       statusLabel:
           json['statusLabel'] == "Không xác định"
               ? ""
-              : json['statusLabel']?.toString() ?? '',
-      note: json['note']?.toString() ?? '',
+              : json['statusLabel']?.toString(),
+      note: json['note']?.toString(),
       createdDate:
           json['createdDate'] != null
               ? DateTime.tryParse(json['createdDate'].toString())
               : null,
       isDeleted: json['isDeleted'] as bool?,
-      receiver: json['receiver']?.toString() ?? '',
-      jobTitle: json['jobTitle']?.toString() ?? '',
+      receiver: json['receiver']?.toString(),
+      jobTitle: json['jobTitle']?.toString(),
     );
   }
 
