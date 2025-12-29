@@ -8,14 +8,16 @@ class Config {
   static const String _manualEnvKey = 'manual_environment_set';
   // Default URLs
   static const String _defaultProdBaseUrl =
-      "https://api-tcshr.azurewebsites.net/api";
+      "https://tcshr-api.azurewebsites.net/api";
   // "https://namphuong-api.azurewebsites.net/api";
   static const String _defaultDevBaseUrl =
-      "https://api-tcshr-dev.azurewebsites.net/api";
+      "https://tcshr-api-dev.azurewebsites.net/api";
 
   // Internal helper to compute current default based on awaiting flag
+  // Nếu awaiting = true thì dùng dev URL, ngược lại dùng prod URL
   static String _currentDefaultBaseUrl(GetStorage storage) {
     final bool awaiting = storage.read('awaiting') ?? false;
+    // Nếu awaiting là true, sử dụng dev URL
     return awaiting ? _defaultDevBaseUrl : _defaultProdBaseUrl;
   }
 

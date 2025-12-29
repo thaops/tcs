@@ -9,10 +9,10 @@ import 'package:tcs_flutter/common/Services/services.dart';
 import 'package:tcs_flutter/common/repositoty/dio_api.dart';
 import 'package:tcs_flutter/common/utils/show_dialog_set_url.dart';
 import 'package:tcs_flutter/router/app_router.dart';
+import 'package:tcs_flutter/router/one_signal_service.dart';
 import 'package:tcs_flutter/src/api/api_service.dart';
 import 'package:tcs_flutter/src/api/models/apiResponse_model.dart';
 import 'package:tcs_flutter/src/services/lib/services/auth_service.dart';
-import 'package:tcs_flutter/router/one_signal_service.dart';
 
 class LoginController extends GetxController {
   DioApi dioApi = DioApi();
@@ -58,7 +58,7 @@ class LoginController extends GetxController {
       );
       final response = await dio.get(ApiEndpoints.loginUrlMicrosoft(0, 1));
       Navigator.pop(context);
-      print(response.data);
+      print("response.data: ${response.data}");
       print(ApiEndpoints.loginUrlMicrosoft(0, 1));
 
       if (response.statusCode == response.data['statusCode']) {
